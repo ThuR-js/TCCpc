@@ -133,6 +133,44 @@ function App() {
       status: "analyzing",
       whatsapp: "11666666666",
       chatEnabled: true
+    },
+    {
+      id: 7,
+      name: "Jaqueta Palace Stella",
+      description: "Jaqueta Palace Stella em ótimo estado, pouco usada",
+      type: "moletom",
+      size: "M",
+      condition: "seminovo",
+      donor: "Lucas Ferreira",
+      donorId: 7,
+      image: "images/Moletons/Jaquetapalacestella.webp",
+      images: [
+        "images/Moletons/Jaquetapalacestella.webp",
+        "images/Moletons/Jaquetapalacestella2.webp",
+        "images/Moletons/Jaquetapalacestella3.webp"
+      ],
+      status: "available",
+      whatsapp: "11555555555",
+      chatEnabled: true
+    },
+    {
+      id: 8,
+      name: "Moletom Champion",
+      description: "Moletom Champion original, muito confortável",
+      type: "moletom",
+      size: "M",
+      condition: "usado",
+      donor: "Beatriz Santos",
+      donorId: 8,
+      image: "images/Moletons/MoletomChampion.webp",
+      images: [
+        "images/Moletons/MoletomChampion.webp",
+        "images/Moletons/MoletomChampion2.webp",
+        "images/Moletons/MoletomChampion3.webp"
+      ],
+      status: "available",
+      whatsapp: "11444444444",
+      chatEnabled: true
     }
   ]
 
@@ -352,7 +390,7 @@ function App() {
                 {!currentUser.isGuest && <button onClick={() => setCurrentPage(currentUser.type === 'doador' ? 'donor' : 'recipient')}>Painel</button>}
                 {currentUser.isGuest ? (
                   <>
-                    <button onClick={() => setShowLoginModal(true)}>Entrar</button>
+                    <button onClick={() => setShowInitialLogin(true)}>Entrar</button>
                     <button onClick={() => setShowRegisterModal(true)}>Cadastrar</button>
                   </>
                 ) : (
