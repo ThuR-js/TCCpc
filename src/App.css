@@ -337,31 +337,31 @@ body {
 }
 
 .btn-primary {
-    background: #e91e63;
+    background: rgb(139, 0, 0);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #c2185b;
+    background: rgb(100, 0, 0);
 }
 
 .btn-secondary {
-    background: #25d366;
+    background: rgb(0, 100, 0);
     color: white;
 }
 
 .btn-secondary:hover {
-    background: #128c7e;
+    background: rgb(0, 80, 0);
 }
 
 .btn-outline {
     background: transparent;
-    color: #e91e63;
-    border: 1px solid #e91e63;
+    color: rgb(139, 0, 0);
+    border: 1px solid rgb(139, 0, 0);
 }
 
 .btn-outline:hover {
-    background: #e91e63;
+    background: rgb(139, 0, 0);
     color: white;
 }
 
@@ -414,7 +414,7 @@ input, select, textarea {
 }
 
 button[type="submit"] {
-    background: #e91e63;
+    background: rgb(139, 0, 0);
     color: white;
     padding: 0.75rem;
     border: none;
@@ -425,7 +425,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background: #c2185b;
+    background: rgb(100, 0, 0);
 }
 
 /* Dashboard */
@@ -437,7 +437,7 @@ button[type="submit"]:hover {
 }
 
 .btn-primary {
-    background: #e91e63;
+    background: rgb(139, 0, 0);
     color: white;
     padding: 0.75rem 1.5rem;
     border: none;
@@ -448,7 +448,7 @@ button[type="submit"]:hover {
 }
 
 .btn-primary:hover {
-    background: #c2185b;
+    background: rgb(100, 0, 0);
 }
 
 /* Product Details */

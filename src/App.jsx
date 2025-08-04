@@ -141,6 +141,7 @@ function App() {
     const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser))
+      setShowInitialLogin(false)
     }
   }, [])
 
@@ -151,6 +152,7 @@ function App() {
     if (user) {
       setCurrentUser(user)
       localStorage.setItem('currentUser', JSON.stringify(user))
+      localStorage.setItem('lastUser', JSON.stringify(user))
       setShowInitialLogin(false)
       setCurrentPage(user.type === 'doador' ? 'donor' : 'recipient')
     } else {
@@ -159,6 +161,17 @@ function App() {
   }
 
   const handleContinueWithoutLogin = () => {
+    // Criar conta de convidado com dados da última conta logada
+    const lastUser = localStorage.getItem('lastUser')
+    const guestUser = {
+      id: 'guest',
+      name: 'Convidado',
+      email: 'convidado@temp.com',
+      type: 'convidado',
+      isGuest: true,
+      lastUserData: lastUser ? JSON.parse(lastUser) : null
+    }
+    setCurrentUser(guestUser)
     setShowInitialLogin(false)
     setCurrentPage('home')
   }
@@ -174,6 +187,7 @@ function App() {
     if (user) {
       setCurrentUser(user)
       localStorage.setItem('currentUser', JSON.stringify(user))
+      localStorage.setItem('lastUser', JSON.stringify(user))
       setShowLoginModal(false)
       setCurrentPage(user.type === 'doador' ? 'donor' : 'recipient')
     } else {
@@ -260,6 +274,12 @@ function App() {
   const sendMessage = () => {
     if (!newMessage.trim()) return
     
+    // Verificar se o usuário é convidado ao tentar enviar
+    if (!currentUser || currentUser.isGuest) {
+      setShowLoginModal(true)
+      return
+    }
+    
     const messageElement = document.createElement('div')
     messageElement.className = 'message sent'
     messageElement.innerHTML = `<strong>Você:</strong> ${newMessage}`
@@ -294,6 +314,8 @@ function App() {
 
   const userProducts = products.filter(p => p.donorId === currentUser?.id)
 
+
+
   if (showInitialLogin) {
     return (
       <LoginScreen 
@@ -322,13 +344,24 @@ function App() {
           <nav className="nav">
             {currentUser ? (
               <>
-                <span>Olá, {currentUser.name}</span>
+                <span>Olá, {currentUser.name}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
                 <button onClick={() => {
                   setCurrentPage('home');
                   setSelectedProduct(null);
                 }}>Início</button>
-                <button onClick={() => setCurrentPage(currentUser.type === 'doador' ? 'donor' : 'recipient')}>Painel</button>
-                <button onClick={() => setCurrentUser(null)}>Sair</button>
+                {!currentUser.isGuest && <button onClick={() => setCurrentPage(currentUser.type === 'doador' ? 'donor' : 'recipient')}>Painel</button>}
+                {currentUser.isGuest ? (
+                  <>
+                    <button onClick={() => setShowLoginModal(true)}>Entrar</button>
+                    <button onClick={() => setShowRegisterModal(true)}>Cadastrar</button>
+                  </>
+                ) : (
+                  <button onClick={() => {
+                    localStorage.removeItem('currentUser');
+                    setCurrentUser(null);
+                    window.location.reload();
+                  }}>Sair</button>
+                )}
               </>
             ) : (
               <>
