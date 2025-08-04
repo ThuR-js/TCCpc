@@ -17,6 +17,7 @@ function App() {
   const [currentChat, setCurrentChat] = useState('chat1')
   const [newMessage, setNewMessage] = useState('')
   const [messages, setMessages] = useState({})
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const sampleProducts = [
     {
@@ -29,6 +30,11 @@ function App() {
       donor: "Maria Silva",
       donorId: 1,
       image: "images/Camisetas/camiseta-hellstar.webp",
+      images: [
+        "images/Camisetas/camiseta-hellstar.webp",
+        "images/Camisetas/Camisas Hellstar2.webp",
+        "images/Camisetas/Camisas Hellstar3.webp"
+      ],
       status: "available",
       whatsapp: "11999999999",
       chatEnabled: true
@@ -43,6 +49,11 @@ function App() {
       donor: "João Santos",
       donorId: 2,
       image: "images/Calças/calca-baggy.webp",
+      images: [
+        "images/Calças/calca-baggy.webp",
+        "images/Calças/calca-baggy2.webp",
+        "images/Calças/calca-baggy3.webp"
+      ],
       status: "analyzing",
       whatsapp: "",
       chatEnabled: true
@@ -57,6 +68,11 @@ function App() {
       donor: "Ana Costa",
       donorId: 3,
       image: "images/Shorts/shorts-eric.webp",
+      images: [
+        "images/Shorts/shorts-eric.webp",
+        "images/Shorts/shorts-eric.webp",
+        "images/Shorts/shorts-eric.webp"
+      ],
       status: "donated",
       whatsapp: "11888888888",
       chatEnabled: false
@@ -71,6 +87,11 @@ function App() {
       donor: "Carlos Lima",
       donorId: 4,
       image: "images/Shorts/shorts-nike.webp",
+      images: [
+        "images/Shorts/shorts-nike.webp",
+        "images/Shorts/shorts-nike.webp",
+        "images/Shorts/shorts-nike.webp"
+      ],
       status: "available",
       whatsapp: "11777777777",
       chatEnabled: true
@@ -85,6 +106,11 @@ function App() {
       donor: "Fernanda Oliveira",
       donorId: 5,
       image: "images/Camisetas/camiseta-stone.webp",
+      images: [
+        "images/Camisetas/camiseta-stone.webp",
+        "images/Camisetas/camiseta-stone.webp",
+        "images/Camisetas/camiseta-stone.webp"
+      ],
       status: "available",
       whatsapp: "",
       chatEnabled: true
@@ -99,6 +125,11 @@ function App() {
       donor: "Patricia Mendes",
       donorId: 6,
       image: "images/Calças/calca-corteiz.webp",
+      images: [
+        "images/Calças/calca-corteiz.webp",
+        "images/Calças/calca-corteiz.webp",
+        "images/Calças/calca-corteiz.webp"
+      ],
       status: "analyzing",
       whatsapp: "11666666666",
       chatEnabled: true
@@ -240,6 +271,18 @@ function App() {
     chatMessages.scrollTop = chatMessages.scrollHeight
   }
 
+  const nextImage = () => {
+    if (selectedProduct && selectedProduct.images) {
+      setCurrentImageIndex((prev) => (prev + 1) % selectedProduct.images.length)
+    }
+  }
+
+  const prevImage = () => {
+    if (selectedProduct && selectedProduct.images) {
+      setCurrentImageIndex((prev) => (prev - 1 + selectedProduct.images.length) % selectedProduct.images.length)
+    }
+  }
+
   const filteredProducts = products.filter(product => {
     return (
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -293,7 +336,7 @@ function App() {
                   setCurrentPage('home');
                   setSelectedProduct(null);
                 }}>Início</a>
-                <a href="#" onClick={() => setShowLoginModal(true)}>Entrar</a>
+                <a href="#" onClick={() => setShowInitialLogin(true)}>Entrar</a>
                 <a href="#" onClick={() => setShowRegisterModal(true)}>Cadastrar</a>
               </>
             )}
@@ -385,6 +428,7 @@ function App() {
                 <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''}`} 
                      onClick={() => {
                        setSelectedProduct(product);
+                       setCurrentImageIndex(0);
                        setCurrentPage('productDetails');
                      }}>
                   <img src={product.image} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
@@ -581,7 +625,17 @@ function App() {
             <div className="product-detail-container">
               <div className="carousel-container">
                 <div className="carousel">
-                  <img src={selectedProduct.image} alt={selectedProduct.name} className="carousel-image active" />
+                  <img 
+                    src={selectedProduct.images ? selectedProduct.images[currentImageIndex] : selectedProduct.image} 
+                    alt={selectedProduct.name} 
+                    className="carousel-image active" 
+                  />
+                  <button className="carousel-nav carousel-prev" onClick={prevImage}>
+                    ‹
+                  </button>
+                  <button className="carousel-nav carousel-next" onClick={nextImage}>
+                    ›
+                  </button>
                 </div>
               </div>
               <div className="product-detail-info">
