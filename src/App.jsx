@@ -32,8 +32,7 @@ function App() {
       image: "images/Camisetas/camiseta-hellstar.webp",
       images: [
         "images/Camisetas/camiseta-hellstar.webp",
-        "images/Camisetas/Camisas Hellstar2.webp",
-        "images/Camisetas/Camisas Hellstar3.webp"
+        "images/Camisetas/camiseta-hellstar2.webp"
       ],
       status: "available",
       whatsapp: "11999999999",
@@ -107,8 +106,9 @@ function App() {
       image: "images/Camisetas/camiseta-stone.webp",
       images: [
         "images/Camisetas/camiseta-stone.webp",
-        "images/Camisetas/camiseta-stone.webp",
-        "images/Camisetas/camiseta-stone.webp"
+        "images/Camisetas/camiseta-stone2.webp",
+        "images/Camisetas/camiseta-stone3.webp",
+        "images/Camisetas/camiseta-stone4.webp"
       ],
       status: "available",
       whatsapp: "",
@@ -126,8 +126,9 @@ function App() {
       image: "images/Calças/calca-corteiz.webp",
       images: [
         "images/Calças/calca-corteiz.webp",
-        "images/Calças/calca-corteiz.webp",
-        "images/Calças/calca-corteiz.webp"
+        "images/Calças/calca-corteiz2.webp",
+        "images/Calças/calca-corteiz3.webp",
+        "images/Calças/calca-corteiz4.webp"
       ],
       status: "analyzing",
       whatsapp: "11666666666",
