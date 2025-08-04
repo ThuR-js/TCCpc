@@ -86,11 +86,10 @@ function App() {
       condition: "seminovo",
       donor: "Carlos Lima",
       donorId: 4,
-      image: "images/Shorts/shorts-nike.webp",
+      image: "images/Shorts/shorts-nike2.webp",
       images: [
         "images/Shorts/shorts-nike.webp",
-        "images/Shorts/shorts-nike.webp",
-        "images/Shorts/shorts-nike.webp"
+        "images/Shorts/shorts-nike2.webp"
       ],
       status: "available",
       whatsapp: "11777777777",
