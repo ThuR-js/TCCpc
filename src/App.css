@@ -139,6 +139,8 @@ body {
     object-fit: cover;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    display: block;
+    margin: 0 auto;
 }
 
 .recent-card .product-info {
@@ -749,4 +751,88 @@ button[type="submit"]:hover {
     .product-detail-container {
         flex-direction: column;
     }
+}
+
+/* User Menu */
+.user-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.menu-trigger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.menu-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-width: 150px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.menu-dropdown a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s;
+}
+
+.menu-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.menu-dropdown a:hover {
+    background-color: #4A230A;
+    color: white;
+    transform: translateX(5px);
+}
+
+.menu-dropdown a:last-child:hover {
+    background-color: rgb(139, 0, 0);
+    color: white;
+}
+
+/* Product Bottom */
+.product-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+}
+
+.favorite-btn-card {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ccc;
+    transition: all 0.3s;
+    padding: 0.25rem;
+}
+
+.favorite-btn-card:hover {
+    transform: scale(1.2);
+}
+
+.favorite-btn-card.favorited {
+    color: #e91e63;
 }
