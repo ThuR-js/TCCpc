@@ -11,7 +11,7 @@ const Home = () => {
     favorites, 
     toggleFavorite, 
     currentUser,
-    setCurrentImageIndex 
+
   } = useApp()
 
   const filteredProducts = products.filter(product => {
@@ -39,12 +39,12 @@ const Home = () => {
         <div className="recent-grid">
           {products.slice(0, 5).map(product => (
             <div key={product.id} className="recent-card" onClick={() => navigate(`/product/${product.id}`)}>
-              <img src={product.image} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
+              <img src={`/${product.image}`} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
               <div className="product-info">
                 <h3 className="product-name">{product.name}</h3>
                 <p className="product-details">{product.size} • {product.condition}</p>
                 <div className="product-donor">
-                  <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
+                  <img src="/images/avatar2.webp" alt="Avatar" className="donor-avatar" />
                   <span>{product.donor}</span>
                 </div>
               </div>
@@ -112,10 +112,9 @@ const Home = () => {
         {filteredProducts.map(product => (
           <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''}`} 
                onClick={() => {
-                 setCurrentImageIndex(0);
                  navigate(`/product/${product.id}`);
                }}>
-            <img src={product.image} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
+            <img src={`/${product.image}`} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
             <div className="product-info">
               <h3 className="product-name">{product.name}</h3>
               <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.size}</span> • {product.type.charAt(0).toUpperCase() + product.type.slice(1)} • {product.condition}</p>

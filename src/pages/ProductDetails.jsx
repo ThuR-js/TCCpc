@@ -1,16 +1,24 @@
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
 const ProductDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { products, currentImageIndex, setCurrentImageIndex, currentUser } = useApp()
+  const { products, currentUser } = useApp()
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   
   const product = products.find(p => p.id === parseInt(id))
+
+  useEffect(() => {
+    setCurrentImageIndex(0)
+  }, [id])
 
   if (!product) {
     return <div>Produto não encontrado</div>
   }
+
+
 
   const nextImage = () => {
     if (product.images) {
@@ -40,16 +48,25 @@ const ProductDetails = () => {
         <div className="carousel-container">
           <div className="carousel">
             <img 
-              src={product.images ? product.images[currentImageIndex] : product.image} 
+              src={product.images ? `/${product.images[currentImageIndex]}` : `/${product.image}`} 
               alt={product.name} 
               className="carousel-image active" 
+              onError={(e) => {
+                console.log('Erro ao carregar imagem:', e.target.src)
+                e.target.src = '/images/placeholder.jpg'
+              }}
             />
-            <button className="carousel-nav carousel-prev" onClick={prevImage}>
-              ‹
-            </button>
-            <button className="carousel-nav carousel-next" onClick={nextImage}>
-              ›
-            </button>
+            {product.images && product.images.length > 1 && (
+              <>
+                <button className="carousel-nav carousel-prev" onClick={prevImage}>
+                  ‹
+                </button>
+                <button className="carousel-nav carousel-next" onClick={nextImage}>
+                  ›
+                </button>
+              </>
+            )}
+
           </div>
         </div>
         <div className="product-detail-info">
@@ -77,10 +94,9 @@ const ProductDetails = () => {
         <div className="recent-grid">
           {products.filter(p => p.id !== product.id).slice(0, 4).map(relatedProduct => (
             <div key={relatedProduct.id} className="recent-card" onClick={() => {
-              setCurrentImageIndex(0);
               navigate(`/product/${relatedProduct.id}`);
             }}>
-              <img src={relatedProduct.image} alt={relatedProduct.name} className={`product-image ${relatedProduct.status === 'donated' ? 'donated' : ''}`} />
+              <img src={`/${relatedProduct.image}`} alt={relatedProduct.name} className={`product-image ${relatedProduct.status === 'donated' ? 'donated' : ''}`} />
               <div className="product-info">
                 <h3 className="product-name">{relatedProduct.name}</h3>
                 <p className="product-details">{relatedProduct.size} • {relatedProduct.condition}</p>
