@@ -17,7 +17,7 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
         <div className="login-form-section">
           <div className="login-header">
             <h2>Entrar</h2>
-            <p>Não tem uma conta? <a href="#" onClick={() => alert('Cadastro em desenvolvimento')}>Cadastre-se agora</a></p>
+            <p>Não tem uma conta? <a href="/register">Cadastre-se agora</a></p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">

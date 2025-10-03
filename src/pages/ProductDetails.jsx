@@ -48,12 +48,16 @@ const ProductDetails = () => {
         <div className="carousel-container">
           <div className="carousel">
             <img 
-              src={product.images ? `/${product.images[currentImageIndex]}` : `/${product.image}`} 
+              src={product.images ? 
+                (product.images[currentImageIndex].startsWith('data:') ? product.images[currentImageIndex] : `/${product.images[currentImageIndex]}`) : 
+                (product.image.startsWith('data:') ? product.image : `/${product.image}`)
+              } 
               alt={product.name} 
               className="carousel-image active" 
               onError={(e) => {
                 console.log('Erro ao carregar imagem:', e.target.src)
                 e.target.src = '/images/placeholder.jpg'
+                e.target.onerror = null
               }}
             />
             {product.images && product.images.length > 1 && (
@@ -96,7 +100,15 @@ const ProductDetails = () => {
             <div key={relatedProduct.id} className="recent-card" onClick={() => {
               navigate(`/product/${relatedProduct.id}`);
             }}>
-              <img src={`/${relatedProduct.image}`} alt={relatedProduct.name} className={`product-image ${relatedProduct.status === 'donated' ? 'donated' : ''}`} />
+              <img 
+                src={relatedProduct.image.startsWith('data:') ? relatedProduct.image : `/${relatedProduct.image}`} 
+                alt={relatedProduct.name} 
+                className={`product-image ${relatedProduct.status === 'donated' ? 'donated' : ''}`} 
+                onError={(e) => {
+                  e.target.src = '/images/placeholder.jpg'
+                  e.target.onerror = null
+                }}
+              />
               <div className="product-info">
                 <h3 className="product-name">{relatedProduct.name}</h3>
                 <p className="product-details">{relatedProduct.size} • {relatedProduct.condition}</p>

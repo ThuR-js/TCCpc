@@ -18,6 +18,7 @@ export const AppProvider = ({ children }) => {
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [requests, setRequests] = useState([])
 
   const sampleProducts = [
     {
@@ -559,7 +560,19 @@ export const AppProvider = ({ children }) => {
   ]
 
   useEffect(() => {
-    setProducts(sampleProducts)
+    const savedProducts = localStorage.getItem('products')
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts))
+    } else {
+      setProducts(sampleProducts)
+      localStorage.setItem('products', JSON.stringify(sampleProducts))
+    }
+    
+    const savedRequests = localStorage.getItem('requests')
+    if (savedRequests) {
+      setRequests(JSON.parse(savedRequests))
+    }
+    
     const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser))
@@ -572,6 +585,83 @@ export const AppProvider = ({ children }) => {
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     )
+  }
+
+  const addRequest = (productId) => {
+    if (!currentUser) return
+    
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+    
+    // Verificar se já existe uma solicitação pendente para este produto pelo mesmo usuário
+    const existingRequest = requests.find(req => 
+      req.productId === productId && 
+      req.userId === currentUser.id && 
+      req.status === 'pending'
+    )
+    
+    if (existingRequest) {
+      alert('Você já tem uma solicitação pendente para este produto!')
+      return
+    }
+    
+    const newRequest = {
+      id: Date.now(),
+      productId,
+      productName: product.name,
+      productImage: product.image,
+      donorId: product.donorId,
+      donorName: product.donor,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userEmail: currentUser.email,
+      date: new Date().toISOString(),
+      status: 'pending'
+    }
+    
+    console.log('Adding new request:', newRequest)
+    console.log('Product donorId:', product.donorId)
+    console.log('Current user:', currentUser)
+    
+    const updatedRequests = [...requests, newRequest]
+    setRequests(updatedRequests)
+    localStorage.setItem('requests', JSON.stringify(updatedRequests))
+    
+    console.log('Updated requests:', updatedRequests)
+  }
+
+  const updateRequestStatus = (requestId, status) => {
+    const updatedRequests = requests.map(request => 
+      request.id === requestId 
+        ? { ...request, status }
+        : request
+    )
+    setRequests(updatedRequests)
+    localStorage.setItem('requests', JSON.stringify(updatedRequests))
+  }
+
+  const addProduct = (productData) => {
+    const newProduct = {
+      id: Date.now(),
+      ...productData
+    }
+    const updatedProducts = [newProduct, ...products]
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+  }
+
+  const removeProduct = (productId) => {
+    const updatedProducts = products.filter(product => product.id !== productId)
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+  }
+
+  const removeProductByName = (productName) => {
+    const updatedProducts = products.filter(product => 
+      !product.name.toLowerCase().includes(productName.toLowerCase())
+    )
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
   }
 
   const value = {
@@ -588,7 +678,13 @@ export const AppProvider = ({ children }) => {
     currentImageIndex,
     setCurrentImageIndex,
     showDropdown,
-    setShowDropdown
+    setShowDropdown,
+    requests,
+    addRequest,
+    updateRequestStatus,
+    addProduct,
+    removeProduct,
+    removeProductByName
   }
 
   return (

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
@@ -11,8 +12,13 @@ const Home = () => {
     favorites, 
     toggleFavorite, 
     currentUser,
-
+    addRequest,
+    removeProduct,
+    removeProductByName
   } = useApp()
+  
+  const [showRemoveModal, setShowRemoveModal] = useState(false)
+  const [productToRemove, setProductToRemove] = useState(null)
 
   const filteredProducts = products.filter(product => {
     return (
@@ -29,7 +35,27 @@ const Home = () => {
 
   const handleProductInterest = (productId) => {
     if (!currentUser || currentUser.type !== 'donatario') return
+    addRequest(productId)
     alert('Interesse manifestado! O doador será notificado.')
+  }
+
+  const handleRemoveClick = (e, product) => {
+    e.stopPropagation()
+    setProductToRemove(product)
+    setShowRemoveModal(true)
+  }
+
+  const confirmRemove = () => {
+    if (productToRemove) {
+      removeProduct(productToRemove.id)
+      setShowRemoveModal(false)
+      setProductToRemove(null)
+    }
+  }
+
+  const cancelRemove = () => {
+    setShowRemoveModal(false)
+    setProductToRemove(null)
   }
 
   return (
@@ -37,9 +63,26 @@ const Home = () => {
       <div className="recent-section">
         <h2 className="section-title">Recém-publicados</h2>
         <div className="recent-grid">
+          {currentUser && currentUser.type === 'doador' && (
+            <div className="recent-card add-product-card" onClick={() => navigate('/add-product')}>
+              <div className="add-product-icon">+</div>
+              <div className="product-info">
+                <h3 className="product-name">Adicionar Produto</h3>
+                <p className="product-details">Clique para adicionar um novo item</p>
+              </div>
+            </div>
+          )}
           {products.slice(0, 5).map(product => (
             <div key={product.id} className="recent-card" onClick={() => navigate(`/product/${product.id}`)}>
-              <img src={`/${product.image}`} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
+              <img 
+                src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
+                alt={product.name} 
+                className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
+                onError={(e) => {
+                  e.target.src = '/images/placeholder.jpg'
+                  e.target.onerror = null
+                }}
+              />
               <div className="product-info">
                 <h3 className="product-name">{product.name}</h3>
                 <p className="product-details">{product.size} • {product.condition}</p>
@@ -114,9 +157,27 @@ const Home = () => {
                onClick={() => {
                  navigate(`/product/${product.id}`);
                }}>
-            <img src={`/${product.image}`} alt={product.name} className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} />
+            <img 
+              src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
+              alt={product.name} 
+              className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
+              onError={(e) => {
+                e.target.src = '/images/placeholder.jpg'
+                e.target.onerror = null
+              }}
+            />
             <div className="product-info">
-              <h3 className="product-name">{product.name}</h3>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <h3 className="product-name">{product.name}</h3>
+                {currentUser && currentUser.id === product.donorId && (
+                  <button 
+                    className="remove-btn"
+                    onClick={(e) => handleRemoveClick(e, product)}
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
               <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.size}</span> • {product.type.charAt(0).toUpperCase() + product.type.slice(1)} • {product.condition}</p>
               <div className="product-donor">
                 <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
@@ -146,6 +207,18 @@ const Home = () => {
           </div>
         ))}
       </div>
+      
+      {showRemoveModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Deseja remover esse anúncio?</h3>
+            <div style={{display: 'flex', gap: '1rem', marginTop: '2rem'}}>
+              <button onClick={confirmRemove} className="btn btn-primary">Sim</button>
+              <button onClick={cancelRemove} className="btn btn-secondary">Não</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

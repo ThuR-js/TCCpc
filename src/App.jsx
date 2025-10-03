@@ -5,7 +5,10 @@ import Home from './pages/Home'
 import Favorites from './pages/Favorites'
 import Chat from './pages/Chat'
 import ProductDetails from './pages/ProductDetails'
+import Requests from './pages/Requests'
+import AddProduct from './pages/AddProduct'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
@@ -16,6 +19,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/*" element={
               <ProtectedRoute>
                 <Header />
@@ -24,6 +28,8 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/favorites" element={<Favorites />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route path="/requests" element={<Requests />} />
+                    <Route path="/add-product" element={<AddProduct />} />
                     <Route path="/product/:id" element={<ProductDetails />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>

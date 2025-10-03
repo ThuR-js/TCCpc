@@ -1,0 +1,30 @@
+.login-form .form-group {
+  margin-bottom: 10px !important;
+}
+
+.login-form {
+  gap: 10px !important;
+}
+
+.login-form-section {
+  overflow-y: auto !important;
+  max-height: 70vh !important;
+}
+
+.login-form-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.login-form-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.login-form-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.login-form-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
