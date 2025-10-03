@@ -10,6 +10,7 @@ const Register = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [cpf, setCpf] = useState('')
   const [cep, setCep] = useState('')
   const [password, setPassword] = useState('')
   const [userType, setUserType] = useState('donatario')
@@ -41,7 +42,7 @@ const Register = () => {
 
           <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
-              <label>👤 Nome</label>
+              <label>Nome</label>
               <input
                 type="text"
                 value={name}
@@ -52,7 +53,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>📧 Endereço de email</label>
+              <label>Endereço de email</label>
               <input
                 type="email"
                 value={email}
@@ -63,7 +64,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>📱 Telefone</label>
+              <label>Telefone</label>
               <input
                 type="tel"
                 value={phone}
@@ -73,9 +74,20 @@ const Register = () => {
               <small style={{fontSize: '12px', color: '#666', marginTop: '4px', display: 'block'}}>opcional</small>
             </div>
 
+            <div className="form-group">
+              <label>CPF</label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                placeholder="000.000.000-00"
+                required
+              />
+            </div>
+
             {userType === 'doador' && (
               <div className="form-group">
-                <label>📍 CEP</label>
+                <label>CEP</label>
                 <input
                   type="text"
                   value={cep}
@@ -87,7 +99,7 @@ const Register = () => {
             )}
 
             <div className="form-group">
-              <label>🔒 Senha</label>
+              <label>Senha</label>
               <input
                 type="password"
                 value={password}
@@ -98,7 +110,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label>👥 Tipo de usuário</label>
+              <label>Tipo de usuário</label>
               <select value={userType} onChange={(e) => setUserType(e.target.value)}>
                 <option value="donatario">Quero receber doações</option>
                 <option value="doador">Quero doar roupas</option>

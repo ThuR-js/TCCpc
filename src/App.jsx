@@ -7,6 +7,7 @@ import Chat from './pages/Chat'
 import ProductDetails from './pages/ProductDetails'
 import Requests from './pages/Requests'
 import AddProduct from './pages/AddProduct'
+import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -30,6 +31,7 @@ function App() {
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/requests" element={<Requests />} />
                     <Route path="/add-product" element={<AddProduct />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/product/:id" element={<ProductDetails />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>

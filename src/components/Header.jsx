@@ -32,6 +32,7 @@ const Header = () => {
             <>
               <span>Olá, {currentUser.name}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
               <button onClick={() => navigate('/')}>Início</button>
+              <button onClick={() => navigate('/profile')}>Perfil</button>
               {currentUser.isGuest ? (
                 <div className="user-menu">
                   <button onClick={() => setShowDropdown(!showDropdown)} className="menu-trigger">
