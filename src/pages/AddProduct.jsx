@@ -161,7 +161,7 @@ const AddProduct = () => {
               >
                 <option value="">Selecione o tamanho</option>
                 {formData.type === 'tenis' ? (
-                  Array.from({length: 16}, (_, i) => i + 30).map(size => (
+                  Array.from({length: 15}, (_, i) => i + 34).map(size => (
                     <option key={size} value={size.toString()}>{size}</option>
                   ))
                 ) : (

@@ -77,8 +77,8 @@ const ProductDetails = () => {
           <h1 className="product-detail-title">{product.name}</h1>
           <p className="product-detail-description">{product.description}</p>
           <div className="product-detail-specs">
-            <p><strong>Tamanho:</strong> {product.size}</p>
-            <p><strong>Tipo:</strong> {product.type.charAt(0).toUpperCase() + product.type.slice(1)}</p>
+            <p><strong>Tamanho:</strong> {product.type === 'tenis' ? product.size : product.size}</p>
+            <p><strong>Tipo:</strong> {product.type === 'moletom' ? 'Blusa' : product.type.charAt(0).toUpperCase() + product.type.slice(1)}</p>
             <p><strong>Condição:</strong> {product.condition}</p>
             <div className="product-donor">
               <img src="/images/avatar2.webp" alt="Avatar" className="donor-avatar" />

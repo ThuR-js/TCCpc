@@ -243,7 +243,7 @@ body {
 
 .product-card {
     background: rgba(139, 69, 19, 0.25);
-    border: 1px solid #000;
+    border: 2px solid #000;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     transition: transform 0.3s, box-shadow 0.3s;
@@ -467,6 +467,10 @@ button[type="submit"]:hover {
     display: flex;
     gap: 2rem;
     margin-bottom: 2rem;
+    background: rgba(139, 69, 19, 0.25);
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 2rem;
 }
 
 .carousel-container {
@@ -478,7 +482,7 @@ button[type="submit"]:hover {
     position: relative;
     border-radius: 12px;
     overflow: hidden;
-    background-color: #A18777;
+    background-color: #c5a795;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -562,7 +566,7 @@ button[type="submit"]:hover {
 .chat-container {
     display: flex;
     height: 600px;
-    background: rgba(161, 135, 119, 0.8);
+    background: #A18777;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -570,9 +574,9 @@ button[type="submit"]:hover {
 
 .chat-sidebar {
     width: 300px;
-    border-right: 2px solid #4A230A;
+    border-right: 2px solid #D2B48C;
     padding: 1rem;
-    background: #4A230A;
+    background: #6e4d32d0;
 }
 
 .chat-sidebar h3 {
@@ -585,20 +589,20 @@ button[type="submit"]:hover {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #CEBAAE;
+    background: #E5D5C8;
 }
 
 #chatMessages {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
-    background: #CEBAAE;
+    background: #E5D5C8;
 }
 
 .chat-input {
     display: flex;
     padding: 1rem;
-    border-top: 2px solid #4A230A;
+    border-top: 2px solid #4a230a;
     background: #A18777;
 }
 
@@ -606,10 +610,10 @@ button[type="submit"]:hover {
     flex: 1;
     margin-right: 0.5rem;
     padding: 0.75rem;
-    border: 1px solid #4A230A;
+    border: 1px solid #4a230a;
     border-radius: 25px;
     outline: none;
-    background: #DFA983;
+    background: white;
     color: #4A230A;
 }
 
@@ -644,13 +648,13 @@ button[type="submit"]:hover {
 }
 
 .chat-item:hover {
-    background: rgba(223, 169, 131, 0.3);
+    background: rgba(161, 135, 119, 0.3);
     transform: translateX(5px);
 }
 
 .chat-item.active {
-    background: #DFA983;
-    color: #4A230A;
+    background: white;
+    color: black;
     transform: translateX(10px);
 }
 
@@ -686,8 +690,8 @@ button[type="submit"]:hover {
 }
 
 .message.received {
-    background: #DFA983;
-    color: #4A230A;
+    background: white;
+    color: black;
     border: 1px solid #B27148;
     border-bottom-left-radius: 5px;
 }
@@ -756,7 +760,7 @@ button[type="submit"]:hover {
 .menu-trigger {
     background: none;
     border: none;
-    color: white;
+    color: black;
     font-size: 20px;
     cursor: pointer;
     padding: 0.5rem;
@@ -802,6 +806,10 @@ button[type="submit"]:hover {
 .menu-dropdown a:last-child:hover {
     background-color: rgb(139, 0, 0);
     color: white;
+}
+
+.nav .menu-dropdown a {
+    color: black !important;
 }
 
 /* Product Bottom */

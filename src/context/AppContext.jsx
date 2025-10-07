@@ -20,6 +20,26 @@ export const AppProvider = ({ children }) => {
   const [showDropdown, setShowDropdown] = useState(false)
   const [requests, setRequests] = useState([])
 
+  // Palavras-chave para pesquisa por categoria
+  const searchKeywords = {
+    camiseta: ['camisa', 'camisetas', 'cropped'],
+    calca: ['calça', 'short', 'saia'],
+    moletom: ['blusas', 'moletom'],
+    tenis: ['calçado', 'sandalia', 'tenis', 'sapato']
+  }
+
+  // Função para verificar se o termo de pesquisa corresponde a alguma categoria
+  const getProductTypeFromSearch = (searchTerm) => {
+    const term = searchTerm.toLowerCase().trim()
+    
+    for (const [productType, keywords] of Object.entries(searchKeywords)) {
+      if (keywords.some(keyword => term.includes(keyword))) {
+        return productType
+      }
+    }
+    return null
+  }
+
   const sampleProducts = [
     {
       id: 1,
@@ -442,7 +462,7 @@ export const AppProvider = ({ children }) => {
       name: "Air Force 1 Black",
       description: "Nike Air Force 1 preto clássico, ícone do streetwear",
       type: "tenis",
-      size: "P",
+      size: "38",
       condition: "seminovo",
       donor: "Bruno Silva",
       donorId: 23,
@@ -461,7 +481,7 @@ export const AppProvider = ({ children }) => {
       name: "Asics Gel",
       description: "Tênis Asics Gel para corrida, conforto e performance",
       type: "tenis",
-      size: "M",
+      size: "40",
       condition: "usado",
       donor: "Fernanda Costa",
       donorId: 24,
@@ -480,7 +500,7 @@ export const AppProvider = ({ children }) => {
       name: "Chuteira Nike Air Zoom Mercurial Superfly 10 Elite TF",
       description: "Chuteira Nike profissional para futebol, alta performance",
       type: "tenis",
-      size: "M",
+      size: "42",
       condition: "novo",
       donor: "Carlos Eduardo",
       donorId: 25,
@@ -500,7 +520,7 @@ export const AppProvider = ({ children }) => {
       name: "Dunk Albino Black",
       description: "Nike Dunk Albino Black, edição especial e limitada",
       type: "tenis",
-      size: "M",
+      size: "41",
       condition: "seminovo",
       donor: "Matheus Oliveira",
       donorId: 26,
@@ -520,7 +540,7 @@ export const AppProvider = ({ children }) => {
       name: "Jordan 1 Next Chapter",
       description: "Air Jordan 1 Next Chapter, clássico atemporal do basquete",
       type: "tenis",
-      size: "G",
+      size: "44",
       condition: "novo",
       donor: "Leonardo Santos",
       donorId: 27,
@@ -541,7 +561,7 @@ export const AppProvider = ({ children }) => {
       name: "Timberland",
       description: "Bota Timberland clássica, resistência e estilo urbano",
       type: "tenis",
-      size: "M",
+      size: "43",
       condition: "usado",
       donor: "Rodrigo Lima",
       donorId: 28,
@@ -560,13 +580,10 @@ export const AppProvider = ({ children }) => {
   ]
 
   useEffect(() => {
-    const savedProducts = localStorage.getItem('products')
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts))
-    } else {
-      setProducts(sampleProducts)
-      localStorage.setItem('products', JSON.stringify(sampleProducts))
-    }
+    // Limpar localStorage para forçar atualização
+    localStorage.clear()
+    setProducts(sampleProducts)
+    localStorage.setItem('products', JSON.stringify(sampleProducts))
     
     const savedRequests = localStorage.getItem('requests')
     if (savedRequests) {
@@ -684,7 +701,8 @@ export const AppProvider = ({ children }) => {
     updateRequestStatus,
     addProduct,
     removeProduct,
-    removeProductByName
+    removeProductByName,
+    getProductTypeFromSearch
   }
 
   return (
