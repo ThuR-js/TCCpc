@@ -1,11 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
 const Requests = () => {
   const navigate = useNavigate()
-  const { requests, updateRequestStatus, currentUser } = useApp()
+  const { requests, updateRequestStatus, currentUser, products, setProducts } = useApp()
   const [selectedRequest, setSelectedRequest] = useState(null)
+  
+  // Recarregar produtos do localStorage quando componente monta
+  useEffect(() => {
+    const savedProducts = localStorage.getItem('products')
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts))
+    }
+  }, [setProducts])
 
   const handleApprove = (requestId) => {
     updateRequestStatus(requestId, 'approved')
@@ -18,12 +26,43 @@ const Requests = () => {
   console.log('Current user:', currentUser)
   console.log('All requests:', requests)
   
-  const filteredRequests = currentUser?.type === 'doador' 
-    ? requests.filter(req => {
-        console.log('Checking request for donor:', req.donorId, 'vs current user:', currentUser?.id)
-        return req.donorId === currentUser?.id
-      })
-    : requests.filter(req => req.userId === currentUser?.id)
+  const approveProduct = (productId) => {
+    const updatedProducts = products.map(p => 
+      p.id === productId ? { ...p, status: 'available' } : p
+    )
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+  }
+
+  const rejectProduct = (productId) => {
+    const updatedProducts = products.filter(p => p.id !== productId)
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+  }
+
+  // Se for admin, criar "solicitações" baseadas nos produtos pendentes
+  console.log('Current user:', currentUser)
+  console.log('All products:', products)
+  console.log('Pending products:', products.filter(p => p.status === 'pending'))
+  
+  const filteredRequests = currentUser?.isAdmin 
+    ? products.filter(p => p.status === 'pending').map(product => ({
+        id: product.id,
+        productName: product.name,
+        productImage: product.image,
+        userName: product.donor,
+        userEmail: `${product.donor.toLowerCase().replace(' ', '.')}@email.com`,
+        date: new Date().toISOString(),
+        status: 'pending',
+        isProductValidation: true,
+        product: product
+      }))
+    : currentUser?.type === 'doador' 
+      ? requests.filter(req => {
+          console.log('Checking request for donor:', req.donorId, 'vs current user:', currentUser?.id)
+          return req.donorId === currentUser?.id
+        })
+      : requests.filter(req => req.userId === currentUser?.id)
     
   console.log('Filtered requests:', filteredRequests)
 
@@ -48,9 +87,27 @@ const Requests = () => {
   return (
     <div className="container">
       <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
+      {currentUser?.isAdmin && (
+        <button 
+          onClick={() => {
+            const savedProducts = localStorage.getItem('products')
+            console.log('Produtos salvos no localStorage:', savedProducts)
+            if (savedProducts) {
+              const parsedProducts = JSON.parse(savedProducts)
+              console.log('Produtos parseados:', parsedProducts)
+              console.log('Produtos pendentes:', parsedProducts.filter(p => p.status === 'pending'))
+              setProducts(parsedProducts)
+            }
+          }}
+          className="btn btn-primary"
+          style={{marginLeft: '1rem', marginBottom: '1rem'}}
+        >
+          🔄 Recarregar Anúncios
+        </button>
+      )}
       <div className="chat-container">
         <div className="chat-sidebar">
-          <h3>Solicitações</h3>
+          <h3>{currentUser?.isAdmin ? 'Validação de Anúncios' : 'Solicitações'}</h3>
           {filteredRequests.length === 0 ? (
             <p style={{color: 'white', padding: '1rem', fontSize: '0.9rem'}}>Nenhuma solicitação encontrada.</p>
           ) : (
@@ -62,7 +119,7 @@ const Requests = () => {
               >
                 <div className="chat-preview">
                   <strong>{request.productName}</strong>
-                  <p>{currentUser?.type === 'doador' ? `Por: ${request.userName}` : `Status: ${getStatusText(request.status)}`}</p>
+                  <p>{currentUser?.isAdmin ? `Doador: ${request.userName}` : currentUser?.type === 'doador' ? `Por: ${request.userName}` : `Status: ${getStatusText(request.status)}`}</p>
                   <small style={{fontSize: '0.7rem', opacity: 0.7}}>
                     {new Date(request.date).toLocaleDateString()}
                   </small>
@@ -88,8 +145,24 @@ const Requests = () => {
                   <div style={{flex: 1}}>
                     <h2 style={{marginBottom: '1rem', color: '#4A230A'}}>{selectedRequest.productName}</h2>
                     <p style={{marginBottom: '0.5rem', color: '#333'}}>
-                      <strong>{currentUser?.type === 'doador' ? 'Interessado:' : 'Você manifestou interesse em:'}</strong> {currentUser?.type === 'doador' ? selectedRequest.userName : selectedRequest.productName}
+                      <strong>{currentUser?.isAdmin ? 'Doador:' : currentUser?.type === 'doador' ? 'Interessado:' : 'Você manifestou interesse em:'}</strong> {currentUser?.isAdmin ? selectedRequest.userName : currentUser?.type === 'doador' ? selectedRequest.userName : selectedRequest.productName}
                     </p>
+                    {selectedRequest.product && currentUser?.isAdmin && (
+                      <>
+                        <p style={{marginBottom: '0.5rem', color: '#333'}}>
+                          <strong>Categoria:</strong> {selectedRequest.product.type}
+                        </p>
+                        <p style={{marginBottom: '0.5rem', color: '#333'}}>
+                          <strong>Tamanho:</strong> {selectedRequest.product.size}
+                        </p>
+                        <p style={{marginBottom: '0.5rem', color: '#333'}}>
+                          <strong>Condição:</strong> {selectedRequest.product.condition}
+                        </p>
+                        <p style={{marginBottom: '0.5rem', color: '#333'}}>
+                          <strong>Descrição:</strong> {selectedRequest.product.description}
+                        </p>
+                      </>
+                    )}
                     <p style={{marginBottom: '0.5rem', color: '#333'}}>
                       <strong>Email:</strong> {selectedRequest.userEmail}
                     </p>
@@ -105,21 +178,21 @@ const Requests = () => {
                   </div>
                 </div>
               </div>
-              {currentUser?.type === 'doador' && selectedRequest.status === 'pending' && (
+              {((currentUser?.type === 'doador' && selectedRequest.status === 'pending') || (currentUser?.isAdmin && selectedRequest.isProductValidation)) && (
                 <div style={{display: 'flex', gap: '1rem', borderTop: '2px solid #4A230A', paddingTop: '1rem'}}>
                   <button 
-                    onClick={() => handleApprove(selectedRequest.id)} 
+                    onClick={() => currentUser?.isAdmin ? approveProduct(selectedRequest.id) : handleApprove(selectedRequest.id)} 
                     className="btn btn-primary"
                     style={{flex: 1}}
                   >
-                    Aprovar Solicitação
+                    {currentUser?.isAdmin ? 'Aprovar Anúncio' : 'Aprovar Solicitação'}
                   </button>
                   <button 
-                    onClick={() => handleReject(selectedRequest.id)} 
+                    onClick={() => currentUser?.isAdmin ? rejectProduct(selectedRequest.id) : handleReject(selectedRequest.id)} 
                     className="btn btn-secondary"
                     style={{flex: 1, background: '#dc3545'}}
                   >
-                    Rejeitar Solicitação
+                    {currentUser?.isAdmin ? 'Rejeitar Anúncio' : 'Rejeitar Solicitação'}
                   </button>
                 </div>
               )}

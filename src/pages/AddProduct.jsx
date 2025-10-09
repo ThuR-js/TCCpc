@@ -60,12 +60,14 @@ const AddProduct = () => {
       image: imagePreviews[0],
       donor: currentUser.name,
       donorId: currentUser.id,
-      status: 'available',
+      status: 'pending',
       chatEnabled: true
     }
 
+    console.log('Criando produto:', newProduct)
     addProduct(newProduct)
-    alert('Produto adicionado com sucesso!')
+    console.log('Produto adicionado')
+    alert('Produto enviado para análise! Aguarde a aprovação do administrador.')
     navigate('/')
   }
 

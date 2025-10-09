@@ -7,6 +7,20 @@ const Login = () => {
   const { setCurrentUser } = useApp()
 
   const handleInitialLogin = (email, password) => {
+    // Verificar se é admin
+    if (email === 'admin@doeconect.com' && password === 'admin123') {
+      const adminUser = {
+        id: 999,
+        name: 'Administrador',
+        email: 'admin@doeconect.com',
+        isAdmin: true
+      }
+      setCurrentUser(adminUser)
+      localStorage.setItem('currentUser', JSON.stringify(adminUser))
+      navigate('/')
+      return
+    }
+
     const users = JSON.parse(localStorage.getItem('users') || '[]')
     const user = users.find(u => u.email === email && u.password === password)
     

@@ -580,17 +580,21 @@ export const AppProvider = ({ children }) => {
   ]
 
   useEffect(() => {
-    // Limpar localStorage para forçar atualização
-    localStorage.clear()
-    setProducts(sampleProducts)
-    localStorage.setItem('products', JSON.stringify(sampleProducts))
-    
+    const savedProducts = localStorage.getItem('products')
     const savedRequests = localStorage.getItem('requests')
+    const savedUser = localStorage.getItem('currentUser')
+    
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts))
+    } else {
+      setProducts(sampleProducts)
+      localStorage.setItem('products', JSON.stringify(sampleProducts))
+    }
+    
     if (savedRequests) {
       setRequests(JSON.parse(savedRequests))
     }
     
-    const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {
       setCurrentUser(JSON.parse(savedUser))
     }

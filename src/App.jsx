@@ -10,8 +10,10 @@ import AddProduct from './pages/AddProduct'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import AdminPanel from './pages/AdminPanel'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
+import './AdminStyles.css'
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="/*" element={
               <ProtectedRoute>
                 <Header />
