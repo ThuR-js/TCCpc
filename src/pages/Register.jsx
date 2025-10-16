@@ -19,7 +19,7 @@ const Register = () => {
   const [cpf, setCpf] = useState('') // CPF do usuário
   const [cep, setCep] = useState('') // CEP (apenas para doadores)
   const [password, setPassword] = useState('') // Senha do usuário
-  const [userType, setUserType] = useState('donatario')] // Tipo: donatario ou doador
+  const [userType, setUserType] = useState('donatario') // Tipo: donatario ou doador
 
   // Função que processa o envio do formulário de registro
   const handleSubmit = async (e) => {

@@ -27,92 +27,104 @@ const Home = () => {
   const [showRemoveModal, setShowRemoveModal] = useState(false) // Controla se o modal está visível
   const [productToRemove, setProductToRemove] = useState(null) // Produto selecionado para remoção
 
-  // Filtra os produtos baseado no tipo de usuário e critérios de busca
+  // Função que filtra quais produtos aparecem na tela
   const filteredProducts = products.filter(product => {
-    // Identifica o tipo de usuário atual (compatibilidade com localStorage e API)
-    const isDoador = currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR'
-    const isDonatario = currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO'
-    const isGuest = currentUser?.isGuest || currentUser?.type === 'convidado'
-    
-    // REGRA DE VISIBILIDADE: Donatários e convidados só podem ver produtos aprovados pelo administrador
-    if ((isDonatario || isGuest) && product.status !== 'available') {
-      return false // Oculta produtos pendentes para donatários e convidados (segurança)
+    // PASSO 1: Verifica se o usuário é doador
+    let isDoador = false
+    if (currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR') {
+      isDoador = true
     }
     
-    // REGRA: Doadores podem ver seus próprios produtos (qualquer status) + produtos aprovados de outros
+    // PASSO 2: Aplica regras de visibilidade por tipo de usuário
+    // Donatários e convidados só veem produtos aprovados
+    if (!isDoador && product.status !== 'available') {
+      return false
+    }
+    
+    // Doadores veem seus próprios produtos + produtos aprovados de outros
     if (isDoador) {
-      const isOwnProduct = product.donorId === currentUser?.id // Verifica se é produto próprio
-      const isApprovedProduct = product.status === 'available' // Verifica se está aprovado
-      if (!isOwnProduct && !isApprovedProduct) {
-        return false // Oculta produtos pendentes de outros doadores
+      let canSee = false
+      if (product.donorId === currentUser?.id) {
+        canSee = true // Pode ver seus próprios produtos
+      }
+      if (product.status === 'available') {
+        canSee = true // Pode ver produtos aprovados de outros
+      }
+      if (!canSee) {
+        return false
       }
     }
     
-    // FILTROS DE BUSCA E CATEGORIA
-    const searchTermLower = searchTerm.toLowerCase() // Converte termo de busca para minúsculas
-    const productNameMatch = product.name.toLowerCase().includes(searchTermLower) // Verifica se nome contém o termo
+    // PASSO 3: Aplica filtro de busca por nome do produto
+    if (searchTerm !== '') {
+      let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      if (!nameMatch) {
+        return false
+      }
+    }
     
-    // Verifica se o termo de busca corresponde a uma categoria (ex: "tenis" -> "tenis")
-    const searchedProductType = getProductTypeFromSearch(searchTerm)
-    const keywordMatch = searchedProductType && product.type === searchedProductType
+    // PASSO 4: Aplica filtros de categoria, tamanho e condição
+    if (filters.type !== '' && product.type !== filters.type) {
+      return false
+    }
+    if (filters.size !== '' && product.size !== filters.size) {
+      return false
+    }
+    if (filters.condition !== '' && product.condition !== filters.condition) {
+      return false
+    }
     
-    // Produto passa no filtro de busca se: não há termo OU nome contém termo OU categoria corresponde
-    const searchMatch = searchTerm === '' || productNameMatch || keywordMatch
-    
-    // APLICA TODOS OS FILTROS: busca, tipo, tamanho e condição
-    return (
-      searchMatch && // Passou no filtro de busca
-      (filters.type === '' || product.type === filters.type) && // Filtro de tipo/categoria
-      (filters.size === '' || product.size === filters.size) && // Filtro de tamanho
-      (filters.condition === '' || product.condition === filters.condition) // Filtro de condição
-    )
+    // Se passou por todos os filtros, mostra o produto
+    return true
   })
 
-  // Função para iniciar chat (navega para página de chat)
+  // Função que abre a página de chat
   const startChat = () => {
-    // CONTROLE DE ACESSO: Verifica se é convidado antes de permitir acesso ao chat
-    if (currentUser?.isGuest || currentUser?.type === 'convidado') {
-      alert('Faça login para enviar mensagens.') // Mensagem curta e direta
-      return // Impede navegação
+    // Verifica se o usuário é convidado (não logado)
+    if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
+      alert('Faça login para enviar mensagens.')
+      return // Para a execução aqui
     }
+    // Se não é convidado, vai para a página de chat
     navigate('/chat')
   }
 
-  // Função para manifestar interesse em um produto (apenas donatários)
+  // Função que registra interesse em um produto
   const handleProductInterest = (productId) => {
-    // CONTROLE DE ACESSO: Verifica se é convidado antes de permitir manifestar interesse
-    if (currentUser?.isGuest || currentUser?.type === 'convidado') {
-      alert('Faça login para manifestar interesse.') // Mensagem curta e direta
-      return // Impede ação
+    // Verifica se o usuário é convidado (não logado)
+    if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
+      alert('Faça login para manifestar interesse.')
+      return // Para a execução aqui
     }
-    // Verifica se usuário está logado e é donatário
-    if (!currentUser || currentUser.type !== 'donatario') return
-    // Adiciona solicitação de interesse no produto
+    // Verifica se o usuário é donatário (quem recebe doações)
+    if (currentUser?.type !== 'donatario') {
+      return // Só donatários podem manifestar interesse
+    }
+    // Registra o interesse no produto
     addRequest(productId)
-    // Notifica o usuário
     alert('Interesse manifestado! O doador será notificado.')
   }
 
-  // Função chamada quando usuário clica em "Remover" produto
+  // Função que abre o modal para confirmar remoção
   const handleRemoveClick = (e, product) => {
-    e.stopPropagation() // Impede que o clique propague para o card do produto
-    setProductToRemove(product) // Define qual produto será removido
+    e.stopPropagation() // Evita abrir a página do produto
+    setProductToRemove(product) // Guarda qual produto vai ser removido
     setShowRemoveModal(true) // Mostra o modal de confirmação
   }
 
-  // Função para confirmar remoção do produto
+  // Função que remove o produto quando usuário confirma
   const confirmRemove = () => {
     if (productToRemove) {
-      removeProduct(productToRemove.id) // Remove o produto da lista
+      removeProduct(productToRemove.id) // Remove da lista
       setShowRemoveModal(false) // Fecha o modal
-      setProductToRemove(null) // Limpa o produto selecionado
+      setProductToRemove(null) // Limpa a seleção
     }
   }
 
-  // Função para cancelar remoção do produto
+  // Função que cancela a remoção
   const cancelRemove = () => {
     setShowRemoveModal(false) // Fecha o modal
-    setProductToRemove(null) // Limpa o produto selecionado
+    setProductToRemove(null) // Limpa a seleção
   }
 
   return (
