@@ -46,12 +46,12 @@ const Requests = () => {
   console.log('Pending products:', products.filter(p => p.status === 'pending'))
   
   const filteredRequests = currentUser?.isAdmin 
-    ? products.filter(p => p.status === 'pending').map(product => ({
+    ? (products || []).filter(p => p?.status === 'pending').map(product => ({
         id: product.id,
-        productName: product.name,
-        productImage: product.image,
-        userName: product.donor,
-        userEmail: `${product.donor.toLowerCase().replace(' ', '.')}@email.com`,
+        productName: product.name || 'Produto sem nome',
+        productImage: product.image || '/images/placeholder.jpg',
+        userName: product.donor || 'Usuário desconhecido',
+        userEmail: `${(product.donor || 'usuario').toLowerCase().replace(/\s+/g, '.')}@email.com`,
         date: new Date().toISOString(),
         status: 'pending',
         isProductValidation: true,

@@ -34,20 +34,32 @@ const Profile = () => {
           <div className="profile-info">
             <div className="info-item">
               <strong>Nome:</strong>
-              <span>{currentUser?.name}</span>
+              <span>{currentUser?.name || currentUser?.nome}</span>
+            </div>
+            <div className="info-item">
+              <strong>Email:</strong>
+              <span>{currentUser?.email}</span>
+            </div>
+            <div className="info-item">
+              <strong>Telefone:</strong>
+              <span>{currentUser?.phone || currentUser?.telefone || 'Não informado'}</span>
+            </div>
+            <div className="info-item">
+              <strong>CPF:</strong>
+              <span>{currentUser?.cpf || 'Não informado'}</span>
             </div>
             <div className="info-item">
               <strong>Data de Registro:</strong>
-              <span>{getRegistrationDate()}</span>
+              <span>{currentUser?.dataCadastro || getRegistrationDate()}</span>
             </div>
             <div className="info-item">
               <strong>Tipo de Conta:</strong>
-              <span>{currentUser?.type === 'donatario' ? 'Donatário' : 'Doador'}</span>
+              <span>{(currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO') ? 'Donatário' : 'Doador'}</span>
             </div>
           </div>
         </div>
 
-        {currentUser?.type === 'doador' ? (
+        {(currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR') ? (
           <>
             <div className="profile-card">
               <h3>Estatísticas de Doação</h3>

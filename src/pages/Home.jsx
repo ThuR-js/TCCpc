@@ -1,72 +1,118 @@
+// Importações necessárias para estado, navegação e contexto
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
+// Componente principal da página inicial
 const Home = () => {
+  // Hook para navegação entre páginas
   const navigate = useNavigate()
+  
+  // Desestruturação do contexto global para acessar estados e funções
   const { 
-    products, 
-    filters, 
-    setFilters, 
-    searchTerm, 
-    favorites, 
-    toggleFavorite, 
-    currentUser,
-    addRequest,
-    removeProduct,
-    removeProductByName,
-    getProductTypeFromSearch
+    products, // Lista de todos os produtos
+    filters, // Filtros ativos (tipo, tamanho, condição)
+    setFilters, // Função para atualizar filtros
+    searchTerm, // Termo de busca atual
+    favorites, // Lista de IDs dos produtos favoritos
+    toggleFavorite, // Função para adicionar/remover favoritos
+    currentUser, // Usuário atualmente logado
+    addRequest, // Função para adicionar solicitação de produto
+    removeProduct, // Função para remover produto por ID
+    removeProductByName, // Função para remover produto por nome
+    getProductTypeFromSearch // Função que identifica tipo de produto pela busca
   } = useApp()
   
-  const [showRemoveModal, setShowRemoveModal] = useState(false)
-  const [productToRemove, setProductToRemove] = useState(null)
+  // Estados locais para controle do modal de remoção
+  const [showRemoveModal, setShowRemoveModal] = useState(false) // Controla se o modal está visível
+  const [productToRemove, setProductToRemove] = useState(null) // Produto selecionado para remoção
 
+  // Filtra os produtos baseado no tipo de usuário e critérios de busca
   const filteredProducts = products.filter(product => {
-    const searchTermLower = searchTerm.toLowerCase()
-    const productNameMatch = product.name.toLowerCase().includes(searchTermLower)
+    // Identifica o tipo de usuário atual (compatibilidade com localStorage e API)
+    const isDoador = currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR'
+    const isDonatario = currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO'
+    const isGuest = currentUser?.isGuest || currentUser?.type === 'convidado'
     
-    // Verificar se o termo de pesquisa corresponde a palavras-chave de categoria
+    // REGRA DE VISIBILIDADE: Donatários e convidados só podem ver produtos aprovados pelo administrador
+    if ((isDonatario || isGuest) && product.status !== 'available') {
+      return false // Oculta produtos pendentes para donatários e convidados (segurança)
+    }
+    
+    // REGRA: Doadores podem ver seus próprios produtos (qualquer status) + produtos aprovados de outros
+    if (isDoador) {
+      const isOwnProduct = product.donorId === currentUser?.id // Verifica se é produto próprio
+      const isApprovedProduct = product.status === 'available' // Verifica se está aprovado
+      if (!isOwnProduct && !isApprovedProduct) {
+        return false // Oculta produtos pendentes de outros doadores
+      }
+    }
+    
+    // FILTROS DE BUSCA E CATEGORIA
+    const searchTermLower = searchTerm.toLowerCase() // Converte termo de busca para minúsculas
+    const productNameMatch = product.name.toLowerCase().includes(searchTermLower) // Verifica se nome contém o termo
+    
+    // Verifica se o termo de busca corresponde a uma categoria (ex: "tenis" -> "tenis")
     const searchedProductType = getProductTypeFromSearch(searchTerm)
     const keywordMatch = searchedProductType && product.type === searchedProductType
     
-    // Se há termo de pesquisa, deve corresponder ao nome OU às palavras-chave
+    // Produto passa no filtro de busca se: não há termo OU nome contém termo OU categoria corresponde
     const searchMatch = searchTerm === '' || productNameMatch || keywordMatch
     
+    // APLICA TODOS OS FILTROS: busca, tipo, tamanho e condição
     return (
-      searchMatch &&
-      (filters.type === '' || product.type === filters.type) &&
-      (filters.size === '' || product.size === filters.size) &&
-      (filters.condition === '' || product.condition === filters.condition)
+      searchMatch && // Passou no filtro de busca
+      (filters.type === '' || product.type === filters.type) && // Filtro de tipo/categoria
+      (filters.size === '' || product.size === filters.size) && // Filtro de tamanho
+      (filters.condition === '' || product.condition === filters.condition) // Filtro de condição
     )
   })
 
+  // Função para iniciar chat (navega para página de chat)
   const startChat = () => {
+    // CONTROLE DE ACESSO: Verifica se é convidado antes de permitir acesso ao chat
+    if (currentUser?.isGuest || currentUser?.type === 'convidado') {
+      alert('Faça login para enviar mensagens.') // Mensagem curta e direta
+      return // Impede navegação
+    }
     navigate('/chat')
   }
 
+  // Função para manifestar interesse em um produto (apenas donatários)
   const handleProductInterest = (productId) => {
+    // CONTROLE DE ACESSO: Verifica se é convidado antes de permitir manifestar interesse
+    if (currentUser?.isGuest || currentUser?.type === 'convidado') {
+      alert('Faça login para manifestar interesse.') // Mensagem curta e direta
+      return // Impede ação
+    }
+    // Verifica se usuário está logado e é donatário
     if (!currentUser || currentUser.type !== 'donatario') return
+    // Adiciona solicitação de interesse no produto
     addRequest(productId)
+    // Notifica o usuário
     alert('Interesse manifestado! O doador será notificado.')
   }
 
+  // Função chamada quando usuário clica em "Remover" produto
   const handleRemoveClick = (e, product) => {
-    e.stopPropagation()
-    setProductToRemove(product)
-    setShowRemoveModal(true)
+    e.stopPropagation() // Impede que o clique propague para o card do produto
+    setProductToRemove(product) // Define qual produto será removido
+    setShowRemoveModal(true) // Mostra o modal de confirmação
   }
 
+  // Função para confirmar remoção do produto
   const confirmRemove = () => {
     if (productToRemove) {
-      removeProduct(productToRemove.id)
-      setShowRemoveModal(false)
-      setProductToRemove(null)
+      removeProduct(productToRemove.id) // Remove o produto da lista
+      setShowRemoveModal(false) // Fecha o modal
+      setProductToRemove(null) // Limpa o produto selecionado
     }
   }
 
+  // Função para cancelar remoção do produto
   const cancelRemove = () => {
-    setShowRemoveModal(false)
-    setProductToRemove(null)
+    setShowRemoveModal(false) // Fecha o modal
+    setProductToRemove(null) // Limpa o produto selecionado
   }
 
   return (
@@ -74,7 +120,7 @@ const Home = () => {
       <div className="recent-section">
         <h2 className="section-title">Recém-publicados</h2>
         <div className="recent-grid">
-          {currentUser && currentUser.type === 'doador' && (
+          {currentUser && (currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
             <div className="recent-card add-product-card" onClick={() => navigate('/add-product')}>
               <div className="add-product-icon">+</div>
               <div className="product-info">
@@ -83,7 +129,7 @@ const Home = () => {
               </div>
             </div>
           )}
-          {products.slice(0, 5).map(product => (
+          {filteredProducts.slice(0, 5).map(product => (
             <div key={product.id} className="recent-card" onClick={() => navigate(`/product/${product.id}`)}>
               <img 
                 src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
@@ -167,7 +213,7 @@ const Home = () => {
       
       <div className="products-grid">
         {filteredProducts.map(product => (
-          <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''}`} 
+          <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
                onClick={() => {
                  navigate(`/product/${product.id}`);
                }}>
@@ -197,6 +243,7 @@ const Home = () => {
                 <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
                 <span>{product.donor}</span>
               </div>
+              {product.status === 'pending' && <span className="product-status status-analyzing">Em Análise</span>}
               {product.status === 'analyzing' && <span className="product-status status-analyzing">Em Análise</span>}
               {product.status === 'donated' && <span className="product-status status-donated">Doado</span>}
               <div className="product-bottom">

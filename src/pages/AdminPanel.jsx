@@ -6,13 +6,21 @@ const AdminPanel = () => {
   const navigate = useNavigate()
 
   if (!currentUser?.isAdmin) {
-    navigate('/login')
-    return null
+    return (
+      <div className="container">
+        <h2 style={{color: 'white'}}>Acesso Negado</h2>
+        <p style={{color: 'white'}}>Você não tem permissão para acessar esta página.</p>
+        <button onClick={() => navigate('/login')} className="btn btn-primary">
+          Fazer Login
+        </button>
+      </div>
+    )
   }
 
-  const pendingProducts = products.filter(p => p.status === 'pending')
+  const pendingProducts = products ? products.filter(p => p.status === 'pending') : []
 
   const approveProduct = (productId) => {
+    if (!products) return
     const updatedProducts = products.map(p => 
       p.id === productId ? { ...p, status: 'available' } : p
     )
@@ -21,6 +29,7 @@ const AdminPanel = () => {
   }
 
   const rejectProduct = (productId) => {
+    if (!products) return
     const updatedProducts = products.filter(p => p.id !== productId)
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
@@ -28,6 +37,7 @@ const AdminPanel = () => {
 
   return (
     <div className="container">
+      <button onClick={() => navigate('/login')} className="btn-back">← Sair</button>
       <h2 style={{color: 'white', marginBottom: '2rem'}}>Painel Administrativo</h2>
       
       <div className="admin-stats">
@@ -46,7 +56,14 @@ const AdminPanel = () => {
           <div className="products-grid">
             {pendingProducts.map(product => (
               <div key={product.id} className="product-card admin-card">
-                <img src={product.image} alt={product.name} />
+                <img 
+                  src={product.image?.startsWith('data:') ? product.image : `/${product.image}`} 
+                  alt={product.name}
+                  onError={(e) => {
+                    e.target.src = '/images/placeholder.jpg'
+                    e.target.onerror = null
+                  }}
+                />
                 <div className="product-info">
                   <h4>{product.name}</h4>
                   <p>{product.description}</p>

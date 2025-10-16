@@ -1,34 +1,68 @@
+// Importações necessárias para estado, navegação, contexto e estilos
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import '../LoginScreen.css'
 import './Register.css'
 
+// Componente de registro de novos usuários
 const Register = () => {
+  // Hook para navegação entre páginas
   const navigate = useNavigate()
+  // Hook para acessar o contexto global da aplicação
   const { setCurrentUser } = useApp()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [cpf, setCpf] = useState('')
-  const [cep, setCep] = useState('')
-  const [password, setPassword] = useState('')
-  const [userType, setUserType] = useState('donatario')
+  
+  // Estados para armazenar os dados do formulário
+  const [name, setName] = useState('') // Nome do usuário
+  const [email, setEmail] = useState('') // Email do usuário
+  const [phone, setPhone] = useState('') // Telefone (opcional)
+  const [cpf, setCpf] = useState('') // CPF do usuário
+  const [cep, setCep] = useState('') // CEP (apenas para doadores)
+  const [password, setPassword] = useState('') // Senha do usuário
+  const [userType, setUserType] = useState('donatario')] // Tipo: donatario ou doador
 
-  const handleSubmit = (e) => {
+  // Função que processa o envio do formulário de registro
+  const handleSubmit = async (e) => {
+    // Previne o comportamento padrão do formulário (recarregar a página)
     e.preventDefault()
     
-    const newUser = {
-      id: Date.now(),
-      name: name,
-      email: email,
-      phone: phone,
-      type: userType
+    // Cria objeto com os dados do usuário no formato esperado pela API
+    const usuario = {
+      nome: name, // Nome do usuário
+      email: email, // Email do usuário
+      telefone: phone || '00000000000', // Telefone ou valor padrão se vazio
+      cpf: cpf, // CPF do usuário
+      senha: password, // Senha do usuário
+      nivelAcesso: userType === 'doador' ? 'DOADOR' : 'DONATARIO' // Converte tipo para formato da API
     }
     
-    setCurrentUser(newUser)
-    localStorage.setItem('currentUser', JSON.stringify(newUser))
-    navigate('/')
+    try {
+      // Log para debug - mostra os dados que serão enviados
+      console.log('Enviando dados:', usuario)
+      // Faz requisição POST para a API de criação de usuários
+      const response = await fetch('http://localhost:8080/api/v1/usuario', {
+        method: 'POST', // Método HTTP POST
+        headers: { 'Content-Type': 'application/json' }, // Especifica que está enviando JSON
+        body: JSON.stringify(usuario) // Converte objeto para JSON
+      })
+      // Log para debug - mostra o status da resposta
+      console.log('Response status:', response.status)
+      
+      if (response.ok) {
+        // Se a requisição foi bem-sucedida
+        const newUser = await response.json() // Converte resposta para objeto
+        setCurrentUser(newUser) // Define como usuário atual
+        localStorage.setItem('currentUser', JSON.stringify(newUser)) // Salva no localStorage
+        navigate('/') // Redireciona para a página inicial
+      } else {
+        // Se houve erro na requisição
+        const errorData = await response.json() // Tenta obter detalhes do erro
+        alert('Erro: ' + (errorData.message || 'Erro ao criar usuário')) // Mostra erro
+      }
+    } catch (error) {
+      // Se houve erro de conexão
+      alert('Erro de conexão')
+    }
   }
 
   return (

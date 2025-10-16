@@ -1,16 +1,21 @@
+// Importações necessárias para navegação e contexto
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
+// Componente do cabeçalho da aplicação
 const Header = () => {
+  // Hook para navegação entre páginas
   const navigate = useNavigate()
+  
+  // Desestruturação do contexto global
   const { 
-    currentUser, 
-    setCurrentUser, 
-    searchTerm, 
-    setSearchTerm, 
-    favorites, 
-    showDropdown, 
-    setShowDropdown 
+    currentUser, // Usuário atualmente logado
+    setCurrentUser, // Função para alterar usuário atual
+    searchTerm, // Termo de busca atual
+    setSearchTerm, // Função para alterar termo de busca
+    favorites, // Lista de produtos favoritos
+    showDropdown, // Estado do menu dropdown
+    setShowDropdown // Função para controlar dropdown
   } = useApp()
 
   return (
@@ -30,7 +35,7 @@ const Header = () => {
         <nav className="nav">
           {currentUser ? (
             <>
-              <span>Olá, {currentUser.name}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
+              <span>Olá, {currentUser.name || currentUser.nome}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
               <button onClick={() => navigate('/')}>Início</button>
               <button onClick={() => navigate('/profile')}>Perfil</button>
               {currentUser.isGuest ? (
@@ -70,7 +75,7 @@ const Header = () => {
                         navigate('/requests');
                         setShowDropdown(false);
                       }}>Solicitações</a>
-                      {currentUser.type === 'doador' && (
+                      {(currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
                         <a href="#" onClick={() => {
                           navigate('/add-product');
                           setShowDropdown(false);

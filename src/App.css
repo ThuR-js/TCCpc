@@ -270,6 +270,15 @@ body {
     transform: none;
 }
 
+.product-card.pending {
+    opacity: 0.7;
+    filter: grayscale(50%);
+}
+
+.product-card.pending .product-image {
+    filter: grayscale(30%) brightness(0.8);
+}
+
 .product-image {
     width: 160px !important;
     height: 160px !important;

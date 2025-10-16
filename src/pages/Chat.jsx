@@ -1,10 +1,34 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useApp } from '../context/AppContext'
 
 const Chat = () => {
   const navigate = useNavigate()
+  const { currentUser } = useApp()
   const [currentChat, setCurrentChat] = useState('chat1')
   const [newMessage, setNewMessage] = useState('')
+  
+  // VERIFICAÇÃO DE ACESSO: Se for convidado, mostra mensagem para fazer login
+  if (currentUser?.isGuest || currentUser?.type === 'convidado') {
+    return (
+      <div className="container">
+        {/* Botão para voltar à página inicial */}
+        <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
+        {/* Container do chat com centralização total (horizontal e vertical) */}
+        <div className="chat-container" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+          {/* Div interna com texto centralizado */}
+          <div style={{textAlign: 'center'}}>
+            {/* Mensagem informativa para convidados */}
+            <p>Faça login para acessar o chat.</p>
+            {/* Botão que redireciona para página de login */}
+            <button onClick={() => navigate('/login')} className="btn btn-primary" style={{marginTop: '1rem'}}>
+              Fazer Login
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const sendMessage = () => {
     if (!newMessage.trim()) return
