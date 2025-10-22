@@ -102,8 +102,14 @@ const Register = () => {
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  if (value.length <= 11) {
+                    setPhone(value)
+                  }
+                }}
                 placeholder="(11) 99999-9999"
+                maxLength="15"
               />
               <small style={{fontSize: '12px', color: '#666', marginTop: '4px', display: 'block'}}>opcional</small>
             </div>
@@ -113,8 +119,14 @@ const Register = () => {
               <input
                 type="text"
                 value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                placeholder="000.000.000-00"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  if (value.length <= 11) {
+                    setCpf(value)
+                  }
+                }}
+                placeholder="00000000000"
+                maxLength="11"
                 required
               />
             </div>
@@ -125,8 +137,14 @@ const Register = () => {
                 <input
                   type="text"
                   value={cep}
-                  onChange={(e) => setCep(e.target.value)}
-                  placeholder="00000-000"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '')
+                    if (value.length <= 8) {
+                      setCep(value)
+                    }
+                  }}
+                  placeholder="00000000"
+                  maxLength="8"
                   required
                 />
               </div>
@@ -137,8 +155,13 @@ const Register = () => {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Digite sua senha"
+                onChange={(e) => {
+                  if (e.target.value.length <= 6) {
+                    setPassword(e.target.value)
+                  }
+                }}
+                placeholder="Digite sua senha (máx 6 dígitos)"
+                maxLength="6"
                 required
               />
             </div>
