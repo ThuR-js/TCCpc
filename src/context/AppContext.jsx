@@ -685,6 +685,33 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('products', JSON.stringify(updatedProducts))
   }
 
+  const updateUser = async (userData) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      })
+      
+      if (response.ok) {
+        const updatedUser = { ...currentUser }
+        if (userData.nome) {
+          updatedUser.nome = userData.nome
+          updatedUser.name = userData.nome
+        }
+        setCurrentUser(updatedUser)
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+        return { success: true }
+      } else {
+        return { success: false, error: 'Erro ao atualizar usuário' }
+      }
+    } catch (error) {
+      return { success: false, error: 'Erro de conexão' }
+    }
+  }
+
   const value = {
     currentUser,
     setCurrentUser,
@@ -706,7 +733,8 @@ export const AppProvider = ({ children }) => {
     addProduct,
     removeProduct,
     removeProductByName,
-    getProductTypeFromSearch
+    getProductTypeFromSearch,
+    updateUser
   }
 
   return (

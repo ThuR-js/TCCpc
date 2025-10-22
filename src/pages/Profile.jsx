@@ -1,9 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { useState } from 'react'
 
 const Profile = () => {
   const navigate = useNavigate()
-  const { currentUser, requests, products } = useApp()
+  const { currentUser, requests, products, updateUser } = useApp()
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
+  const [isLoading, setIsLoading] = useState(false)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
   const pendingRequests = userRequests.filter(req => req.status === 'pending')
@@ -23,6 +27,24 @@ const Profile = () => {
     return new Date().toLocaleDateString()
   }
 
+  const handleSaveName = async () => {
+    if (!newName.trim()) {
+      alert('Nome não pode estar vazio')
+      return
+    }
+
+    setIsLoading(true)
+    const result = await updateUser({ nome: newName.trim() })
+    
+    if (result.success) {
+      setIsEditingName(false)
+      alert('Nome atualizado com sucesso!')
+    } else {
+      alert(result.error || 'Erro ao atualizar nome')
+    }
+    setIsLoading(false)
+  }
+
   return (
     <div className="container">
       <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
@@ -34,7 +56,71 @@ const Profile = () => {
           <div className="profile-info">
             <div className="info-item">
               <strong>Nome:</strong>
-              <span>{currentUser?.name || currentUser?.nome}</span>
+              {isEditingName ? (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input 
+                    type="text" 
+                    value={newName} 
+                    onChange={(e) => setNewName(e.target.value)}
+                    style={{ 
+                      padding: '5px', 
+                      borderRadius: '4px', 
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <button 
+                    onClick={handleSaveName}
+                    disabled={isLoading}
+                    style={{ 
+                      padding: '5px 10px', 
+                      backgroundColor: '#4CAF50', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {isLoading ? 'Salvando...' : 'Salvar'}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setIsEditingName(false)
+                      setNewName(currentUser?.name || currentUser?.nome || '')
+                    }}
+                    style={{ 
+                      padding: '5px 10px', 
+                      backgroundColor: '#f44336', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>{currentUser?.name || currentUser?.nome}</span>
+                  <button 
+                    onClick={() => setIsEditingName(true)}
+                    style={{ 
+                      padding: '3px 8px', 
+                      backgroundColor: '#2196F3', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '11px'
+                    }}
+                  >
+                    Editar
+                  </button>
+                </div>
+              )}
             </div>
             <div className="info-item">
               <strong>Email:</strong>
