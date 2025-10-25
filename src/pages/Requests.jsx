@@ -28,7 +28,7 @@ const Requests = () => {
   
   const approveProduct = (productId) => {
     const updatedProducts = products.map(p => 
-      p.id === productId ? { ...p, status: 'available' } : p
+      p.id === productId ? { ...p, status: 'available', approvedDate: new Date().toISOString() } : p
     )
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))

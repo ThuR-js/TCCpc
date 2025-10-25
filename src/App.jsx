@@ -24,23 +24,63 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/*" element={
+            <Route path="/" element={
               <ProtectedRoute>
                 <Header />
                 <main className="main">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/chat" element={<Chat />} />
-                    <Route path="/requests" element={<Requests />} />
-                    <Route path="/add-product" element={<AddProduct />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/product/:id" element={<ProductDetails />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
+                  <Home />
                 </main>
               </ProtectedRoute>
             } />
+            <Route path="/favorites" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Favorites />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Chat />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/requests" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Requests />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/add-product" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <AddProduct />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Profile />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/product/:id" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ProductDetails />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>

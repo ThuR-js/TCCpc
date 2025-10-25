@@ -579,16 +579,23 @@ export const AppProvider = ({ children }) => {
     }
   ]
 
-  useEffect(() => {
+  // Função para carregar dados do localStorage
+  const loadFromStorage = () => {
+    const globalProducts = localStorage.getItem('products_global')
     const savedProducts = localStorage.getItem('products')
     const savedRequests = localStorage.getItem('requests')
     const savedUser = localStorage.getItem('currentUser')
     
-    if (savedProducts) {
+    // Prioriza produtos globais (atualizados pelo admin)
+    if (globalProducts) {
+      setProducts(JSON.parse(globalProducts))
+      localStorage.setItem('products', globalProducts) // Sincroniza
+    } else if (savedProducts) {
       setProducts(JSON.parse(savedProducts))
     } else {
       setProducts(sampleProducts)
       localStorage.setItem('products', JSON.stringify(sampleProducts))
+      localStorage.setItem('products_global', JSON.stringify(sampleProducts))
     }
     
     if (savedRequests) {
@@ -596,7 +603,23 @@ export const AppProvider = ({ children }) => {
     }
     
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser))
+      const user = JSON.parse(savedUser)
+      setCurrentUser(user)
+    }
+  }
+
+  useEffect(() => {
+    loadFromStorage()
+    
+    // Listener customizado apenas para mudanças internas (mesma aba)
+    const handleCustomStorageChange = () => {
+      loadFromStorage()
+    }
+    
+    window.addEventListener('localStorageUpdate', handleCustomStorageChange)
+    
+    return () => {
+      window.removeEventListener('localStorageUpdate', handleCustomStorageChange)
     }
   }, [])
 
@@ -669,12 +692,16 @@ export const AppProvider = ({ children }) => {
     const updatedProducts = [newProduct, ...products]
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
   }
 
   const removeProduct = (productId) => {
     const updatedProducts = products.filter(product => product.id !== productId)
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
+    // Dispara evento customizado para atualizar outros componentes
+    window.dispatchEvent(new Event('localStorageUpdate'))
   }
 
   const removeProductByName = (productName) => {
@@ -687,20 +714,27 @@ export const AppProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
+      const fullUserData = {
+        nome: userData.nome,
+        email: currentUser.email,
+        telefone: currentUser.telefone || '00000000000',
+        cpf: currentUser.cpf,
+        senha: currentUser.senha,
+        nivelAcesso: currentUser.nivelAcesso,
+        dataCadastro: currentUser.dataCadastro,
+        statusUsuario: currentUser.statusUsuario || 'ATIVO'
+      }
+      
       const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(fullUserData)
       })
       
       if (response.ok) {
-        const updatedUser = { ...currentUser }
-        if (userData.nome) {
-          updatedUser.nome = userData.nome
-          updatedUser.name = userData.nome
-        }
+        const updatedUser = { ...currentUser, nome: userData.nome, name: userData.nome }
         setCurrentUser(updatedUser)
         localStorage.setItem('currentUser', JSON.stringify(updatedUser))
         return { success: true }
@@ -710,6 +744,14 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: 'Erro de conexão' }
     }
+  }
+
+  const resetProducts = () => {
+    setProducts(sampleProducts)
+    localStorage.setItem('products', JSON.stringify(sampleProducts))
+    localStorage.setItem('products_global', JSON.stringify(sampleProducts))
+    localStorage.removeItem('requests')
+    setRequests([])
   }
 
   const value = {
@@ -734,7 +776,8 @@ export const AppProvider = ({ children }) => {
     removeProduct,
     removeProductByName,
     getProductTypeFromSearch,
-    updateUser
+    updateUser,
+    resetProducts
   }
 
   return (

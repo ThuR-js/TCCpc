@@ -12,8 +12,9 @@ const Login = () => {
 
   // Função que processa o login do usuário
   const handleInitialLogin = async (email, password) => {
+    console.log('Login attempt:', email)
     // Verificação especial para conta de administrador (hardcoded)
-    if (email === 'admin@doeconect.com' && password === 'admin123') {
+    if (email === 'admin@doeconect.com' && password === 'admin1') {
       // Cria objeto do usuário administrador
       const adminUser = {
         id: 999,
@@ -21,10 +22,12 @@ const Login = () => {
         email: 'admin@doeconect.com',
         isAdmin: true // Flag que identifica como admin
       }
+      console.log('Admin login successful, setting user:', adminUser)
       // Define o usuário atual no contexto global
       setCurrentUser(adminUser)
       // Salva no localStorage para persistir entre sessões
       localStorage.setItem('currentUser', JSON.stringify(adminUser))
+      console.log('Navigating to /')
       // Redireciona para a página inicial
       navigate('/')
       return
@@ -40,13 +43,15 @@ const Login = () => {
         const user = users.find(u => u.email === email && u.senha === password)
         
         if (user) {
+          console.log('User found in API:', user)
           // Se encontrou o usuário, define como usuário atual
           setCurrentUser(user)
           // Salva no localStorage para persistir
           localStorage.setItem('currentUser', JSON.stringify(user))
           localStorage.setItem('lastUser', JSON.stringify(user))
-          // Redireciona baseado no tipo de usuário (DOADOR ou DONATARIO)
-          navigate(user.nivelAcesso === 'DOADOR' ? '/donor' : '/recipient')
+          console.log('User saved to localStorage, navigating to /')
+          // Redireciona para a página inicial
+          navigate('/')
         } else {
           // Se não encontrou, mostra erro
           alert('Email ou senha incorretos')
@@ -63,6 +68,7 @@ const Login = () => {
 
   // Função para permitir acesso como convidado (sem login)
   const handleContinueWithoutLogin = () => {
+    console.log('Guest login attempt')
     // Recupera dados do último usuário logado (se houver)
     const lastUser = localStorage.getItem('lastUser')
     // Cria objeto de usuário convidado
@@ -74,10 +80,12 @@ const Login = () => {
       isGuest: true, // Flag que identifica como convidado
       lastUserData: lastUser ? JSON.parse(lastUser) : null // Dados do último usuário para referência
     }
+    console.log('Guest user created:', guestUser)
     // Define o convidado como usuário atual
     setCurrentUser(guestUser)
     // Salva no localStorage
     localStorage.setItem('currentUser', JSON.stringify(guestUser))
+    console.log('Guest user saved, navigating to /')
     // Redireciona para a página inicial
     navigate('/')
   }

@@ -4,10 +4,15 @@ import { useState } from 'react'
 
 const Profile = () => {
   const navigate = useNavigate()
-  const { currentUser, requests, products, updateUser } = useApp()
+  const { currentUser, requests, products, updateUser, setProducts, resetProducts } = useApp()
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Debug: verificar se os dados estão carregando
+  console.log('Profile - currentUser:', currentUser)
+  console.log('Profile - products:', products?.length)
+  console.log('Profile - requests:', requests?.length)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
   const pendingRequests = userRequests.filter(req => req.status === 'pending')
@@ -27,27 +32,57 @@ const Profile = () => {
     return new Date().toLocaleDateString()
   }
 
-  const handleSaveName = async () => {
-    if (!newName.trim()) {
-      alert('Nome não pode estar vazio')
-      return
+  const removeProduct = (productId) => {
+    if (confirm('Tem certeza que deseja remover este anúncio?')) {
+      const updatedProducts = products.filter(p => p.id !== productId)
+      setProducts(updatedProducts)
+      // Atualiza AMBOS os localStorage para garantir sincronização
+      localStorage.setItem('products', JSON.stringify(updatedProducts))
+      localStorage.setItem('products_global', JSON.stringify(updatedProducts))
+      // Dispara evento para atualizar outros componentes
+      window.dispatchEvent(new Event('localStorageUpdate'))
     }
+  }
 
-    setIsLoading(true)
-    const result = await updateUser({ nome: newName.trim() })
-    
-    if (result.success) {
-      setIsEditingName(false)
-      alert('Nome atualizado com sucesso!')
-    } else {
-      alert(result.error || 'Erro ao atualizar nome')
-    }
-    setIsLoading(false)
+
+
+
+
+  // Verificar se o usuário está carregado
+  if (!currentUser) {
+    return (
+      <div className="container">
+        <p style={{color: 'white'}}>Carregando perfil...</p>
+      </div>
+    )
   }
 
   return (
     <div className="container">
-      <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
+      {/* Botão de teste simples */}
+      <button 
+        onClick={() => {
+          console.log('Botão clicado!')
+          navigate('/')
+        }} 
+        className="btn-back"
+        style={{
+          display: 'inline-block',
+          visibility: 'visible',
+          opacity: 1,
+          backgroundColor: '#4A230A',
+          color: 'white',
+          padding: '10px 20px',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+      >
+        ← Voltar
+      </button>
+      
+
+      
       <h2 style={{marginBottom: '2rem', color: 'white'}}>Perfil</h2>
       
       <div className="profile-container">
@@ -70,7 +105,21 @@ const Profile = () => {
                     }}
                   />
                   <button 
-                    onClick={handleSaveName}
+                    onClick={async () => {
+                      if (!newName.trim()) {
+                        alert('Nome não pode estar vazio')
+                        return
+                      }
+                      setIsLoading(true)
+                      const result = await updateUser({ nome: newName.trim() })
+                      if (result.success) {
+                        setIsEditingName(false)
+                        alert('Nome atualizado com sucesso!')
+                      } else {
+                        alert(result.error || 'Erro ao atualizar nome')
+                      }
+                      setIsLoading(false)
+                    }}
                     disabled={isLoading}
                     style={{ 
                       padding: '5px 10px', 
@@ -114,7 +163,10 @@ const Profile = () => {
                       border: 'none', 
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontSize: '11px'
+                      fontSize: '11px',
+                      display: 'inline-block',
+                      visibility: 'visible',
+                      opacity: 1
                     }}
                   >
                     Editar
@@ -140,7 +192,10 @@ const Profile = () => {
             </div>
             <div className="info-item">
               <strong>Tipo de Conta:</strong>
-              <span>{(currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO') ? 'Donatário' : 'Doador'}</span>
+              <span>
+                {currentUser?.isAdmin ? 'Administrador' : 
+                 (currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO') ? 'Donatário' : 'Doador'}
+              </span>
             </div>
           </div>
         </div>
@@ -213,6 +268,82 @@ const Profile = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {currentUser?.isAdmin && (
+          <div className="profile-card" style={{marginTop: '2rem', borderTop: '2px solid #ff4444'}}>
+            <h3 style={{color: '#ff4444'}}>Painel Administrativo - Remover Anúncios</h3>
+            <div style={{marginBottom: '1rem'}}>
+              <span style={{color: '#ccc'}}>Total de anúncios: {products.length}</span>
+            </div>
+            
+            <div className="admin-products-list" style={{maxHeight: '400px', overflowY: 'auto'}}>
+              {products.slice(0, 10).map(product => (
+                <div key={product.id} className="admin-product-item" style={{
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: '10px', 
+                  border: '1px solid #333', 
+                  borderRadius: '8px', 
+                  marginBottom: '10px',
+                  backgroundColor: '#1a1a1a'
+                }}>
+                  <img 
+                    src={product.image?.startsWith('data:') ? product.image : `/${product.image}`} 
+                    alt={product.name}
+                    style={{
+                      width: '60px', 
+                      height: '60px', 
+                      objectFit: 'cover', 
+                      borderRadius: '4px',
+                      marginRight: '15px'
+                    }}
+                    onError={(e) => {
+                      e.target.src = '/images/placeholder.jpg'
+                      e.target.onerror = null
+                    }}
+                  />
+                  <div style={{flex: 1}}>
+                    <h5 style={{margin: '0 0 5px 0', color: 'white'}}>{product.name}</h5>
+                    <p style={{margin: '0', color: '#ccc', fontSize: '14px'}}>Por: {product.donor}</p>
+                    <span style={{
+                      fontSize: '12px',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      backgroundColor: product.status === 'available' ? '#4CAF50' : 
+                                     product.status === 'pending' ? '#FF9800' : '#f44336',
+                      color: 'white'
+                    }}>
+                      {product.status === 'available' ? 'Disponível' : 
+                       product.status === 'pending' ? 'Pendente' : 'Doado'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => removeProduct(product.id)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      display: 'inline-block',
+                      visibility: 'visible',
+                      opacity: 1
+                    }}
+                  >
+                    Remover
+                  </button>
+                </div>
+              ))}
+              {products.length > 10 && (
+                <p style={{textAlign: 'center', color: '#ccc', marginTop: '15px'}}>
+                  Mostrando 10 de {products.length} anúncios.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

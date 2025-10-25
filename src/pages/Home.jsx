@@ -27,35 +27,32 @@ const Home = () => {
   const [showRemoveModal, setShowRemoveModal] = useState(false) // Controla se o modal está visível
   const [productToRemove, setProductToRemove] = useState(null) // Produto selecionado para remoção
 
-  // Função que filtra quais produtos aparecem na tela
-  const filteredProducts = products.filter(product => {
-    // PASSO 1: Verifica se o usuário é doador
-    let isDoador = false
-    if (currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR') {
-      isDoador = true
-    }
-    
-    // PASSO 2: Aplica regras de visibilidade por tipo de usuário
-    // Donatários e convidados só veem produtos aprovados
-    if (!isDoador && product.status !== 'available') {
-      return false
-    }
-    
-    // Doadores veem seus próprios produtos + produtos aprovados de outros
-    if (isDoador) {
-      let canSee = false
-      if (product.donorId === currentUser?.id) {
-        canSee = true // Pode ver seus próprios produtos
+  // Função base para filtrar produtos por visibilidade
+  const getVisibleProducts = () => {
+    return products.filter(product => {
+      const isAdmin = currentUser?.isAdmin
+      const isDoador = currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR'
+      const isDonatario = currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO'
+      
+      if (isAdmin) {
+        // Admin vê todos os produtos (pending e available)
+        return true
+      } else if (isDoador) {
+        // Doador vê seus próprios produtos (qualquer status) + produtos aprovados de outros
+        return product.donorId === currentUser?.id || product.status === 'available'
+      } else if (isDonatario) {
+        // Donatário vê APENAS produtos aprovados
+        return product.status === 'available'
+      } else {
+        // Outros usuários veem apenas produtos aprovados
+        return product.status === 'available'
       }
-      if (product.status === 'available') {
-        canSee = true // Pode ver produtos aprovados de outros
-      }
-      if (!canSee) {
-        return false
-      }
-    }
-    
-    // PASSO 3: Aplica filtro de busca por nome do produto
+    })
+  }
+
+  // Produtos para "Para você" - aplica filtros de categoria
+  const filteredProducts = getVisibleProducts().filter(product => {
+    // Aplica filtro de busca por nome do produto
     if (searchTerm !== '') {
       let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
       if (!nameMatch) {
@@ -63,7 +60,7 @@ const Home = () => {
       }
     }
     
-    // PASSO 4: Aplica filtros de categoria, tamanho e condição
+    // Aplica filtros de categoria, tamanho e condição
     if (filters.type !== '' && product.type !== filters.type) {
       return false
     }
@@ -74,9 +71,29 @@ const Home = () => {
       return false
     }
     
-    // Se passou por todos os filtros, mostra o produto
     return true
   })
+
+  // Produtos para "Recém-publicados" - mostra os mesmos que "Todos os itens" (sem filtro de categoria)
+  const recentProducts = getVisibleProducts().filter(product => {
+    // Aplica filtro de busca por nome do produto
+    if (searchTerm !== '') {
+      let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      if (!nameMatch) {
+        return false
+      }
+    }
+    
+    // Aplica filtros de tamanho e condição, mas NÃO de categoria
+    if (filters.size !== '' && product.size !== filters.size) {
+      return false
+    }
+    if (filters.condition !== '' && product.condition !== filters.condition) {
+      return false
+    }
+    
+    return true
+  }).sort((a, b) => new Date(b.approvedDate || b.id) - new Date(a.approvedDate || a.id))
 
   // Função que abre a página de chat
   const startChat = () => {
@@ -141,7 +158,7 @@ const Home = () => {
               </div>
             </div>
           )}
-          {filteredProducts.slice(0, 5).map(product => (
+          {products.filter(product => product.status === 'available').slice(0, 6).map(product => (
             <div key={product.id} className="recent-card" onClick={() => navigate(`/product/${product.id}`)}>
               <img 
                 src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
