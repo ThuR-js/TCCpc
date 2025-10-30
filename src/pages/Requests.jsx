@@ -32,12 +32,14 @@ const Requests = () => {
     )
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
   }
 
   const rejectProduct = (productId) => {
     const updatedProducts = products.filter(p => p.id !== productId)
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
   }
 
   // Se for admin, criar "solicitações" baseadas nos produtos pendentes

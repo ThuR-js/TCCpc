@@ -82,7 +82,7 @@ const Header = () => {
                         }}>Adicionar Produto</a>
                       )}
                       <a href="#" onClick={() => {
-                        localStorage.removeItem('currentUser');
+                        sessionStorage.removeItem('currentUser');
                         setCurrentUser(null);
                         navigate('/login');
                         setShowDropdown(false);

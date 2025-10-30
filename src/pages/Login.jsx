@@ -25,8 +25,8 @@ const Login = () => {
       console.log('Admin login successful, setting user:', adminUser)
       // Define o usuário atual no contexto global
       setCurrentUser(adminUser)
-      // Salva no localStorage para persistir entre sessões
-      localStorage.setItem('currentUser', JSON.stringify(adminUser))
+      // Salva no sessionStorage para persistir apenas nesta aba
+      sessionStorage.setItem('currentUser', JSON.stringify(adminUser))
       console.log('Navigating to /')
       // Redireciona para a página inicial
       navigate('/')
@@ -46,9 +46,8 @@ const Login = () => {
           console.log('User found in API:', user)
           // Se encontrou o usuário, define como usuário atual
           setCurrentUser(user)
-          // Salva no localStorage para persistir
-          localStorage.setItem('currentUser', JSON.stringify(user))
-          localStorage.setItem('lastUser', JSON.stringify(user))
+          // Salva no sessionStorage para persistir apenas nesta aba
+          sessionStorage.setItem('currentUser', JSON.stringify(user))
           console.log('User saved to localStorage, navigating to /')
           // Redireciona para a página inicial
           navigate('/')
@@ -69,22 +68,19 @@ const Login = () => {
   // Função para permitir acesso como convidado (sem login)
   const handleContinueWithoutLogin = () => {
     console.log('Guest login attempt')
-    // Recupera dados do último usuário logado (se houver)
-    const lastUser = localStorage.getItem('lastUser')
     // Cria objeto de usuário convidado
     const guestUser = {
       id: 'guest',
       name: 'Convidado',
       email: 'convidado@temp.com',
       type: 'convidado',
-      isGuest: true, // Flag que identifica como convidado
-      lastUserData: lastUser ? JSON.parse(lastUser) : null // Dados do último usuário para referência
+      isGuest: true // Flag que identifica como convidado
     }
     console.log('Guest user created:', guestUser)
     // Define o convidado como usuário atual
     setCurrentUser(guestUser)
-    // Salva no localStorage
-    localStorage.setItem('currentUser', JSON.stringify(guestUser))
+    // Salva no sessionStorage
+    sessionStorage.setItem('currentUser', JSON.stringify(guestUser))
     console.log('Guest user saved, navigating to /')
     // Redireciona para a página inicial
     navigate('/')

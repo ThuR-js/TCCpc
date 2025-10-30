@@ -11,7 +11,10 @@ export const useApp = () => {
 }
 
 export const AppProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null)
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = sessionStorage.getItem('currentUser')
+    return savedUser ? JSON.parse(savedUser) : null
+  })
   const [products, setProducts] = useState([])
   const [favorites, setFavorites] = useState([1, 4])
   const [searchTerm, setSearchTerm] = useState('')
@@ -584,7 +587,6 @@ export const AppProvider = ({ children }) => {
     const globalProducts = localStorage.getItem('products_global')
     const savedProducts = localStorage.getItem('products')
     const savedRequests = localStorage.getItem('requests')
-    const savedUser = localStorage.getItem('currentUser')
     
     // Prioriza produtos globais (atualizados pelo admin)
     if (globalProducts) {
@@ -601,25 +603,22 @@ export const AppProvider = ({ children }) => {
     if (savedRequests) {
       setRequests(JSON.parse(savedRequests))
     }
-    
-    if (savedUser) {
-      const user = JSON.parse(savedUser)
-      setCurrentUser(user)
-    }
   }
 
   useEffect(() => {
     loadFromStorage()
     
-    // Listener customizado apenas para mudanças internas (mesma aba)
-    const handleCustomStorageChange = () => {
-      loadFromStorage()
+    // Listener para mudanças no localStorage entre abas
+    const handleStorageChange = (e) => {
+      if (e.key === 'products_global' || e.key === 'products' || e.key === 'requests') {
+        loadFromStorage()
+      }
     }
     
-    window.addEventListener('localStorageUpdate', handleCustomStorageChange)
+    window.addEventListener('storage', handleStorageChange)
     
     return () => {
-      window.removeEventListener('localStorageUpdate', handleCustomStorageChange)
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
@@ -663,15 +662,9 @@ export const AppProvider = ({ children }) => {
       status: 'pending'
     }
     
-    console.log('Adding new request:', newRequest)
-    console.log('Product donorId:', product.donorId)
-    console.log('Current user:', currentUser)
-    
     const updatedRequests = [...requests, newRequest]
     setRequests(updatedRequests)
     localStorage.setItem('requests', JSON.stringify(updatedRequests))
-    
-    console.log('Updated requests:', updatedRequests)
   }
 
   const updateRequestStatus = (requestId, status) => {
@@ -700,8 +693,6 @@ export const AppProvider = ({ children }) => {
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
     localStorage.setItem('products_global', JSON.stringify(updatedProducts))
-    // Dispara evento customizado para atualizar outros componentes
-    window.dispatchEvent(new Event('localStorageUpdate'))
   }
 
   const removeProductByName = (productName) => {
@@ -710,6 +701,7 @@ export const AppProvider = ({ children }) => {
     )
     setProducts(updatedProducts)
     localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
   }
 
   const updateUser = async (userData) => {
@@ -736,7 +728,7 @@ export const AppProvider = ({ children }) => {
       if (response.ok) {
         const updatedUser = { ...currentUser, nome: userData.nome, name: userData.nome }
         setCurrentUser(updatedUser)
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+        sessionStorage.setItem('currentUser', JSON.stringify(updatedUser))
         return { success: true }
       } else {
         return { success: false, error: 'Erro ao atualizar usuário' }
@@ -748,10 +740,10 @@ export const AppProvider = ({ children }) => {
 
   const resetProducts = () => {
     setProducts(sampleProducts)
+    setRequests([])
     localStorage.setItem('products', JSON.stringify(sampleProducts))
     localStorage.setItem('products_global', JSON.stringify(sampleProducts))
     localStorage.removeItem('requests')
-    setRequests([])
   }
 
   const value = {
