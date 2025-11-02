@@ -15,11 +15,14 @@ const Register = () => {
   // Estados para armazenar os dados do formulário
   const [name, setName] = useState('') // Nome do usuário
   const [email, setEmail] = useState('') // Email do usuário
-  const [phone, setPhone] = useState('') // Telefone (opcional)
-  const [cpf, setCpf] = useState('') // CPF do usuário
-  const [cep, setCep] = useState('') // CEP (apenas para doadores)
+
+
+
   const [password, setPassword] = useState('') // Senha do usuário
   const [userType, setUserType] = useState('donatario') // Tipo: donatario ou doador
+  const [birthDate, setBirthDate] = useState('') // Data nascimento (só doador)
+  const [cpf, setCpf] = useState('') // CPF (só doador)
+  const [cep, setCep] = useState('') // CEP (só doador)
 
   // Função que processa o envio do formulário de registro
   const handleSubmit = async (e) => {
@@ -28,12 +31,18 @@ const Register = () => {
     
     // Cria objeto com os dados do usuário no formato esperado pela API
     const usuario = {
-      nome: name, // Nome do usuário
-      email: email, // Email do usuário
-      telefone: phone || '00000000000', // Telefone ou valor padrão se vazio
-      cpf: cpf, // CPF do usuário
-      senha: password, // Senha do usuário
-      nivelAcesso: userType === 'doador' ? 'DOADOR' : 'DONATARIO' // Converte tipo para formato da API
+      nome: name,
+      email: email,
+      senha: password,
+      nivelAcesso: userType === 'doador' ? 'DOADOR' : 'DONATARIO'
+    }
+    
+    // Se for doador, valida campos obrigatórios
+    if (userType === 'doador') {
+      if (!birthDate || !cpf || !cep) {
+        alert('Para doadores, todos os campos são obrigatórios')
+        return
+      }
     }
     
     try {
@@ -49,11 +58,29 @@ const Register = () => {
       console.log('Response status:', response.status)
       
       if (response.ok) {
-        // Se a requisição foi bem-sucedida
-        const newUser = await response.json() // Converte resposta para objeto
-        setCurrentUser(newUser) // Define como usuário atual
-        localStorage.setItem('currentUser', JSON.stringify(newUser)) // Salva no localStorage
-        navigate('/') // Redireciona para a página inicial
+        const newUser = await response.json()
+        
+        // TODO: Implementar CRUD do doador no back-end
+        // Se for doador, criar registro na tabela doador
+        // if (userType === 'doador') {
+        //   const doadorData = {
+        //     nome: name,
+        //     dataNascimento: birthDate,
+        //     cpf: cpf,
+        //     cep: cep,
+        //     usuarioId: newUser.id
+        //   }
+        //   
+        //   const doadorResponse = await fetch('http://localhost:8080/api/v1/doador', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(doadorData)
+        //   })
+        // }
+        
+        setCurrentUser(newUser)
+        sessionStorage.setItem('currentUser', JSON.stringify(newUser))
+        navigate('/')
       } else {
         // Se houve erro na requisição
         const errorData = await response.json() // Tenta obter detalhes do erro
@@ -70,11 +97,11 @@ const Register = () => {
       <div className="login-container">
         <div className="login-form-section">
           <div className="login-header">
-            <button onClick={() => navigate('/login')} style={{background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', marginBottom: '10px', padding: '0'}}>← Voltar</button>
-            <h2>Criar Conta</h2>
+            <button onClick={() => navigate('/login')} style={{background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', marginBottom: '20px', padding: '0'}}>← Voltar</button>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
+            <h2 style={{marginBottom: '20px'}}>Criar Conta</h2>
             <div className="form-group">
               <label>Nome</label>
               <input
@@ -97,58 +124,11 @@ const Register = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label>Telefone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '')
-                  if (value.length <= 11) {
-                    setPhone(value)
-                  }
-                }}
-                placeholder="(11) 99999-9999"
-                maxLength="15"
-              />
-              <small style={{fontSize: '12px', color: '#666', marginTop: '4px', display: 'block'}}>opcional</small>
-            </div>
 
-            <div className="form-group">
-              <label>CPF</label>
-              <input
-                type="text"
-                value={cpf}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '')
-                  if (value.length <= 11) {
-                    setCpf(value)
-                  }
-                }}
-                placeholder="00000000000"
-                maxLength="11"
-                required
-              />
-            </div>
 
-            {userType === 'doador' && (
-              <div className="form-group">
-                <label>CEP</label>
-                <input
-                  type="text"
-                  value={cep}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '')
-                    if (value.length <= 8) {
-                      setCep(value)
-                    }
-                  }}
-                  placeholder="00000000"
-                  maxLength="8"
-                  required
-                />
-              </div>
-            )}
+
+
+
 
             <div className="form-group">
               <label>Senha</label>
@@ -165,6 +145,54 @@ const Register = () => {
                 required
               />
             </div>
+
+            {userType === 'doador' && (
+              <>
+                <div className="form-group">
+                  <label>Data de Nascimento</label>
+                  <input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>CPF</label>
+                  <input
+                    type="text"
+                    value={cpf}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      if (value.length <= 11) {
+                        setCpf(value)
+                      }
+                    }}
+                    placeholder="00000000000"
+                    maxLength="11"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>CEP</label>
+                  <input
+                    type="text"
+                    value={cep}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      if (value.length <= 8) {
+                        setCep(value)
+                      }
+                    }}
+                    placeholder="00000000"
+                    maxLength="8"
+                    required
+                  />
+                </div>
+              </>
+            )}
 
             <div className="form-group">
               <label>Tipo de usuário</label>

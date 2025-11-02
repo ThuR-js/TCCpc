@@ -12,11 +12,10 @@ const AddProduct = () => {
   
   // Estado para armazenar dados do formulário do produto
   const [formData, setFormData] = useState({
-    name: '', // Nome do produto
-    description: '', // Descrição do produto
-    type: '', // Categoria (camiseta, calça, etc.)
-    size: '', // Tamanho (P, M, G ou números para tênis)
-    condition: '', // Condição (novo, seminovo, usado)
+    nome: '', // Nome do anúncio
+    descricao: '', // Descrição do anúncio
+    tamanho: '', // Tamanho (P, M, G ou números para tênis)
+    condicao: '', // Condição (novo, seminovo, usado)
     whatsapp: '' // Número do WhatsApp (opcional)
   })
   
@@ -75,14 +74,20 @@ const AddProduct = () => {
       return
     }
 
-    // Cria objeto do novo produto com todos os dados
+    // Cria objeto do novo anúncio com todos os dados
     const newProduct = {
       ...formData, // Inclui todos os dados do formulário
-      images: imagePreviews, // Array com todas as imagens
-      image: imagePreviews[0], // Primeira imagem como imagem principal
-      donor: currentUser.name || currentUser.nome, // Nome do doador (compatibilidade localStorage/API)
+      caminhoFoto: imagePreviews[0], // Primeira imagem como caminho da foto
+      images: imagePreviews, // Array com todas as imagens (para compatibilidade front-end)
+      image: imagePreviews[0], // Primeira imagem como imagem principal (para compatibilidade front-end)
+      name: formData.nome, // Para compatibilidade com front-end existente
+      description: formData.descricao, // Para compatibilidade com front-end existente
+      size: formData.tamanho, // Para compatibilidade com front-end existente
+      condition: formData.condicao, // Para compatibilidade com front-end existente
+      donor: currentUser.name || currentUser.nome, // Nome do doador
       donorId: currentUser.id, // ID do doador para identificação
-      status: 'pending', // Status inicial: aguardando aprovação do admin
+      statusAnuncio: 'PENDENTE', // Status inicial conforme back-end
+      status: 'pending', // Para compatibilidade com front-end existente
       chatEnabled: true // Habilita chat para este produto
     }
 
@@ -142,8 +147,8 @@ const AddProduct = () => {
               <label>Nome do Produto</label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="nome"
+                value={formData.nome}
                 onChange={handleInputChange}
                 placeholder="Ex: Camiseta Nike"
                 required
@@ -153,8 +158,8 @@ const AddProduct = () => {
             <div className="form-group">
               <label>Descrição</label>
               <textarea
-                name="description"
-                value={formData.description}
+                name="descricao"
+                value={formData.descricao}
                 onChange={handleInputChange}
                 placeholder="Descreva o produto..."
                 rows="4"
@@ -162,33 +167,18 @@ const AddProduct = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label>Categoria</label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Selecione a categoria</option>
-                <option value="camiseta">Camiseta</option>
-                <option value="calca">Calça</option>
-                <option value="moletom">Moletom</option>
-                <option value="shorts">Shorts</option>
-                <option value="tenis">Tênis</option>
-              </select>
-            </div>
+
 
             <div className="form-group">
               <label>Tamanho</label>
               <select
-                name="size"
-                value={formData.size}
+                name="tamanho"
+                value={formData.tamanho}
                 onChange={handleInputChange}
                 required
               >
                 <option value="">Selecione o tamanho</option>
-                {formData.type === 'tenis' ? (
+                {formData.tamanho && formData.nome && formData.nome.toLowerCase().includes('tenis') ? (
                   Array.from({length: 15}, (_, i) => i + 34).map(size => (
                     <option key={size} value={size.toString()}>{size}</option>
                   ))
@@ -207,8 +197,8 @@ const AddProduct = () => {
             <div className="form-group">
               <label>Condição</label>
               <select
-                name="condition"
-                value={formData.condition}
+                name="condicao"
+                value={formData.condicao}
                 onChange={handleInputChange}
                 required
               >

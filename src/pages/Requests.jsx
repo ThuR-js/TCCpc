@@ -59,7 +59,7 @@ const Requests = () => {
         isProductValidation: true,
         product: product
       }))
-    : currentUser?.type === 'doador' 
+    : (currentUser?.nivelAcesso === 'DOADOR' || currentUser?.type === 'doador') 
       ? requests.filter(req => {
           console.log('Checking request for donor:', req.donorId, 'vs current user:', currentUser?.id)
           return req.donorId === currentUser?.id
@@ -147,7 +147,7 @@ const Requests = () => {
                   <div style={{flex: 1}}>
                     <h2 style={{marginBottom: '1rem', color: '#4A230A'}}>{selectedRequest.productName}</h2>
                     <p style={{marginBottom: '0.5rem', color: '#333'}}>
-                      <strong>{currentUser?.isAdmin ? 'Doador:' : currentUser?.type === 'doador' ? 'Interessado:' : 'Você manifestou interesse em:'}</strong> {currentUser?.isAdmin ? selectedRequest.userName : currentUser?.type === 'doador' ? selectedRequest.userName : selectedRequest.productName}
+                      <strong>{currentUser?.isAdmin ? 'Doador:' : (currentUser?.nivelAcesso === 'DOADOR' || currentUser?.type === 'doador') ? 'Interessado:' : 'Você manifestou interesse em:'}</strong> {currentUser?.isAdmin ? selectedRequest.userName : (currentUser?.nivelAcesso === 'DOADOR' || currentUser?.type === 'doador') ? selectedRequest.userName : selectedRequest.productName}
                     </p>
                     {selectedRequest.product && currentUser?.isAdmin && (
                       <>
@@ -180,7 +180,7 @@ const Requests = () => {
                   </div>
                 </div>
               </div>
-              {((currentUser?.type === 'doador' && selectedRequest.status === 'pending') || (currentUser?.isAdmin && selectedRequest.isProductValidation)) && (
+              {(((currentUser?.nivelAcesso === 'DOADOR' || currentUser?.type === 'doador') && selectedRequest.status === 'pending') || (currentUser?.isAdmin && selectedRequest.isProductValidation)) && (
                 <div style={{display: 'flex', gap: '1rem', borderTop: '2px solid #4A230A', paddingTop: '1rem'}}>
                   <button 
                     onClick={() => currentUser?.isAdmin ? approveProduct(selectedRequest.id) : handleApprove(selectedRequest.id)} 

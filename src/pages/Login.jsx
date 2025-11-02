@@ -44,13 +44,40 @@ const Login = () => {
         
         if (user) {
           console.log('User found in API:', user)
-          // Se encontrou o usuário, define como usuário atual
-          setCurrentUser(user)
-          // Salva no sessionStorage para persistir apenas nesta aba
-          sessionStorage.setItem('currentUser', JSON.stringify(user))
-          console.log('User saved to localStorage, navigating to /')
-          // Redireciona para a página inicial
-          navigate('/')
+          
+          // Verificar se a conta está inativa e reativar
+          if (user.statusUsuario === 'INATIVO') {
+            try {
+              const reactivateResponse = await fetch(`http://localhost:8080/api/v1/usuario/${user.id}/reativar`, {
+                method: 'PUT'
+              })
+              
+              if (reactivateResponse.ok) {
+                const reactivatedUser = await reactivateResponse.json()
+                console.log('Account reactivated:', reactivatedUser)
+                setCurrentUser(reactivatedUser)
+                sessionStorage.setItem('currentUser', JSON.stringify(reactivatedUser))
+                alert('Sua conta foi reativada com sucesso!')
+                navigate('/')
+              } else {
+                alert('Erro ao reativar conta')
+              }
+            } catch (error) {
+              console.error('Error reactivating account:', error)
+              alert('Erro ao reativar conta')
+            }
+          } else {
+            // Conta ativa - login normal
+            try {
+              setCurrentUser(user)
+              sessionStorage.setItem('currentUser', JSON.stringify(user))
+              console.log('User saved, navigating to /')
+              navigate('/')
+            } catch (error) {
+              console.error('Error setting user:', error)
+              alert('Erro ao fazer login')
+            }
+          }
         } else {
           // Se não encontrou, mostra erro
           alert('Email ou senha incorretos')

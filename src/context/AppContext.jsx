@@ -706,16 +706,13 @@ export const AppProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
+      // Preserva TODOS os dados existentes e só atualiza os campos enviados
       const fullUserData = {
-        nome: userData.nome,
-        email: currentUser.email,
-        telefone: currentUser.telefone || '00000000000',
-        cpf: currentUser.cpf,
-        senha: currentUser.senha,
-        nivelAcesso: currentUser.nivelAcesso,
-        dataCadastro: currentUser.dataCadastro,
-        statusUsuario: currentUser.statusUsuario || 'ATIVO'
+        ...currentUser, // Mantém todos os dados atuais
+        ...userData     // Sobrescreve apenas os campos enviados
       }
+      
+      console.log('Updating user with data:', fullUserData)
       
       const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
         method: 'PUT',
@@ -726,14 +723,25 @@ export const AppProvider = ({ children }) => {
       })
       
       if (response.ok) {
-        const updatedUser = { ...currentUser, nome: userData.nome, name: userData.nome }
-        setCurrentUser(updatedUser)
-        sessionStorage.setItem('currentUser', JSON.stringify(updatedUser))
+        const updatedUserFromAPI = await response.json()
+        console.log('Updated user from API:', updatedUserFromAPI)
+        
+        // Mescla dados locais com resposta da API
+        const mergedUser = {
+          ...currentUser,
+          ...updatedUserFromAPI,
+          name: updatedUserFromAPI.nome || currentUser.name // Garante compatibilidade
+        }
+        
+        console.log('Final merged user:', mergedUser)
+        setCurrentUser(mergedUser)
+        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
         return { success: true }
       } else {
         return { success: false, error: 'Erro ao atualizar usuário' }
       }
     } catch (error) {
+      console.error('Error updating user:', error)
       return { success: false, error: 'Erro de conexão' }
     }
   }

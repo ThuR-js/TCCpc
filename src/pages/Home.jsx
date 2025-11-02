@@ -267,7 +267,7 @@ const Home = () => {
                   </button>
                 )}
               </div>
-              <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type.charAt(0).toUpperCase() + product.type.slice(1)} • {product.condition}</p>
+              <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
               <div className="product-donor">
                 <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
                 <span>{product.donor}</span>

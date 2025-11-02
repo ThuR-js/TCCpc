@@ -4,10 +4,11 @@ import { useState } from 'react'
 
 const Profile = () => {
   const navigate = useNavigate()
-  const { currentUser, requests, products, updateUser, setProducts, resetProducts } = useApp()
+  const { currentUser, requests, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
   const [isLoading, setIsLoading] = useState(false)
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false)
 
   // Debug: verificar se os dados estão carregando
   console.log('Profile - currentUser:', currentUser)
@@ -42,6 +43,27 @@ const Profile = () => {
       // Dispara evento para atualizar outros componentes
       window.dispatchEvent(new Event('localStorageUpdate'))
     }
+  }
+
+  const handleDeactivateAccount = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}/inativar`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        alert('Conta inativada com sucesso!')
+        setCurrentUser(null)
+        sessionStorage.removeItem('currentUser')
+        navigate('/login')
+      } else {
+        alert('Erro ao inativar conta')
+      }
+    } catch (error) {
+      alert('Erro de conexão')
+    }
+    setShowDeactivateModal(false)
   }
 
 
@@ -190,12 +212,258 @@ const Profile = () => {
               <strong>Data de Registro:</strong>
               <span>{currentUser?.dataCadastro || getRegistrationDate()}</span>
             </div>
+            
+            {/* Campos específicos para doadores */}
+            {(currentUser?.nivelAcesso === 'DOADOR' || currentUser?.type === 'doador') && (
+              <div style={{marginTop: '2rem', padding: '1.5rem', backgroundColor: '#1a1a1a', borderRadius: '12px', border: '2px solid #DFA983'}}>
+                <h4 style={{color: '#DFA983', marginBottom: '1.5rem', fontSize: '18px', fontWeight: '600', textAlign: 'center'}}>Informações de Doador</h4>
+                  
+                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
+                  <strong style={{color: '#fff', fontSize: '14px'}}>CPF (obrigatório):</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
+                      <input 
+                        type="text"
+                        placeholder="00000000000"
+                        maxLength="11"
+                        value={currentUser?.cpfDoador || ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '')
+                          // Atualizar temporáriamente no estado local
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid #ccc',
+                          fontSize: '14px',
+                          width: '150px'
+                        }}
+                      />
+                      <button 
+                        onClick={async () => {
+                          const cpfInput = document.querySelector('input[placeholder="00000000000"]')
+                          const cpf = cpfInput.value.replace(/\D/g, '')
+                          
+                          if (cpf.length !== 11) {
+                            alert('CPF deve ter 11 dígitos')
+                            return
+                          }
+                          
+                          setIsLoading(true)
+                          const result = await updateUser({ cpfDoador: cpf })
+                          if (result.success) {
+                            alert('CPF atualizado com sucesso!')
+                          } else {
+                            alert(result.error || 'Erro ao atualizar CPF')
+                          }
+                          setIsLoading(false)
+                        }}
+                        disabled={isLoading}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                </div>
+                
+                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
+                  <strong style={{color: '#fff', fontSize: '14px'}}>Data de Nascimento (obrigatório):</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
+                      <input 
+                        type="date"
+                        value={currentUser?.dataNascimento || ''}
+                        onChange={(e) => {
+                          // Atualizar temporáriamente no estado local
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid #ccc',
+                          fontSize: '14px',
+                          width: '150px'
+                        }}
+                      />
+                      <button 
+                        onClick={async () => {
+                          const dateInput = document.querySelector('input[type="date"]')
+                          const birthDate = dateInput.value
+                          
+                          if (!birthDate) {
+                            alert('Data de nascimento é obrigatória')
+                            return
+                          }
+                          
+                          setIsLoading(true)
+                          const result = await updateUser({ dataNascimento: birthDate })
+                          if (result.success) {
+                            alert('Data de nascimento atualizada com sucesso!')
+                          } else {
+                            alert(result.error || 'Erro ao atualizar data de nascimento')
+                          }
+                          setIsLoading(false)
+                        }}
+                        disabled={isLoading}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                </div>
+                
+                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
+                  <strong style={{color: '#fff', fontSize: '14px'}}>CEP (obrigatório):</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
+                      <input 
+                        type="text"
+                        placeholder="00000000"
+                        maxLength="8"
+                        value={currentUser?.cep || ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '')
+                          // Atualizar temporáriamente no estado local
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '4px',
+                          border: '1px solid #ccc',
+                          fontSize: '14px',
+                          width: '150px'
+                        }}
+                      />
+                      <button 
+                        onClick={async () => {
+                          const cepInput = document.querySelector('input[placeholder="00000000"]')
+                          const cep = cepInput.value.replace(/\D/g, '')
+                          
+                          if (cep.length !== 8) {
+                            alert('CEP deve ter 8 dígitos')
+                            return
+                          }
+                          
+                          setIsLoading(true)
+                          const result = await updateUser({ cep: cep })
+                          if (result.success) {
+                            alert('CEP atualizado com sucesso!')
+                          } else {
+                            alert(result.error || 'Erro ao atualizar CEP')
+                          }
+                          setIsLoading(false)
+                        }}
+                        disabled={isLoading}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#4CAF50',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                </div>
+                
+                <p style={{color: '#ff9800', fontSize: '13px', marginTop: '1rem', fontStyle: 'italic', textAlign: 'center', backgroundColor: '#2a1a0a', padding: '10px', borderRadius: '6px'}}>
+                  ⚠️ Estes campos são obrigatórios para adicionar produtos como doador
+                </p>
+              </div>
+            )}
             <div className="info-item">
               <strong>Tipo de Conta:</strong>
-              <span>
-                {currentUser?.isAdmin ? 'Administrador' : 
-                 (currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO') ? 'Donatário' : 'Doador'}
-              </span>
+              {currentUser?.isAdmin ? (
+                <span>Administrador</span>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <select 
+                    value={currentUser?.nivelAcesso || (currentUser?.type === 'donatario' ? 'DONATARIO' : 'DOADOR')}
+                    onChange={async (e) => {
+                      const newType = e.target.value
+                      console.log('Current user before change:', currentUser)
+                      setIsLoading(true)
+                      try {
+                        const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            ...currentUser, // Preserva TODOS os campos existentes
+                            nivelAcesso: newType // Só altera o tipo de conta
+                          })
+                        })
+                        
+                        if (response.ok) {
+                          const updatedUser = await response.json()
+                          console.log('Updated user from API:', updatedUser)
+                          
+                          // Garantir que todos os dados sejam preservados
+                          const mergedUser = {
+                            ...currentUser, // Dados atuais
+                            ...updatedUser, // Dados do servidor
+                            nivelAcesso: newType // Garantir o novo tipo
+                          }
+                          
+                          console.log('Merged user:', mergedUser)
+                          setCurrentUser(mergedUser)
+                          sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+                          alert(`Tipo de conta alterado para ${newType === 'DOADOR' ? 'Doador' : 'Donatário'} com sucesso!`)
+                        } else {
+                          alert('Erro ao alterar tipo de conta')
+                        }
+                      } catch (error) {
+                        alert('Erro de conexão')
+                      }
+                      setIsLoading(false)
+                    }}
+                    disabled={isLoading}
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px',
+                      backgroundColor: 'white'
+                    }}
+                  >
+                    <option value="DONATARIO">Donatário</option>
+                    <option value="DOADOR">Doador</option>
+                  </select>
+                  {isLoading && <span style={{fontSize: '12px', color: '#ccc'}}>Salvando...</span>}
+                </div>
+              )}
+            </div>
+            
+            <div className="danger-zone" style={{marginTop: '2rem', padding: '1rem', border: '2px solid #ff4444', borderRadius: '8px', backgroundColor: '#2a1a1a'}}>
+              <h4 style={{color: '#ff4444', marginBottom: '1rem'}}>Zona de Perigo</h4>
+              <p style={{color: '#ccc', marginBottom: '1rem', fontSize: '14px'}}>Inativar sua conta irá desabilitar o acesso. Você pode reativar fazendo login novamente.</p>
+              <button 
+                onClick={() => setShowDeactivateModal(true)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Inativar Conta
+              </button>
             </div>
           </div>
         </div>
@@ -347,6 +615,60 @@ const Profile = () => {
           </div>
         )}
       </div>
+      
+      {showDeactivateModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: '#2a2a2a',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            textAlign: 'center'
+          }}>
+            <h3 style={{color: '#ff4444', marginBottom: '1rem'}}>Confirmar Inativação</h3>
+            <p style={{color: '#ccc', marginBottom: '2rem'}}>Tem certeza que deseja inativar sua conta? Você pode reativar fazendo login novamente.</p>
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
+              <button 
+                onClick={handleDeactivateAccount}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Sim, Inativar
+              </button>
+              <button 
+                onClick={() => setShowDeactivateModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
