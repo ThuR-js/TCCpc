@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import ProductCarousel from '../components/ProductCarousel'
 
 // Componente principal da página inicial
 const Home = () => {
@@ -148,38 +149,11 @@ const Home = () => {
     <div className="container">
       <div className="recent-section">
         <h2 className="section-title">Recém-publicados</h2>
-        <div className="recent-grid">
-          {currentUser && (currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
-            <div className="recent-card add-product-card" onClick={() => navigate('/add-product')}>
-              <div className="add-product-icon">+</div>
-              <div className="product-info">
-                <h3 className="product-name">Adicionar Produto</h3>
-                <p className="product-details">Clique para adicionar um novo item</p>
-              </div>
-            </div>
-          )}
-          {products.filter(product => product.status === 'available').slice(0, 6).map(product => (
-            <div key={product.id} className="recent-card" onClick={() => navigate(`/product/${product.id}`)}>
-              <img 
-                src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
-                alt={product.name} 
-                className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
-                onError={(e) => {
-                  e.target.src = '/images/placeholder.jpg'
-                  e.target.onerror = null
-                }}
-              />
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-details">{product.size} • {product.condition}</p>
-                <div className="product-donor">
-                  <img src="/images/avatar2.webp" alt="Avatar" className="donor-avatar" />
-                  <span>{product.donor}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ProductCarousel 
+          products={products.filter(product => product.status === 'available').slice(0, 6)} 
+          showAddCard={true} 
+          currentUser={currentUser}
+        />
       </div>
       
       <div className="categories-section">
@@ -223,14 +197,34 @@ const Home = () => {
         </select>
         <select value={filters.size} onChange={(e) => setFilters({...filters, size: e.target.value})}>
           <option value="">Todos os tamanhos</option>
-          <option value="34">34</option>
-          <option value="36">36</option>
-          <option value="38">38</option>
-          <option value="40">40</option>
-          <option value="42">42</option>
-          <option value="44">44</option>
-          <option value="46">46</option>
-          <option value="48">48</option>
+          {filters.type === 'tenis' ? (
+            <>
+              <option value="34">34</option>
+              <option value="35">35</option>
+              <option value="36">36</option>
+              <option value="37">37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="40">40</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44</option>
+              <option value="45">45</option>
+              <option value="46">46</option>
+              <option value="47">47</option>
+              <option value="48">48</option>
+            </>
+          ) : (
+            <>
+              <option value="PP">PP</option>
+              <option value="P">P</option>
+              <option value="M">M</option>
+              <option value="G">G</option>
+              <option value="GG">GG</option>
+              <option value="XG">XG</option>
+            </>
+          )}
         </select>
         <select value={filters.condition} onChange={(e) => setFilters({...filters, condition: e.target.value})}>
           <option value="">Todas as condições</option>
