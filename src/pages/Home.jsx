@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import ProductCarousel from '../components/ProductCarousel'
-import HeroBanner from '../components/HeroBanner'
 
 // Componente principal da página inicial
 const Home = () => {
@@ -148,7 +147,14 @@ const Home = () => {
 
   return (
     <div className="container">
-      <HeroBanner products={products.filter(product => product.status === 'available')} />
+      <div className="recent-section">
+        <h2 className="section-title">Recém-publicados</h2>
+        <ProductCarousel 
+          products={products.filter(product => product.status === 'available').slice(0, 6)} 
+          showAddCard={true} 
+          currentUser={currentUser}
+        />
+      </div>
       
       <div className="categories-section">
         <h2 className="section-title">Para você</h2>

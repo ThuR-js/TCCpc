@@ -4,16 +4,17 @@ import { useApp } from '../context/AppContext'
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate()
-  const { currentUser, authChecked } = useApp()
+  const { currentUser } = useApp()
 
   useEffect(() => {
-    if (authChecked && !currentUser) {
+    if (!currentUser) {
       navigate('/login')
     }
-  }, [currentUser, authChecked, navigate])
+  }, [currentUser, navigate])
 
-  if (!authChecked) return null
-  if (!currentUser) return null
+  if (!currentUser) {
+    return null
+  }
 
   return children
 }

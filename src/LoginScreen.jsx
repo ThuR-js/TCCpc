@@ -8,7 +8,7 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onLogin(email, password, rememberMe)
+    onLogin(email, password)
   }
 
   return (
@@ -39,6 +39,7 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Digite sua senha"
+                maxLength="6"
                 required
               />
             </div>
