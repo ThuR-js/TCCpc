@@ -18,17 +18,32 @@ const Register = () => {
 
 
 
-  const [password, setPassword] = useState('') // Senha do usuário
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [userType, setUserType] = useState('donatario') // Tipo: donatario ou doador
   const [birthDate, setBirthDate] = useState('') // Data nascimento (só doador)
   const [cpf, setCpf] = useState('') // CPF (só doador)
   const [cep, setCep] = useState('') // CEP (só doador)
+
+  const validatePassword = (value) => {
+    if (value.length < 8) return 'A senha deve ter no mínimo 8 caracteres.'
+    if (!/[A-Z]/.test(value)) return 'A senha deve conter pelo menos uma letra maiúscula.'
+    if (!/[0-9]/.test(value)) return 'A senha deve conter pelo menos um número.'
+    if (!/[^A-Za-z0-9]/.test(value)) return 'A senha deve conter pelo menos um caractere especial.'
+    return ''
+  }
 
   // Função que processa o envio do formulário de registro
   const handleSubmit = async (e) => {
     // Previne o comportamento padrão do formulário (recarregar a página)
     e.preventDefault()
     
+    const error = validatePassword(password)
+    if (error) {
+      setPasswordError(error)
+      return
+    }
+
     // Cria objeto com os dados do usuário no formato esperado pela API
     const usuario = {
       nome: name,
@@ -136,14 +151,15 @@ const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => {
-                  if (e.target.value.length <= 6) {
-                    setPassword(e.target.value)
-                  }
+                  setPassword(e.target.value)
+                  setPasswordError(validatePassword(e.target.value))
                 }}
-                placeholder="Digite sua senha (máx 6 dígitos)"
-                maxLength="6"
+                placeholder="Mín. 8 caracteres, maiúscula, número e especial"
                 required
               />
+              {passwordError && (
+                <p style={{ color: '#e53e3e', fontSize: '13px', marginTop: '4px' }}>{passwordError}</p>
+              )}
             </div>
 
             {userType === 'doador' && (

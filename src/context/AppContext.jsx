@@ -15,6 +15,7 @@ export const AppProvider = ({ children }) => {
     const savedUser = sessionStorage.getItem('currentUser')
     return savedUser ? JSON.parse(savedUser) : null
   })
+  const [authChecked, setAuthChecked] = useState(false)
   const [products, setProducts] = useState([])
   const [favorites, setFavorites] = useState([1, 4])
   const [searchTerm, setSearchTerm] = useState('')
@@ -606,6 +607,28 @@ export const AppProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    const checkRememberToken = async () => {
+      if (currentUser) { setAuthChecked(true); return }
+      const token = localStorage.getItem('rememberToken')
+      if (!token) { setAuthChecked(true); return }
+      try {
+        const res = await fetch(`http://localhost:8080/auth/remember-token/${token}`)
+        if (res.ok) {
+          const user = await res.json()
+          setCurrentUser(user)
+          sessionStorage.setItem('currentUser', JSON.stringify(user))
+        } else {
+          localStorage.removeItem('rememberToken')
+        }
+      } catch (e) {
+        console.error('Erro ao validar remember token:', e)
+      }
+      setAuthChecked(true)
+    }
+    checkRememberToken()
+  }, [])
+
+  useEffect(() => {
     loadFromStorage()
     
     // Listener para mudanças no localStorage entre abas
@@ -757,6 +780,7 @@ export const AppProvider = ({ children }) => {
   const value = {
     currentUser,
     setCurrentUser,
+    authChecked,
     products,
     setProducts,
     favorites,

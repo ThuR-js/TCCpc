@@ -11,7 +11,7 @@ const Login = () => {
   const { setCurrentUser } = useApp()
 
   // Função que processa o login do usuário
-  const handleInitialLogin = async (email, password) => {
+  const handleInitialLogin = async (email, password, rememberMe = false) => {
     console.log('Login attempt:', email)
     // Verificação especial para conta de administrador (hardcoded)
     if (email === 'admin@doeconect.com' && password === 'admin1') {
@@ -20,15 +20,10 @@ const Login = () => {
         id: 999,
         name: 'Administrador',
         email: 'admin@doeconect.com',
-        isAdmin: true // Flag que identifica como admin
+        isAdmin: true
       }
-      console.log('Admin login successful, setting user:', adminUser)
-      // Define o usuário atual no contexto global
       setCurrentUser(adminUser)
-      // Salva no sessionStorage para persistir apenas nesta aba
       sessionStorage.setItem('currentUser', JSON.stringify(adminUser))
-      console.log('Navigating to /')
-      // Redireciona para a página inicial
       navigate('/')
       return
     }
@@ -43,7 +38,26 @@ const Login = () => {
         const user = users.find(u => u.email === email && u.senha === password)
         
         if (user) {
-          console.log('User found in API:', user)
+          const saveSession = async (loggedUser) => {
+            if (rememberMe && loggedUser.id) {
+              try {
+                const res = await fetch('http://localhost:8080/auth/remember-token', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: String(loggedUser.id) })
+                })
+                if (res.ok) {
+                  const { token } = await res.json()
+                  localStorage.setItem('rememberToken', token)
+                }
+              } catch (e) {
+                console.error('Erro ao salvar remember token:', e)
+              }
+            }
+            setCurrentUser(loggedUser)
+            sessionStorage.setItem('currentUser', JSON.stringify(loggedUser))
+            navigate('/')
+          }
           
           // Verificar se a conta está inativa e reativar
           if (user.statusUsuario === 'INATIVO') {
@@ -51,32 +65,18 @@ const Login = () => {
               const reactivateResponse = await fetch(`http://localhost:8080/api/v1/usuario/${user.id}/reativar`, {
                 method: 'PUT'
               })
-              
               if (reactivateResponse.ok) {
                 const reactivatedUser = await reactivateResponse.json()
-                console.log('Account reactivated:', reactivatedUser)
-                setCurrentUser(reactivatedUser)
-                sessionStorage.setItem('currentUser', JSON.stringify(reactivatedUser))
+                await saveSession(reactivatedUser)
                 alert('Sua conta foi reativada com sucesso!')
-                navigate('/')
               } else {
                 alert('Erro ao reativar conta')
               }
             } catch (error) {
-              console.error('Error reactivating account:', error)
               alert('Erro ao reativar conta')
             }
           } else {
-            // Conta ativa - login normal
-            try {
-              setCurrentUser(user)
-              sessionStorage.setItem('currentUser', JSON.stringify(user))
-              console.log('User saved, navigating to /')
-              navigate('/')
-            } catch (error) {
-              console.error('Error setting user:', error)
-              alert('Erro ao fazer login')
-            }
+            await saveSession(user)
           }
         } else {
           // Se não encontrou, mostra erro
