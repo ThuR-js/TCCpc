@@ -32,7 +32,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 20px;
+    padding: 1.6rem 20px;
     gap: 2rem;
 }
 
@@ -81,6 +81,7 @@ body {
     color: white !important;
     background: none;
     border: none;
+    font-size: 1.1rem;
     font-weight: 500;
     cursor: pointer;
     transition: color 0.3s;
