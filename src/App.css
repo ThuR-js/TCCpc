@@ -10,12 +10,14 @@ body {
     background-color: #FEFEFE;
     color: black;
     line-height: 1.6;
+    overflow-x: hidden;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 2rem 20px 0 20px;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -26,14 +28,17 @@ body {
     top: 0;
     width: 100%;
     z-index: 1000;
+    overflow: visible;
 }
 
 .header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.6rem 20px;
+    padding: 1.2rem 20px;
     gap: 2rem;
+    overflow: visible;
+    position: relative;
 }
 
 .header-search {
@@ -93,14 +98,15 @@ body {
 
 /* Main Content */
 .main {
-    margin-top: 80px;
-    min-height: calc(100vh - 80px);
-    padding: 2rem 0;
+    margin-top: 0;
+    min-height: 100vh;
+    padding: 0;
 }
 
 /* Recent Products Section */
 .recent-section {
     margin-bottom: 4rem;
+    overflow: hidden;
 }
 
 .section-title {
@@ -115,7 +121,9 @@ body {
     display: flex;
     gap: 1rem;
     overflow-x: auto;
+    overflow-y: hidden;
     padding-bottom: 1rem;
+    max-width: 100%;
 }
 
 .recent-card {
@@ -765,12 +773,13 @@ button[type="submit"]:hover {
     position: relative;
     display: inline-block;
     margin-left: 1rem;
+    z-index: 10000;
 }
 
 .menu-trigger {
     background: none;
     border: none;
-    color: black;
+    color: white;
     font-size: 20px;
     cursor: pointer;
     padding: 0.5rem;
@@ -784,42 +793,58 @@ button[type="submit"]:hover {
 
 .menu-dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     right: 0;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    min-width: 150px;
-    z-index: 1000;
-    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    min-width: 180px;
+    z-index: 9999;
+    overflow: visible;
+    border: 1px solid rgba(0,0,0,0.1);
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+.user-menu:hover .menu-dropdown,
+.menu-dropdown:hover,
+.menu-dropdown.show {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .menu-dropdown a {
     display: block;
     padding: 0.75rem 1rem;
-    color: #333;
+    color: #333 !important;
     text-decoration: none;
     border-bottom: 1px solid #eee;
     transition: background-color 0.3s;
+    white-space: nowrap;
 }
 
 .menu-dropdown a:last-child {
     border-bottom: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.menu-dropdown a:first-child {
+    border-radius: 8px 8px 0 0;
 }
 
 .menu-dropdown a:hover {
-    background-color: #4A230A;
-    color: white;
-    transform: translateX(5px);
+    background-color: #e8c39e;
+    color: white !important;
 }
 
 .menu-dropdown a:last-child:hover {
-    background-color: rgb(139, 0, 0);
-    color: white;
-}
-
-.nav .menu-dropdown a {
-    color: black !important;
+    background-color: #e8c39e;
+    color: white !important;
 }
 
 /* Product Bottom */

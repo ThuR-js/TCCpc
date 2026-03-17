@@ -2,16 +2,21 @@
   position: relative;
   width: 100%;
   padding: 0 50px;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .carousel-track {
   display: flex;
   gap: 1rem;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-behavior: smooth;
   padding-bottom: 1rem;
   cursor: grab;
   user-select: none;
+  width: 100%;
+  max-width: 100%;
 }
 
 .carousel-track:active {

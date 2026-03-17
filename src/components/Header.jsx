@@ -1,11 +1,13 @@
 // Importações necessárias para navegação e contexto
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { useEffect, useRef } from 'react'
 
 // Componente do cabeçalho da aplicação
 const Header = () => {
   // Hook para navegação entre páginas
   const navigate = useNavigate()
+  const dropdownRef = useRef(null)
   
   // Desestruturação do contexto global
   const { 
@@ -17,6 +19,20 @@ const Header = () => {
     showDropdown, // Estado do menu dropdown
     setShowDropdown // Função para controlar dropdown
   } = useApp()
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [setShowDropdown])
 
   return (
     <header className="header">
@@ -39,17 +55,19 @@ const Header = () => {
               <button onClick={() => navigate('/')}>Início</button>
               <button onClick={() => navigate('/profile')}>Perfil</button>
               {currentUser.isGuest ? (
-                <div className="user-menu">
+                <div className="user-menu" ref={dropdownRef}>
                   <button onClick={() => setShowDropdown(!showDropdown)} className="menu-trigger">
                     ⋮
                   </button>
                   {showDropdown && (
-                    <div className="menu-dropdown">
-                      <a href="#" onClick={() => {
+                    <div className="menu-dropdown show">
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         navigate('/login');
                         setShowDropdown(false);
                       }}>Entrar</a>
-                      <a href="#" onClick={() => {
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         navigate('/register');
                         setShowDropdown(false);
                       }}>Cadastrar</a>
@@ -57,31 +75,36 @@ const Header = () => {
                   )}
                 </div>
               ) : (
-                <div className="user-menu">
+                <div className="user-menu" ref={dropdownRef}>
                   <button onClick={() => setShowDropdown(!showDropdown)} className="menu-trigger">
                     ⋮
                   </button>
                   {showDropdown && (
-                    <div className="menu-dropdown">
-                      <a href="#" onClick={() => {
+                    <div className="menu-dropdown show">
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         navigate('/chat');
                         setShowDropdown(false);
                       }}>Chats</a>
-                      <a href="#" onClick={() => {
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         navigate('/favorites');
                         setShowDropdown(false);
                       }}>Favoritos ({favorites.length})</a>
-                      <a href="#" onClick={() => {
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         navigate('/requests');
                         setShowDropdown(false);
                       }}>Solicitações</a>
                       {(currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
-                        <a href="#" onClick={() => {
+                        <a href="#" onClick={(e) => {
+                          e.preventDefault();
                           navigate('/add-product');
                           setShowDropdown(false);
                         }}>Adicionar Produto</a>
                       )}
-                      <a href="#" onClick={() => {
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
                         sessionStorage.removeItem('currentUser');
                         setCurrentUser(null);
                         navigate('/login');
