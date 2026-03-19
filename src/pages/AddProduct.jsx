@@ -2,6 +2,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { ProductService } from '../services'
+import { useApiState, useFormValidation } from '../hooks'
+import { isValidImageType, isValidFileSize } from '../utils'
 
 // Componente para adicionar novos produtos (apenas doadores)
 const AddProduct = () => {
@@ -9,15 +12,24 @@ const AddProduct = () => {
   const navigate = useNavigate()
   // Acessa função de adicionar produto e usuário atual do contexto
   const { addProduct, currentUser } = useApp()
+  const { loading, error, execute } = useApiState()
   
-  // Estado para armazenar dados do formulário do produto
-  const [formData, setFormData] = useState({
-    nome: '', // Nome do anúncio
-    descricao: '', // Descrição do anúncio
-    tamanho: '', // Tamanho (P, M, G ou números para tênis)
-    condicao: '', // Condição (novo, seminovo, usado)
-    whatsapp: '' // Número do WhatsApp (opcional)
-  })
+  // Validação do formulário
+  const { values: formData, errors, setValue, validate, setValues } = useFormValidation(
+    {
+      nome: '',
+      descricao: '',
+      tamanho: '',
+      condicao: '',
+      whatsapp: ''
+    },
+    {
+      nome: { required: true, minLength: 3 },
+      descricao: { required: true, minLength: 10 },
+      tamanho: { required: true },
+      condicao: { required: true }
+    }
+  )
   
   // Estados para gerenciar as imagens do produto
   const [images, setImages] = useState([]) // Arquivos de imagem originais
@@ -25,15 +37,12 @@ const AddProduct = () => {
 
   // Função para atualizar dados do formulário quando usuário digita
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData, // Mantém os dados existentes
-      [e.target.name]: e.target.value // Atualiza apenas o campo que foi modificado
-    })
+    setValue(e.target.name, e.target.value)
   }
 
   // Função para processar seleção de imagens
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files) // Converte FileList para array
+    const files = Array.from(e.target.files)
     
     // Verifica limite máximo de 5 imagens
     if (files.length + images.length > 5) {
@@ -41,17 +50,26 @@ const AddProduct = () => {
       return
     }
 
-    // Adiciona novos arquivos à lista existente
+    // Validação de tipo e tamanho de arquivo
+    for (const file of files) {
+      if (!isValidImageType(file)) {
+        alert('Apenas imagens JPG, PNG e WEBP são permitidas')
+        return
+      }
+      if (!isValidFileSize(file, 5)) {
+        alert('Cada imagem deve ter no máximo 5MB')
+        return
+      }
+    }
+
     setImages([...images, ...files])
     
-    // Cria previews das imagens para mostrar na tela
     files.forEach(file => {
-      const reader = new FileReader() // Leitor de arquivos
+      const reader = new FileReader()
       reader.onload = (e) => {
-        // Quando a leitura terminar, adiciona a URL do preview
         setImagePreviews(prev => [...prev, e.target.result])
       }
-      reader.readAsDataURL(file) // Lê o arquivo como URL de dados (base64)
+      reader.readAsDataURL(file)
     })
   }
 
@@ -64,42 +82,49 @@ const AddProduct = () => {
   }
 
   // Função para processar envio do formulário de novo produto
-  const handleSubmit = (e) => {
-    // Previne comportamento padrão do formulário
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validação: pelo menos uma imagem é obrigatória
+    if (!validate()) {
+      alert('Preencha todos os campos obrigatórios corretamente')
+      return
+    }
+    
     if (images.length === 0) {
       alert('Adicione pelo menos uma imagem')
       return
     }
 
-    // Cria objeto do novo anúncio com todos os dados
     const newProduct = {
-      ...formData, // Inclui todos os dados do formulário
-      caminhoFoto: imagePreviews[0], // Primeira imagem como caminho da foto
-      images: imagePreviews, // Array com todas as imagens (para compatibilidade front-end)
-      image: imagePreviews[0], // Primeira imagem como imagem principal (para compatibilidade front-end)
-      name: formData.nome, // Para compatibilidade com front-end existente
-      description: formData.descricao, // Para compatibilidade com front-end existente
-      size: formData.tamanho, // Para compatibilidade com front-end existente
-      condition: formData.condicao, // Para compatibilidade com front-end existente
-      donor: currentUser.name || currentUser.nome, // Nome do doador
-      donorId: currentUser.id, // ID do doador para identificação
-      statusAnuncio: 'PENDENTE', // Status inicial conforme back-end
-      status: 'pending', // Para compatibilidade com front-end existente
-      chatEnabled: true // Habilita chat para este produto
+      ...formData,
+      caminhoFoto: imagePreviews[0],
+      images: imagePreviews,
+      image: imagePreviews[0],
+      name: formData.nome,
+      description: formData.descricao,
+      size: formData.tamanho,
+      condition: formData.condicao,
+      donor: currentUser.name || currentUser.nome,
+      donorId: currentUser.id,
+      statusAnuncio: 'PENDENTE',
+      status: 'pending',
+      chatEnabled: true
     }
 
-    // Logs para debug
-    console.log('Criando produto:', newProduct)
-    // Adiciona o produto à lista global
-    addProduct(newProduct)
-    console.log('Produto adicionado')
-    
-    // Notifica o usuário e redireciona
-    alert('Produto enviado para análise! Aguarde a aprovação do administrador.')
-    navigate('/') // Volta para a página inicial
+    try {
+      await execute(async () => {
+        // TODO: Quando API de produtos estiver pronta, usar:
+        // await ProductService.create(newProduct)
+        
+        // Por enquanto, usa o método local
+        addProduct(newProduct)
+      })
+      
+      alert('Produto enviado para análise! Aguarde a aprovação do administrador.')
+      navigate('/')
+    } catch (error) {
+      alert('Erro ao criar produto: ' + error.message)
+    }
   }
 
   return (
@@ -153,6 +178,7 @@ const AddProduct = () => {
                 placeholder="Ex: Camiseta Nike"
                 required
               />
+              {errors.nome && <span className="error-message">{errors.nome}</span>}
             </div>
 
             <div className="form-group">
@@ -165,6 +191,7 @@ const AddProduct = () => {
                 rows="4"
                 required
               />
+              {errors.descricao && <span className="error-message">{errors.descricao}</span>}
             </div>
 
 
@@ -178,7 +205,7 @@ const AddProduct = () => {
                 required
               >
                 <option value="">Selecione o tamanho</option>
-                {formData.tamanho && formData.nome && formData.nome.toLowerCase().includes('tenis') ? (
+                {formData.nome && formData.nome.toLowerCase().includes('tenis') ? (
                   Array.from({length: 15}, (_, i) => i + 34).map(size => (
                     <option key={size} value={size.toString()}>{size}</option>
                   ))
@@ -192,6 +219,7 @@ const AddProduct = () => {
                   </>
                 )}
               </select>
+              {errors.tamanho && <span className="error-message">{errors.tamanho}</span>}
             </div>
 
             <div className="form-group">
@@ -207,6 +235,7 @@ const AddProduct = () => {
                 <option value="seminovo">Seminovo</option>
                 <option value="usado">Usado</option>
               </select>
+              {errors.condicao && <span className="error-message">{errors.condicao}</span>}
             </div>
 
             <div className="form-group">
@@ -220,9 +249,15 @@ const AddProduct = () => {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{width: '100%', padding: '1rem'}}>
-              Adicionar Produto
+            <button type="submit" className="btn btn-primary" style={{width: '100%', padding: '1rem'}} disabled={loading}>
+              {loading ? 'Adicionando...' : 'Adicionar Produto'}
             </button>
+            
+            {error && (
+              <div className="error-message" style={{marginTop: '1rem', textAlign: 'center', color: '#ff4444'}}>
+                {error}
+              </div>
+            )}
           </form>
         </div>
       </div>

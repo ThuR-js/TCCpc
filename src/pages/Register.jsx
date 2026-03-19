@@ -2,8 +2,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { apiRequest, API_CONFIG } from '../api'
 import '../LoginScreen.css'
-import './Register.css'
+import './Register_new.css'
 
 // Componente de registro de novos usuários
 const Register = () => {
@@ -49,43 +50,31 @@ const Register = () => {
       // Log para debug - mostra os dados que serão enviados
       console.log('Enviando dados:', usuario)
       // Faz requisição POST para a API de criação de usuários
-      const response = await fetch('http://localhost:8080/api/v1/usuario', {
-        method: 'POST', // Método HTTP POST
-        headers: { 'Content-Type': 'application/json' }, // Especifica que está enviando JSON
-        body: JSON.stringify(usuario) // Converte objeto para JSON
+      const newUser = await apiRequest(API_CONFIG.ENDPOINTS.USUARIO, {
+        method: 'POST',
+        body: JSON.stringify(usuario)
       })
-      // Log para debug - mostra o status da resposta
-      console.log('Response status:', response.status)
       
-      if (response.ok) {
-        const newUser = await response.json()
-        
-        // TODO: Implementar CRUD do doador no back-end
-        // Se for doador, criar registro na tabela doador
-        // if (userType === 'doador') {
-        //   const doadorData = {
-        //     nome: name,
-        //     dataNascimento: birthDate,
-        //     cpf: cpf,
-        //     cep: cep,
-        //     usuarioId: newUser.id
-        //   }
-        //   
-        //   const doadorResponse = await fetch('http://localhost:8080/api/v1/doador', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(doadorData)
-        //   })
-        // }
-        
-        setCurrentUser(newUser)
-        sessionStorage.setItem('currentUser', JSON.stringify(newUser))
-        navigate('/')
-      } else {
-        // Se houve erro na requisição
-        const errorData = await response.json() // Tenta obter detalhes do erro
-        alert('Erro: ' + (errorData.message || 'Erro ao criar usuário')) // Mostra erro
-      }
+      // TODO: Implementar CRUD do doador no back-end
+      // Se for doador, criar registro na tabela doador
+      // if (userType === 'doador') {
+      //   const doadorData = {
+      //     nome: name,
+      //     dataNascimento: birthDate,
+      //     cpf: cpf,
+      //     cep: cep,
+      //     usuarioId: newUser.id
+      //   }
+      //   
+      //   const doadorResponse = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
+      //     method: 'POST',
+      //     body: JSON.stringify(doadorData)
+      //   })
+      // }
+      
+      setCurrentUser(newUser)
+      sessionStorage.setItem('currentUser', JSON.stringify(newUser))
+      navigate('/')
     } catch (error) {
       // Se houve erro de conexão
       alert('Erro de conexão')
@@ -96,10 +85,6 @@ const Register = () => {
     <div className="login-screen">
       <div className="login-container">
         <div className="login-form-section">
-          <div className="login-header">
-            <button onClick={() => navigate('/login')} style={{background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', fontSize: '14px', marginBottom: '20px', padding: '0'}}>← Voltar</button>
-          </div>
-
           <form onSubmit={handleSubmit} className="login-form">
             <h2 style={{marginBottom: '20px'}}>Criar Conta</h2>
             <div className="form-group">
@@ -220,7 +205,19 @@ const Register = () => {
         <div className="login-illustration-section">
           <div className="illustration-container">
             <div className="company-logo">
-              <img src="/logo-doeconect.jpeg" alt="DoeConect+" className="logo-image" />
+              <img 
+                src="/logo-doeconect.jpg" 
+                alt="DoeConect+" 
+                className="logo-image"
+                onError={(e) => {
+                  console.log('Erro ao carregar logo, tentando .jpeg')
+                  e.target.src = '/logo-doeconect.jpeg'
+                  e.target.onerror = () => {
+                    console.log('Logo não encontrada')
+                    e.target.style.display = 'none'
+                  }
+                }}
+              />
             </div>
           </div>
         </div>

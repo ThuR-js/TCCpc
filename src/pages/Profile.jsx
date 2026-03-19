@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useState } from 'react'
+import { apiRequest, API_CONFIG } from '../api'
 
 const Profile = () => {
   const navigate = useNavigate()
@@ -54,19 +55,14 @@ const Profile = () => {
 
   const handleDeactivateAccount = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}/inativar`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}/inativar`, {
+        method: 'PUT'
       })
       
-      if (response.ok) {
-        alert('Conta inativada com sucesso!')
-        setCurrentUser(null)
-        sessionStorage.removeItem('currentUser')
-        navigate('/login')
-      } else {
-        alert('Erro ao inativar conta')
-      }
+      alert('Conta inativada com sucesso!')
+      setCurrentUser(null)
+      sessionStorage.removeItem('currentUser')
+      navigate('/login')
     } catch (error) {
       alert('Erro de conexão')
     }
@@ -236,28 +232,22 @@ const Profile = () => {
                       console.log('Current user before change:', currentUser)
                       setIsLoading(true)
                       try {
-                        const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
+                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
                           method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
                             ...currentUser,
                             nivelAcesso: newType
                           })
                         })
                         
-                        if (response.ok) {
-                          const updatedUser = await response.json()
-                          const mergedUser = {
-                            ...currentUser,
-                            ...updatedUser,
-                            nivelAcesso: newType
-                          }
-                          setCurrentUser(mergedUser)
-                          sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
-                          alert(`Tipo de conta alterado para ${newType === 'DOADOR' ? 'Doador' : 'Donatário'} com sucesso!`)
-                        } else {
-                          alert('Erro ao alterar tipo de conta')
+                        const mergedUser = {
+                          ...currentUser,
+                          ...updatedUser,
+                          nivelAcesso: newType
                         }
+                        setCurrentUser(mergedUser)
+                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+                        alert(`Tipo de conta alterado para ${newType === 'DOADOR' ? 'Doador' : 'Donatário'} com sucesso!`)
                       } catch (error) {
                         alert('Erro de conexão')
                       }
@@ -415,9 +405,8 @@ const Profile = () => {
                       
                       setIsLoading(true)
                       try {
-                        const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
+                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
                           method: 'PUT',
-                          headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
                             ...currentUser,
                             nivelAcesso: 'DOADOR',
@@ -427,36 +416,30 @@ const Profile = () => {
                           })
                         })
                         
-                        if (response.ok) {
-                          const updatedUser = await response.json()
-                          const mergedUser = {
-                            ...currentUser,
-                            ...updatedUser,
-                            nivelAcesso: 'DOADOR',
-                            cpf: doadorCpf,
-                            dataNascimento: doadorDataNasc,
-                            cep: doadorCep
-                          }
-                          setCurrentUser(mergedUser)
-                          sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
-                          setShowDoadorForm(false)
-                          
-                          // TODO: Quando CRUD Doador estiver pronto, criar registro:
-                          // await fetch('http://localhost:8080/api/v1/doador', {
-                          //   method: 'POST',
-                          //   headers: { 'Content-Type': 'application/json' },
-                          //   body: JSON.stringify({
-                          //     cpf: doadorCpf,
-                          //     dataNascimento: doadorDataNasc,
-                          //     cep: doadorCep,
-                          //     usuarioId: currentUser.id
-                          //   })
-                          // })
-                          
-                          alert('Conta alterada para Doador com sucesso!')
-                        } else {
-                          alert('Erro ao alterar tipo de conta')
+                        const mergedUser = {
+                          ...currentUser,
+                          ...updatedUser,
+                          nivelAcesso: 'DOADOR',
+                          cpf: doadorCpf,
+                          dataNascimento: doadorDataNasc,
+                          cep: doadorCep
                         }
+                        setCurrentUser(mergedUser)
+                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+                        setShowDoadorForm(false)
+                        
+                        // TODO: Quando CRUD Doador estiver pronto, criar registro:
+                        // await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
+                        //   method: 'POST',
+                        //   body: JSON.stringify({
+                        //     cpf: doadorCpf,
+                        //     dataNascimento: doadorDataNasc,
+                        //     cep: doadorCep,
+                        //     usuarioId: currentUser.id
+                        //   })
+                        // })
+                        
+                        alert('Conta alterada para Doador com sucesso!')
                       } catch (error) {
                         alert('Erro de conexão')
                       }

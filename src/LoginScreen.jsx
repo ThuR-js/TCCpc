@@ -5,6 +5,7 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -14,10 +15,32 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
   return (
     <div className="login-screen">
       <div className="login-container">
+        {/* Lado Esquerdo - Branco com Logo */}
+        <div className="login-illustration-section">
+          <div className="illustration-container">
+            <div className="company-logo">
+              <img 
+                src="/logo-doeconect.jpg" 
+                alt="DoeConect+" 
+                className="logo-image"
+                onError={(e) => {
+                  console.log('Erro ao carregar logo, tentando .jpeg')
+                  e.target.src = '/logo-doeconect.jpeg'
+                  e.target.onerror = () => {
+                    console.log('Logo não encontrada')
+                    e.target.style.display = 'none'
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Lado Direito - Marrom com Login */}
         <div className="login-form-section">
           <div className="login-header">
-            <h2>Entrar</h2>
-            <p>Não tem uma conta? <a href="/register">Cadastre-se agora</a></p>
+            <h2>Login</h2>
+            <p>Não tem uma conta? <a href="/register">Criar minha conta</a></p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -27,21 +50,30 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
+                placeholder="E-mail"
                 required
               />
             </div>
 
             <div className="form-group">
               <label>🔒 Senha</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Digite sua senha"
-                maxLength="6"
-                required
-              />
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Senha"
+                  maxLength="6"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  👁
+                </button>
+              </div>
             </div>
 
             <div className="form-options">
@@ -53,6 +85,7 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
                 />
                 Lembrar de mim
               </label>
+              <a href="#" className="forgot-password-link">Esqueci minha senha</a>
             </div>
 
             <button type="submit" className="login-btn">Entrar</button>
@@ -68,14 +101,6 @@ function LoginScreen({ onLogin, onContinueWithoutLogin }) {
             <p>Copyright © 2025 DoeConect+. Todos os direitos reservados.</p>
             <div className="footer-links">
               <a href="#">Termos de Serviço</a> | <a href="#">Política de Privacidade</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="login-illustration-section">
-          <div className="illustration-container">
-            <div className="company-logo">
-              <img src="/logo-doeconect.jpeg" alt="DoeConect+" className="logo-image" />
             </div>
           </div>
         </div>

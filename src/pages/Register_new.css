@@ -1,84 +1,85 @@
 /* Ajustes para a página de registro */
 .login-form .form-group {
-  margin-bottom: 2px !important; /* Reduzido de 4px */
+  margin-bottom: 2px !important;
 }
 
 /* Ajustes para o formulário de registro */
 .login-form {
-  gap: 2px !important; /* Reduzido de 4px */
-  margin-top: 3px !important; /* Reduzido de 5px */
-  padding-bottom: 5px !important; /* Reduzido de 8px */
-  flex: 1 !important; /* Ocupa espaço disponível */
+  gap: 2px !important;
+  margin-top: 3px !important;
+  padding-bottom: 5px !important;
+  flex: 1 !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important; /* Centraliza verticalmente */
+  justify-content: center !important;
 }
 
 .login-form .form-group:first-child {
-  margin-top: 10px !important; /* Reduzido de 20px */
-  padding-top: 5px !important; /* Reduzido de 10px */
+  margin-top: 10px !important;
+  padding-top: 5px !important;
 }
 
 .login-form .form-group label {
-  margin-bottom: 1px !important; /* Reduzido de 2px */
+  margin-bottom: 1px !important;
   display: block !important;
-  font-size: 0.75rem !important; /* Reduzido de 0.8rem */
+  font-size: 0.75rem !important;
+  color: #FFFFFF !important; /* Cor branca para os labels */
 }
 
 .login-form .form-group input,
 .login-form .form-group select {
-  padding: 6px 10px !important; /* Reduzido de 8px 12px */
-  font-size: 0.8rem !important; /* Reduzido de 0.85rem */
+  padding: 6px 10px !important;
+  font-size: 0.8rem !important;
 }
 
 /* Container da página de registro */
 .login-form-section {
-  overflow-y: hidden !important; /* Remove scroll */
+  overflow-y: hidden !important;
   max-height: 100% !important;
-  padding: 10px 20px !important; /* Padding ainda mais reduzido */
+  padding: 10px 20px !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important; /* Distribui o espaço */
-  min-height: 100% !important; /* Garante altura mínima */
+  justify-content: space-between !important;
+  min-height: 100% !important;
 }
 
 /* Ajustes para o header do registro */
 .login-header {
-  margin-bottom: 5px !important; /* Reduzido ainda mais */
+  margin-bottom: 5px !important;
   flex-shrink: 0 !important;
 }
 
 .login-header h2 {
-  font-size: 1.4rem !important; /* Reduzido de 1.6rem */
-  margin-bottom: 3px !important; /* Reduzido de 5px */
+  font-size: 1.4rem !important;
+  margin-bottom: 3px !important;
 }
 
 /* Botão de registro */
 .login-btn {
-  padding: 6px 18px !important; /* Reduzido de 8px 20px */
+  padding: 6px 18px !important;
   margin-top: 5px !important;
-  font-size: 0.8rem !important; /* Reduzido de 0.85rem */
+  font-size: 0.8rem !important;
 }
 
 /* Footer menor */
 .login-footer {
-  margin-top: 5px !important; /* Reduzido de 8px */
-  flex-shrink: 0 !important; /* Não permite que o footer encolha */
+  margin-top: 5px !important;
+  flex-shrink: 0 !important;
 }
 
 .login-footer p {
-  font-size: 0.65rem !important; /* Reduzido de 0.7rem */
-  margin-bottom: 2px !important; /* Reduzido de 3px */
+  font-size: 0.65rem !important;
+  margin-bottom: 2px !important;
 }
 
 .footer-links {
-  font-size: 0.65rem !important; /* Reduzido de 0.7rem */
+  font-size: 0.65rem !important;
 }
 
 /* Responsividade para registro */
 @media (max-width: 768px) {
   .login-container {
-    height: min(650px, 95vh) !important; /* Altura otimizada */
+    height: min(650px, 95vh) !important;
   }
   
   .login-form-section {
@@ -87,7 +88,7 @@
   }
   
   .login-header h2 {
-    font-size: 1.3rem !important; /* Reduzido */
+    font-size: 1.3rem !important;
   }
   
   .login-form {
@@ -97,13 +98,13 @@
 
 @media (max-width: 480px) {
   .login-container {
-    height: 100vh !important; /* Usa toda a altura da tela */
+    height: 100vh !important;
   }
   
   .login-form-section {
     padding: 5px 10px !important;
     justify-content: space-between !important;
-    overflow-y: hidden !important; /* Remove scroll */
+    overflow-y: hidden !important;
   }
   
   .login-header {
@@ -112,7 +113,7 @@
   }
   
   .login-header h2 {
-    font-size: 1.1rem !important; /* Reduzido de 1.2rem */
+    font-size: 1.1rem !important;
     margin-bottom: 2px !important;
   }
   
@@ -127,14 +128,15 @@
   }
   
   .login-form .form-group label {
-    font-size: 0.65rem !important; /* Reduzido */
+    font-size: 0.65rem !important;
     margin-bottom: 0px !important;
+    color: #FFFFFF !important;
   }
   
   .login-form .form-group input,
   .login-form .form-group select {
-    padding: 4px 6px !important; /* Reduzido */
-    font-size: 0.7rem !important; /* Reduzido */
+    padding: 4px 6px !important;
+    font-size: 0.7rem !important;
   }
   
   .login-btn {
@@ -148,16 +150,15 @@
   }
   
   .login-footer p {
-    font-size: 0.55rem !important; /* Reduzido */
+    font-size: 0.55rem !important;
     margin-bottom: 1px !important;
     line-height: 1.0 !important;
   }
   
   .footer-links {
-    font-size: 0.55rem !important; /* Reduzido */
+    font-size: 0.55rem !important;
   }
   
-  /* Texto "Já tem uma conta" também menor */
   .login-form p {
     font-size: 0.7rem !important;
     margin-top: 8px !important;
@@ -166,47 +167,50 @@
 
 /* Estilos específicos quando há campos de doador */
 .login-form:has(input[type="date"]) {
-  gap: 2px !important;
+  gap: 1px !important;
 }
 
 .login-form:has(input[type="date"]) .form-group {
-  margin-bottom: 2px !important;
+  margin-bottom: 1px !important;
 }
 
 .login-form:has(input[type="date"]) .form-group label {
-  font-size: 0.75rem !important;
-  margin-bottom: 1px !important;
+  font-size: 0.7rem !important;
+  margin-bottom: 0px !important;
+  color: #FFFFFF !important;
 }
 
 .login-form:has(input[type="date"]) .form-group input,
 .login-form:has(input[type="date"]) .form-group select {
-  padding: 6px 10px !important;
-  font-size: 0.8rem !important;
+  padding: 4px 8px !important;
+  font-size: 0.75rem !important;
 }
 
 /* Para mobile com campos de doador */
 @media (max-width: 480px) {
   .login-form:has(input[type="date"]) {
-    gap: 1px !important;
+    gap: 0px !important;
   }
   
   .login-form:has(input[type="date"]) .form-group {
-    margin-bottom: 1px !important;
+    margin-bottom: 0px !important;
   }
   
   .login-form:has(input[type="date"]) .form-group label {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
     margin-bottom: 0px !important;
+    color: #FFFFFF !important;
   }
   
   .login-form:has(input[type="date"]) .form-group input,
   .login-form:has(input[type="date"]) .form-group select {
-    padding: 4px 8px !important;
-    font-size: 0.7rem !important;
+    padding: 3px 6px !important;
+    font-size: 0.65rem !important;
   }
   
   .login-form:has(input[type="date"]) .login-btn {
-    margin-top: 4px !important;
-    padding: 5px 12px !important;
+    margin-top: 2px !important;
+    padding: 3px 10px !important;
+    font-size: 0.7rem !important;
   }
 }

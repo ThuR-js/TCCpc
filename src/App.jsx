@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AppProvider } from './context/AppContext'
+import { AppProvider, useApp } from './context/AppContext'
+import { NotificationContainer } from './components/Notification'
 import Header from './components/Header'
 import Home from './pages/Home'
 import Favorites from './pages/Favorites'
@@ -14,6 +15,7 @@ import AdminPanel from './pages/AdminPanel'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 import './AdminStyles.css'
+import './components.css'
 
 function App() {
   return (
@@ -82,9 +84,22 @@ function App() {
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <AppNotifications />
         </div>
       </Router>
     </AppProvider>
+  )
+}
+
+// Componente para renderizar notificações
+const AppNotifications = () => {
+  const { notification } = useApp()
+  
+  return (
+    <NotificationContainer 
+      notifications={notification.notifications}
+      onRemove={notification.removeNotification}
+    />
   )
 }
 

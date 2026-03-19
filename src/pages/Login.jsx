@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import LoginScreen from '../LoginScreen'
+import { apiRequest, API_CONFIG } from '../api'
 
 // Componente principal de Login
 const Login = () => {
@@ -35,33 +36,24 @@ const Login = () => {
 
     try {
       // Faz requisição para a API do back-end para buscar todos os usuários
-      const response = await fetch('http://localhost:8080/api/v1/usuario')
-      if (response.ok) {
-        // Converte a resposta para JSON
-        const users = await response.json()
-        // Procura o usuário com email e senha correspondentes
-        const user = users.find(u => u.email === email && u.senha === password)
-        
+      const users = await apiRequest(API_CONFIG.ENDPOINTS.USUARIO)
+      // Procura o usuário com email e senha correspondentes
+      const user = users.find(u => u.email === email && u.senha === password)
         if (user) {
           console.log('User found in API:', user)
           
           // Verificar se a conta está inativa e reativar
           if (user.statusUsuario === 'INATIVO') {
             try {
-              const reactivateResponse = await fetch(`http://localhost:8080/api/v1/usuario/${user.id}/reativar`, {
+              const reactivatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${user.id}/reativar`, {
                 method: 'PUT'
               })
               
-              if (reactivateResponse.ok) {
-                const reactivatedUser = await reactivateResponse.json()
-                console.log('Account reactivated:', reactivatedUser)
-                setCurrentUser(reactivatedUser)
-                sessionStorage.setItem('currentUser', JSON.stringify(reactivatedUser))
-                alert('Sua conta foi reativada com sucesso!')
-                navigate('/')
-              } else {
-                alert('Erro ao reativar conta')
-              }
+              console.log('Account reactivated:', reactivatedUser)
+              setCurrentUser(reactivatedUser)
+              sessionStorage.setItem('currentUser', JSON.stringify(reactivatedUser))
+              alert('Sua conta foi reativada com sucesso!')
+              navigate('/')
             } catch (error) {
               console.error('Error reactivating account:', error)
               alert('Erro ao reativar conta')
@@ -82,10 +74,6 @@ const Login = () => {
           // Se não encontrou, mostra erro
           alert('Email ou senha incorretos')
         }
-      } else {
-        // Se a API retornou erro
-        alert('Erro ao conectar com o servidor')
-      }
     } catch (error) {
       // Se houve erro de conexão
       alert('Erro de conexão')

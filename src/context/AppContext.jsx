@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { apiRequest, API_CONFIG } from '../api'
+import { useNotification } from '../components/Notification'
 
 const AppContext = createContext()
 
@@ -11,6 +13,8 @@ export const useApp = () => {
 }
 
 export const AppProvider = ({ children }) => {
+  const notification = useNotification()
+  
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = sessionStorage.getItem('currentUser')
     return savedUser ? JSON.parse(savedUser) : null
@@ -714,32 +718,24 @@ export const AppProvider = ({ children }) => {
       
       console.log('Updating user with data:', fullUserData)
       
-      const response = await fetch(`http://localhost:8080/api/v1/usuario/${currentUser.id}`, {
+      const updatedUserFromAPI = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(fullUserData)
       })
       
-      if (response.ok) {
-        const updatedUserFromAPI = await response.json()
-        console.log('Updated user from API:', updatedUserFromAPI)
-        
-        // Mescla dados locais com resposta da API
-        const mergedUser = {
-          ...currentUser,
-          ...updatedUserFromAPI,
-          name: updatedUserFromAPI.nome || currentUser.name // Garante compatibilidade
-        }
-        
-        console.log('Final merged user:', mergedUser)
-        setCurrentUser(mergedUser)
-        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
-        return { success: true }
-      } else {
-        return { success: false, error: 'Erro ao atualizar usuário' }
+      console.log('Updated user from API:', updatedUserFromAPI)
+      
+      // Mescla dados locais com resposta da API
+      const mergedUser = {
+        ...currentUser,
+        ...updatedUserFromAPI,
+        name: updatedUserFromAPI.nome || currentUser.name // Garante compatibilidade
       }
+      
+      console.log('Final merged user:', mergedUser)
+      setCurrentUser(mergedUser)
+      sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+      return { success: true }
     } catch (error) {
       console.error('Error updating user:', error)
       return { success: false, error: 'Erro de conexão' }
@@ -754,7 +750,7 @@ export const AppProvider = ({ children }) => {
     localStorage.removeItem('requests')
   }
 
-  const value = {
+    const value = {
     currentUser,
     setCurrentUser,
     products,
@@ -777,7 +773,8 @@ export const AppProvider = ({ children }) => {
     removeProductByName,
     getProductTypeFromSearch,
     updateUser,
-    resetProducts
+    resetProducts,
+    notification // Adiciona o sistema de notificações
   }
 
   return (
