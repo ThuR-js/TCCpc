@@ -166,24 +166,24 @@ const Home = () => {
                   onClick={() => setFilters({...filters, type: ''})}>
             Todos os itens
           </button>
-          <button className={`category-btn ${filters.type === 'camiseta' ? 'active' : ''}`} 
-                  onClick={() => setFilters({...filters, type: 'camiseta'})}>
+          <button className="category-btn" 
+                  onClick={() => navigate('/camisetas')}>
             Camisetas
           </button>
-          <button className={`category-btn ${filters.type === 'calca' ? 'active' : ''}`} 
-                  onClick={() => setFilters({...filters, type: 'calca'})}>
+          <button className="category-btn" 
+                  onClick={() => navigate('/calcas')}>
             Calças
           </button>
-          <button className={`category-btn ${filters.type === 'moletom' ? 'active' : ''}`} 
-                  onClick={() => setFilters({...filters, type: 'moletom'})}>
+          <button className="category-btn" 
+                  onClick={() => navigate('/blusas')}>
             Blusas
           </button>
-          <button className={`category-btn ${filters.type === 'tenis' ? 'active' : ''}`} 
-                  onClick={() => setFilters({...filters, type: 'tenis'})}>
+          <button className="category-btn" 
+                  onClick={() => navigate('/tenis')}>
             Tênis
           </button>
-          <button className={`category-btn ${filters.type === 'shorts' ? 'active' : ''}`} 
-                  onClick={() => setFilters({...filters, type: 'shorts'})}>
+          <button className="category-btn" 
+                  onClick={() => navigate('/shorts')}>
             Shorts
           </button>
         </div>

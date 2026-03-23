@@ -12,6 +12,11 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminPanel from './pages/AdminPanel'
+import Camisetas from './pages/Camisetas'
+import Calcas from './pages/Calcas'
+import Blusas from './pages/Blusas'
+import Tenis from './pages/Tenis'
+import Shorts from './pages/Shorts'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 import './AdminStyles.css'
@@ -79,6 +84,46 @@ function App() {
                 <Header />
                 <main className="main">
                   <ProductDetails />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/camisetas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Camisetas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/calcas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Calcas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/blusas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Blusas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/tenis" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Tenis />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/shorts" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Shorts />
                 </main>
               </ProtectedRoute>
             } />

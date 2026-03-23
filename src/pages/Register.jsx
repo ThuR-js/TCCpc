@@ -85,6 +85,13 @@ const Register = () => {
     <div className="login-screen">
       <div className="login-container">
         <div className="login-form-section">
+          <button 
+            type="button" 
+            onClick={() => navigate('/login')} 
+            className="back-button"
+          >
+            ← Voltar
+          </button>
           <form onSubmit={handleSubmit} className="login-form">
             <h2 style={{marginBottom: '20px'}}>Criar Conta</h2>
             <div className="form-group">

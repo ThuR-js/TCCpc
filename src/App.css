@@ -16,7 +16,7 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 20px 0 20px;
+    padding: 6rem 20px 0 20px; /* Aumentado o padding-top para dar espaço ao header fixo */
     overflow-x: hidden;
 }
 
@@ -44,6 +44,7 @@ body {
 .header-search {
     flex: 1;
     max-width: 400px;
+    position: relative;
 }
 
 .header-search input {
@@ -66,6 +67,76 @@ body {
 .header-search input:focus {
     border-color: #4A230A;
     background: white;
+}
+
+/* Search Dropdown */
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #DFA983;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    z-index: 9999;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+}
+
+.search-result-item:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    border: 1px solid #e0e0e0;
+}
+
+.search-result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-details {
+    color: #666;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .logo h1 {
@@ -471,9 +542,13 @@ button[type="submit"]:hover {
     border-radius: 25px;
     cursor: pointer;
     margin-bottom: 2rem;
+    margin-top: 1rem; /* Adicionado margin-top para garantir espaçamento */
     font-size: 1rem;
     font-weight: 500;
     transition: all 0.3s;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
 }
 
 .btn-back:hover {
@@ -750,6 +825,10 @@ button[type="submit"]:hover {
         order: 3;
     }
     
+    .container {
+        padding: 8rem 20px 0 20px; /* Mais espaço em mobile devido ao header maior */
+    }
+    
     .search-filters {
         flex-direction: column;
     }
@@ -765,6 +844,34 @@ button[type="submit"]:hover {
     
     .product-detail-container {
         flex-direction: column;
+    }
+    
+    .btn-back {
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Search dropdown mobile */
+    .search-dropdown {
+        max-height: 300px;
+    }
+    
+    .search-result-item {
+        padding: 10px 12px;
+    }
+    
+    .search-result-image {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+    }
+    
+    .search-result-name {
+        font-size: 0.85rem;
+    }
+    
+    .search-result-details {
+        font-size: 0.75rem;
     }
 }
 

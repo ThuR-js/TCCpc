@@ -3,6 +3,34 @@
   margin-bottom: 2px !important;
 }
 
+/* Botão de voltar */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-2px);
+}
+
+.back-button:active {
+  transform: translateX(-1px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* Ajustes para o formulário de registro */
 .login-form {
   gap: 2px !important;
@@ -94,6 +122,13 @@
   .login-form {
     gap: 3px !important;
   }
+  
+  .back-button {
+    top: 15px;
+    left: 15px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -162,6 +197,13 @@
   .login-form p {
     font-size: 0.7rem !important;
     margin-top: 8px !important;
+  }
+  
+  .back-button {
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    font-size: 0.75rem;
   }
 }
 
