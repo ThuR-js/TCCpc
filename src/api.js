@@ -4,7 +4,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     USUARIO: '/usuario',
     DOADOR: '/doador',
-    PRODUTO: '/produto',
+    ANUNCIO: '/anuncio',
     SOLICITACAO: '/solicitacao'
   }
 }

@@ -8,7 +8,13 @@ const ProductDetails = () => {
   const { products, currentUser } = useApp()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   
-  const product = products.find(p => p.id === parseInt(id))
+  const product = products.find(p => String(p.id) === String(id))
+
+  const getImageSrc = (img) => {
+    if (!img) return '/images/avatar2.webp'
+    if (img.startsWith('http') || img.startsWith('data:')) return img
+    return `/${img}`
+  }
 
   useEffect(() => {
     setCurrentImageIndex(0)
@@ -48,10 +54,7 @@ const ProductDetails = () => {
         <div className="carousel-container">
           <div className="carousel">
             <img 
-              src={product.images ? 
-                (product.images[currentImageIndex].startsWith('data:') ? product.images[currentImageIndex] : `/${product.images[currentImageIndex]}`) : 
-                (product.image.startsWith('data:') ? product.image : `/${product.image}`)
-              } 
+              src={product.images ? getImageSrc(product.images[currentImageIndex]) : getImageSrc(product.image)} 
               alt={product.name} 
               className="carousel-image active" 
               onError={(e) => {
@@ -101,7 +104,7 @@ const ProductDetails = () => {
               navigate(`/product/${relatedProduct.id}`);
             }}>
               <img 
-                src={relatedProduct.image.startsWith('data:') ? relatedProduct.image : `/${relatedProduct.image}`} 
+                src={getImageSrc(relatedProduct.image)} 
                 alt={relatedProduct.name} 
                 className={`product-image ${relatedProduct.status === 'donated' ? 'donated' : ''}`} 
                 onError={(e) => {

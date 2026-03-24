@@ -2,9 +2,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { ProductService } from '../services'
 import { useApiState, useFormValidation } from '../hooks'
 import { isValidImageType, isValidFileSize } from '../utils'
+import { apiRequest, API_CONFIG } from '../api'
 
 // Componente para adicionar novos produtos (apenas doadores)
 const AddProduct = () => {
@@ -19,13 +19,14 @@ const AddProduct = () => {
     {
       nome: '',
       descricao: '',
+      categoria: '',
       tamanho: '',
-      condicao: '',
-      whatsapp: ''
+      condicao: ''
     },
     {
       nome: { required: true, minLength: 3 },
       descricao: { required: true, minLength: 10 },
+      categoria: { required: true },
       tamanho: { required: true },
       condicao: { required: true }
     }
@@ -81,7 +82,19 @@ const AddProduct = () => {
     setImagePreviews(imagePreviews.filter((_, i) => i !== index))
   }
 
-  // Função para processar envio do formulário de novo produto
+  const uploadImgBB = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'ml_default')
+    const res = await fetch('https://api.cloudinary.com/v1_1/dod8l2rsn/image/upload', {
+      method: 'POST',
+      body: formData
+    })
+    const data = await res.json()
+    if (!data.secure_url) throw new Error('Falha no upload da imagem')
+    return data.secure_url
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -95,31 +108,25 @@ const AddProduct = () => {
       return
     }
 
-    const newProduct = {
-      ...formData,
-      caminhoFoto: imagePreviews[0],
-      images: imagePreviews,
-      image: imagePreviews[0],
-      name: formData.nome,
-      description: formData.descricao,
-      size: formData.tamanho,
-      condition: formData.condicao,
-      donor: currentUser.name || currentUser.nome,
-      donorId: currentUser.id,
-      statusAnuncio: 'PENDENTE',
-      status: 'pending',
-      chatEnabled: true
-    }
-
     try {
       await execute(async () => {
-        // TODO: Quando API de produtos estiver pronta, usar:
-        // await ProductService.create(newProduct)
-        
-        // Por enquanto, usa o método local
-        addProduct(newProduct)
+        const fotoUrl = await uploadImgBB(images[0])
+
+        const novoAnuncio = {
+          nome: formData.nome,
+          descricao: formData.descricao,
+          tamanho: formData.tamanho,
+          condicao: formData.condicao,
+          foto: fotoUrl,
+          categoria: { id: formData.categoria },
+          doador: { id: currentUser.doadorId || currentUser.id }
+        }
+
+        await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO, {
+          method: 'POST',
+          body: JSON.stringify(novoAnuncio)
+        })
       })
-      
       alert('Produto enviado para análise! Aguarde a aprovação do administrador.')
       navigate('/')
     } catch (error) {
@@ -197,6 +204,24 @@ const AddProduct = () => {
 
 
             <div className="form-group">
+              <label>Categoria</label>
+              <select
+                name="categoria"
+                value={formData.categoria}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Selecione a categoria</option>
+                <option value="1">Camiseta</option>
+                <option value="2">Calça</option>
+                <option value="3">Moletom</option>
+                <option value="4">Tênis</option>
+                <option value="5">Shorts</option>
+              </select>
+              {errors.categoria && <span className="error-message">{errors.categoria}</span>}
+            </div>
+
+            <div className="form-group">
               <label>Tamanho</label>
               <select
                 name="tamanho"
@@ -205,8 +230,8 @@ const AddProduct = () => {
                 required
               >
                 <option value="">Selecione o tamanho</option>
-                {formData.nome && formData.nome.toLowerCase().includes('tenis') ? (
-                  Array.from({length: 15}, (_, i) => i + 34).map(size => (
+                {formData.categoria === '4' ? (
+                  Array.from({length: 20}, (_, i) => i + 30).map(size => (
                     <option key={size} value={size.toString()}>{size}</option>
                   ))
                 ) : (
@@ -236,17 +261,6 @@ const AddProduct = () => {
                 <option value="usado">Usado</option>
               </select>
               {errors.condicao && <span className="error-message">{errors.condicao}</span>}
-            </div>
-
-            <div className="form-group">
-              <label>WhatsApp (opcional)</label>
-              <input
-                type="tel"
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleInputChange}
-                placeholder="11999999999"
-              />
             </div>
 
             <button type="submit" className="btn btn-primary" style={{width: '100%', padding: '1rem'}} disabled={loading}>

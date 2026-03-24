@@ -26,8 +26,14 @@ const Home = () => {
   } = useApp()
   
   // Estados locais para controle do modal de remoção
-  const [showRemoveModal, setShowRemoveModal] = useState(false) // Controla se o modal está visível
-  const [productToRemove, setProductToRemove] = useState(null) // Produto selecionado para remoção
+  const [showRemoveModal, setShowRemoveModal] = useState(false)
+  const [productToRemove, setProductToRemove] = useState(null)
+
+  const getImageSrc = (img) => {
+    if (!img) return '/images/avatar2.webp'
+    if (img.startsWith('http') || img.startsWith('data:')) return img
+    return `/${img}`
+  }
 
   // Função base para filtrar produtos por visibilidade
   const getVisibleProducts = () => {
@@ -40,8 +46,7 @@ const Home = () => {
         // Admin vê todos os produtos (pending e available)
         return true
       } else if (isDoador) {
-        // Doador vê seus próprios produtos (qualquer status) + produtos aprovados de outros
-        return product.donorId === currentUser?.id || product.status === 'available'
+        return product.donorId === currentUser?.doadorId || product.status === 'available'
       } else if (isDonatario) {
         // Donatário vê APENAS produtos aprovados
         return product.status === 'available'
@@ -240,11 +245,9 @@ const Home = () => {
       <div className="products-grid">
         {filteredProducts.map(product => (
           <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
-               onClick={() => {
-                 navigate(`/product/${product.id}`);
-               }}>
+               onClick={() => navigate(`/product/${product.id}`)}>
             <img 
-              src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
+              src={getImageSrc(product.image)} 
               alt={product.name} 
               className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
               onError={(e) => {

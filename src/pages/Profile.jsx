@@ -8,6 +8,8 @@ const Profile = () => {
   const { currentUser, requests, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState(currentUser?.email || '')
   const [isLoading, setIsLoading] = useState(false)
   const [showDeactivateModal, setShowDeactivateModal] = useState(false)
   const [showDoadorForm, setShowDoadorForm] = useState(false)
@@ -17,11 +19,6 @@ const Profile = () => {
   const [cpfSaved, setCpfSaved] = useState(false)
   const [dataSaved, setDataSaved] = useState(false)
   const [cepSaved, setCepSaved] = useState(false)
-
-  // Debug: verificar se os dados estão carregando
-  console.log('Profile - currentUser:', currentUser)
-  console.log('Profile - products:', products?.length)
-  console.log('Profile - requests:', requests?.length)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
   const pendingRequests = userRequests.filter(req => req.status === 'pending')
@@ -201,11 +198,53 @@ const Profile = () => {
             </div>
             <div className="info-item">
               <strong>Email:</strong>
-              <span>{currentUser?.email}</span>
-            </div>
-            <div className="info-item">
-              <strong>Telefone:</strong>
-              <span>{currentUser?.telefone || 'Não informado'}</span>
+              {isEditingEmail ? (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!newEmail.trim()) {
+                        alert('Email não pode estar vazio')
+                        return
+                      }
+                      setIsLoading(true)
+                      const result = await updateUser({ email: newEmail.trim() })
+                      if (result.success) {
+                        setIsEditingEmail(false)
+                        alert('Email atualizado com sucesso!')
+                      } else {
+                        alert(result.error || 'Erro ao atualizar email')
+                      }
+                      setIsLoading(false)
+                    }}
+                    disabled={isLoading}
+                    style={{ padding: '5px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                  >
+                    {isLoading ? 'Salvando...' : 'Salvar'}
+                  </button>
+                  <button
+                    onClick={() => { setIsEditingEmail(false); setNewEmail(currentUser?.email || '') }}
+                    style={{ padding: '5px 10px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>{currentUser?.email}</span>
+                  <button
+                    onClick={() => setIsEditingEmail(true)}
+                    style={{ padding: '3px 8px', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                  >
+                    Editar
+                  </button>
+                </div>
+              )}
             </div>
             <div className="info-item">
               <strong>Data de Registro:</strong>

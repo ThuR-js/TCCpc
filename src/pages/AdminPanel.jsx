@@ -1,160 +1,127 @@
-import { useApp } from '../context/AppContext'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useApp } from '../context/AppContext'
+import { apiRequest, API_CONFIG } from '../api'
 
 const AdminPanel = () => {
-  const { products, setProducts, currentUser, resetProducts } = useApp()
+  const { currentUser } = useApp()
   const navigate = useNavigate()
+  const [anuncios, setAnuncios] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState(null)
 
-  const pendingProducts = products ? products.filter(p => p.status === 'pending') : []
-  const allProducts = products || []
+  const fetchAnuncios = async () => {
+    setLoading(true)
+    setErro(null)
+    try {
+      const data = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO)
+      console.log('Anúncios recebidos:', data)
+      setAnuncios(Array.isArray(data) ? data : [])
+    } catch (e) {
+      console.error('Erro ao buscar anúncios:', e)
+      setErro(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  console.log('Current user admin status:', currentUser?.isAdmin)
-  console.log('All products count:', allProducts.length)
+  useEffect(() => {
+    fetchAnuncios()
+  }, [])
+
+  const aprovar = async (id) => {
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ statusAnuncio: 'APROVADO' })
+      })
+      setAnuncios(prev => prev.map(a => a.id === id ? { ...a, statusAnuncio: 'APROVADO' } : a))
+    } catch (e) {
+      alert('Erro ao aprovar: ' + e.message)
+    }
+  }
+
+  const rejeitar = async (id) => {
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${id}`, {
+        method: 'DELETE'
+      })
+      setAnuncios(prev => prev.filter(a => a.id !== id))
+    } catch (e) {
+      alert('Erro ao rejeitar: ' + e.message)
+    }
+  }
+
+  const remover = async (id) => {
+    if (!confirm('Remover este anúncio?')) return
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${id}`, {
+        method: 'DELETE'
+      })
+      setAnuncios(prev => prev.filter(a => a.id !== id))
+    } catch (e) {
+      alert('Erro ao remover: ' + e.message)
+    }
+  }
 
   if (!currentUser?.isAdmin) {
     return (
       <div className="container">
-        <h2 style={{color: 'white'}}>Acesso Negado</h2>
-        <p style={{color: 'white'}}>Você não tem permissão para acessar esta página.</p>
-        <button 
-          onClick={() => {
-            const adminUser = { ...currentUser, isAdmin: true }
-            localStorage.setItem('currentUser', JSON.stringify(adminUser))
-            window.location.reload()
-          }} 
-          className="btn btn-primary"
-        >
-          Tornar Admin (Teste)
-        </button>
-        <button onClick={() => navigate('/login')} className="btn btn-primary">
-          Fazer Login
-        </button>
+        <h2 style={{ color: 'white' }}>Acesso Negado</h2>
+        <button onClick={() => navigate('/login')} className="btn btn-primary">Fazer Login</button>
       </div>
     )
   }
 
-  const approveProduct = (productId) => {
-    if (!products) return
-    const updatedProducts = products.map(p => 
-      p.id === productId ? { ...p, status: 'available', approvedDate: new Date().toISOString() } : p
-    )
-    setProducts(updatedProducts)
-    // Salva para todos os usuários
-    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
-    localStorage.setItem('products', JSON.stringify(updatedProducts))
-    // Dispara evento para atualizar outros componentes
-    window.dispatchEvent(new Event('localStorageUpdate'))
-  }
-
-  const rejectProduct = (productId) => {
-    if (!products) return
-    const updatedProducts = products.filter(p => p.id !== productId)
-    setProducts(updatedProducts)
-    localStorage.setItem('products', JSON.stringify(updatedProducts))
-    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
-    // Dispara evento para atualizar outros componentes
-    window.dispatchEvent(new Event('localStorageUpdate'))
-  }
-
-  const removeProduct = (productId) => {
-    if (!products) return
-    if (confirm('Tem certeza que deseja remover este anúncio?')) {
-      const updatedProducts = products.filter(p => p.id !== productId)
-      setProducts(updatedProducts)
-      localStorage.setItem('products', JSON.stringify(updatedProducts))
-      localStorage.setItem('products_global', JSON.stringify(updatedProducts))
-      // Dispara evento para atualizar outros componentes
-      window.dispatchEvent(new Event('localStorageUpdate'))
-    }
-  }
-
-  const removeJeffersonProducts = () => {
-    if (confirm('Remover todos os produtos do Jefferson?')) {
-      const jeffersonProducts = products.filter(p => 
-        p.donor?.toLowerCase().includes('jefferson') || 
-        p.donor?.toLowerCase().includes('jeferson')
-      )
-      
-      jeffersonProducts.forEach(product => {
-        const updatedProducts = products.filter(p => p.id !== product.id)
-        setProducts(updatedProducts)
-        localStorage.setItem('products', JSON.stringify(updatedProducts))
-      })
-      
-      alert(`${jeffersonProducts.length} produtos do Jefferson removidos`)
-    }
-  }
+  const pendentes = anuncios.filter(a => a.statusAnuncio === 'PENDENTE')
+  const todos = anuncios
 
   return (
     <div className="container">
       <button onClick={() => navigate('/login')} className="btn-back">← Sair</button>
-      <h2 style={{color: 'white', marginBottom: '2rem'}}>Painel Administrativo</h2>
-      
+      <h2 style={{ color: 'white', marginBottom: '2rem' }}>Painel Administrativo</h2>
+
       <div className="admin-stats">
         <div className="stat-card">
           <h3>Anúncios Pendentes</h3>
-          <span>{pendingProducts.length}</span>
+          <span>{pendentes.length}</span>
         </div>
         <div className="stat-card">
           <h3>Total de Anúncios</h3>
-          <span>{allProducts.length}</span>
+          <span>{todos.length}</span>
         </div>
         <div className="stat-card">
-          <button 
-            onClick={removeJeffersonProducts}
-            className="btn btn-danger"
-            style={{width: '100%', padding: '10px', marginBottom: '10px'}}
-          >
-            Remover Produtos Jefferson
-          </button>
-          <button 
-            onClick={resetProducts}
-            className="btn btn-primary"
-            style={{width: '100%', padding: '10px'}}
-          >
-            Resetar Produtos
+          <button onClick={fetchAnuncios} className="btn btn-primary" style={{ width: '100%', padding: '10px' }}>
+            🔄 Atualizar
           </button>
         </div>
       </div>
 
       <div className="pending-products">
-        <h3 style={{color: 'white', marginBottom: '1rem'}}>Anúncios para Validação</h3>
-        
-        {pendingProducts.length === 0 ? (
-          <p style={{color: 'white'}}>Nenhum anúncio pendente</p>
+        <h3 style={{ color: 'white', marginBottom: '1rem' }}>Anúncios para Validação</h3>
+
+        {loading ? (
+          <p style={{ color: 'white' }}>Carregando...</p>
+        ) : erro ? (
+          <p style={{ color: 'red' }}>Erro ao carregar: {erro}</p>
+        ) : pendentes.length === 0 ? (
+          <p style={{ color: 'white' }}>Nenhum anúncio pendente</p>
         ) : (
           <div className="products-grid">
-            {pendingProducts.map(product => (
-              <div key={product.id} className="product-card admin-card">
-                <img 
-                  src={product.image?.startsWith('data:') ? product.image : `/${product.image}`} 
-                  alt={product.name}
-                  onError={(e) => {
-                    e.target.src = '/images/placeholder.jpg'
-                    e.target.onerror = null
-                  }}
-                />
+            {pendentes.map(a => (
+              <div key={a.id} className="product-card admin-card">
                 <div className="product-info">
-                  <h4>{product.name}</h4>
-                  <p>{product.description}</p>
-                  <p><strong>Doador:</strong> {product.donor}</p>
-                  <p><strong>Categoria:</strong> {product.type}</p>
-                  <p><strong>Tamanho:</strong> {product.size}</p>
-                  <p><strong>Condição:</strong> {product.condition}</p>
+                  <h4>{a.nome}</h4>
+                  <p>{a.descricao}</p>
+                  <p><strong>Doador:</strong> {a.doador?.nome}</p>
+                  <p><strong>Categoria:</strong> {a.categoria?.nome}</p>
+                  <p><strong>Tamanho:</strong> {a.tamanho}</p>
+                  <p><strong>Condição:</strong> {a.condicao}</p>
+                  <p><strong>Data:</strong> {a.dataCadastro}</p>
                 </div>
                 <div className="admin-actions">
-                  <button 
-                    onClick={() => approveProduct(product.id)}
-                    className="btn btn-success"
-                  >
-                    Aprovar
-                  </button>
-                  <button 
-                    onClick={() => rejectProduct(product.id)}
-                    className="btn btn-danger"
-                  >
-                    Rejeitar
-                  </button>
+                  <button onClick={() => aprovar(a.id)} className="btn btn-success">Aprovar</button>
+                  <button onClick={() => rejeitar(a.id)} className="btn btn-danger">Rejeitar</button>
                 </div>
               </div>
             ))}
@@ -162,32 +129,18 @@ const AdminPanel = () => {
         )}
       </div>
 
-      <div style={{marginTop: '3rem', borderTop: '2px solid #333', paddingTop: '2rem'}}>
-        <h3 style={{color: 'white', marginBottom: '1rem'}}>REMOVER ANÚNCIOS ({allProducts.length})</h3>
-        
+      <div style={{ marginTop: '3rem', borderTop: '2px solid #333', paddingTop: '2rem' }}>
+        <h3 style={{ color: 'white', marginBottom: '1rem' }}>TODOS OS ANÚNCIOS ({todos.length})</h3>
         <div className="products-grid">
-          {allProducts.map(product => (
-            <div key={product.id} className="product-card admin-card">
-              <img 
-                src={product.image?.startsWith('data:') ? product.image : `/${product.image}`} 
-                alt={product.name}
-                onError={(e) => {
-                  e.target.src = '/images/placeholder.jpg'
-                  e.target.onerror = null
-                }}
-              />
+          {todos.map(a => (
+            <div key={a.id} className="product-card admin-card">
               <div className="product-info">
-                <h4>{product.name}</h4>
-                <p><strong>Doador:</strong> {product.donor}</p>
-                <p><strong>Status:</strong> {product.status}</p>
+                <h4>{a.nome}</h4>
+                <p><strong>Doador:</strong> {a.doador?.nome}</p>
+                <p><strong>Status:</strong> {a.statusAnuncio}</p>
               </div>
               <div className="admin-actions">
-                <button 
-                  onClick={() => removeProduct(product.id)}
-                  className="btn btn-danger"
-                >
-                  REMOVER
-                </button>
+                <button onClick={() => remover(a.id)} className="btn btn-danger">REMOVER</button>
               </div>
             </div>
           ))}

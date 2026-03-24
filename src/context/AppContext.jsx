@@ -20,7 +20,7 @@ export const AppProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null
   })
   const [products, setProducts] = useState([])
-  const [favorites, setFavorites] = useState([1, 4])
+  const [favorites, setFavorites] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -45,6 +45,46 @@ export const AppProvider = ({ children }) => {
       }
     }
     return null
+  }
+
+  const categoriaParaType = (nome) => {
+    if (!nome) return ''
+    const n = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (n.includes('calca')) return 'calca'
+    if (n.includes('camiseta')) return 'camiseta'
+    if (n.includes('moleton') || n.includes('blusa')) return 'moletom'
+    if (n.includes('tenis')) return 'tenis'
+    if (n.includes('short')) return 'shorts'
+    return n
+  }
+
+  const fetchProducts = async () => {
+    try {
+      const data = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO)
+      if (Array.isArray(data)) {
+        const fromApi = data.map(a => ({
+          id: `api_${a.id}`,
+          apiId: a.id,
+          name: a.nome,
+          description: a.descricao,
+          type: categoriaParaType(a.categoria?.nome),
+          size: a.tamanho,
+          condition: a.condicao,
+          donor: a.doador?.nome,
+          donorId: a.doador?.id,
+          image: a.foto || 'images/avatar2.webp',
+          images: [a.foto || 'images/avatar2.webp'],
+          status: a.statusAnuncio === 'APROVADO' ? 'available' : a.statusAnuncio === 'PENDENTE' ? 'pending' : 'analyzing',
+          statusAnuncio: a.statusAnuncio,
+          dataCadastro: a.dataCadastro,
+          chatEnabled: false
+        }))
+        setProducts([...fromApi, ...sampleProducts])
+      }
+    } catch (e) {
+      console.error('Erro fetchProducts:', e.message, e)
+      setProducts(sampleProducts)
+    }
   }
 
   const sampleProducts = [
@@ -586,44 +626,8 @@ export const AppProvider = ({ children }) => {
     }
   ]
 
-  // Função para carregar dados do localStorage
-  const loadFromStorage = () => {
-    const globalProducts = localStorage.getItem('products_global')
-    const savedProducts = localStorage.getItem('products')
-    const savedRequests = localStorage.getItem('requests')
-    
-    // Prioriza produtos globais (atualizados pelo admin)
-    if (globalProducts) {
-      setProducts(JSON.parse(globalProducts))
-      localStorage.setItem('products', globalProducts) // Sincroniza
-    } else if (savedProducts) {
-      setProducts(JSON.parse(savedProducts))
-    } else {
-      setProducts(sampleProducts)
-      localStorage.setItem('products', JSON.stringify(sampleProducts))
-      localStorage.setItem('products_global', JSON.stringify(sampleProducts))
-    }
-    
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests))
-    }
-  }
-
   useEffect(() => {
-    loadFromStorage()
-    
-    // Listener para mudanças no localStorage entre abas
-    const handleStorageChange = (e) => {
-      if (e.key === 'products_global' || e.key === 'products' || e.key === 'requests') {
-        loadFromStorage()
-      }
-    }
-    
-    window.addEventListener('storage', handleStorageChange)
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
+    fetchProducts()
   }, [])
 
   const toggleFavorite = (productId) => {
@@ -716,23 +720,16 @@ export const AppProvider = ({ children }) => {
         ...userData     // Sobrescreve apenas os campos enviados
       }
       
-      console.log('Updating user with data:', fullUserData)
-      
       const updatedUserFromAPI = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
         method: 'PUT',
         body: JSON.stringify(fullUserData)
       })
       
-      console.log('Updated user from API:', updatedUserFromAPI)
-      
-      // Mescla dados locais com resposta da API
       const mergedUser = {
         ...currentUser,
         ...updatedUserFromAPI,
-        name: updatedUserFromAPI.nome || currentUser.name // Garante compatibilidade
+        name: updatedUserFromAPI.nome || currentUser.name
       }
-      
-      console.log('Final merged user:', mergedUser)
       setCurrentUser(mergedUser)
       sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
       return { success: true }
@@ -755,6 +752,7 @@ export const AppProvider = ({ children }) => {
     setCurrentUser,
     products,
     setProducts,
+    fetchProducts,
     favorites,
     toggleFavorite,
     searchTerm,

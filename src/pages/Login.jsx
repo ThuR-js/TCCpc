@@ -61,9 +61,18 @@ const Login = () => {
           } else {
             // Conta ativa - login normal
             try {
-              setCurrentUser(user)
-              sessionStorage.setItem('currentUser', JSON.stringify(user))
-              console.log('User saved, navigating to /')
+              let userData = { ...user }
+              // Se for doador, busca o id da tabela DOADOR
+              if (user.nivelAcesso === 'DOADOR') {
+                try {
+                  const doador = await apiRequest(`${API_CONFIG.ENDPOINTS.DOADOR}/usuario/${user.id}`)
+                  userData.doadorId = doador.id
+                } catch (e) {
+                  console.warn('Doador não encontrado para este usuário')
+                }
+              }
+              setCurrentUser(userData)
+              sessionStorage.setItem('currentUser', JSON.stringify(userData))
               navigate('/')
             } catch (error) {
               console.error('Error setting user:', error)
@@ -75,8 +84,7 @@ const Login = () => {
           alert('Email ou senha incorretos')
         }
     } catch (error) {
-      // Se houve erro de conexão
-      alert('Erro de conexão')
+      alert('Erro de conexão: ' + error.message)
     }
   }
 

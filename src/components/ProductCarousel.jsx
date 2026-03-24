@@ -37,6 +37,12 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
     }
   }
 
+  const getImageSrc = (img) => {
+    if (!img) return '/images/avatar2.webp'
+    if (img.startsWith('http') || img.startsWith('data:')) return img
+    return `/${img}`
+  }
+
   return (
     <div className="carousel-wrapper">
       <button className="carousel-btn carousel-btn-left" onClick={() => scroll('left')}>
@@ -62,7 +68,7 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
         {products.map(product => (
           <div key={product.id} className="carousel-card" onClick={() => navigate(`/product/${product.id}`)}>
             <img 
-              src={product.image.startsWith('data:') ? product.image : `/${product.image}`} 
+              src={getImageSrc(product.image)} 
               alt={product.name} 
               className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
               onError={(e) => {
