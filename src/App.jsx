@@ -6,6 +6,8 @@ import Home from './pages/Home'
 import Favorites from './pages/Favorites'
 import Chat from './pages/Chat'
 import ProductDetails from './pages/ProductDetails'
+import ProductRequests from './pages/ProductRequests'
+import ReceivedRequests from './pages/ReceivedRequests'
 import Requests from './pages/Requests'
 import AddProduct from './pages/AddProduct'
 import Profile from './pages/Profile'
@@ -84,6 +86,22 @@ function App() {
                 <Header />
                 <main className="main">
                   <ProductDetails />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/product-requests/:productId" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ProductRequests />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/received-requests" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ReceivedRequests />
                 </main>
               </ProtectedRoute>
             } />

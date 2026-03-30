@@ -102,16 +102,7 @@ const Home = () => {
     return true
   }).sort((a, b) => new Date(b.approvedDate || b.id) - new Date(a.approvedDate || a.id))
 
-  // Função que abre a página de chat
-  const startChat = () => {
-    // Verifica se o usuário é convidado (não logado)
-    if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
-      alert('Faça login para enviar mensagens.')
-      return // Para a execução aqui
-    }
-    // Se não é convidado, vai para a página de chat
-    navigate('/chat')
-  }
+
 
   // Função que registra interesse em um produto
   const handleProductInterest = (productId) => {
@@ -124,8 +115,24 @@ const Home = () => {
     if (currentUser?.type !== 'donatario') {
       return // Só donatários podem manifestar interesse
     }
-    // Registra o interesse no produto
-    addRequest(productId)
+    
+    // Coleta dados do usuário para a solicitação
+    const nome = prompt('Digite seu nome completo:')
+    if (!nome) return
+    
+    const email = prompt('Digite seu email:')
+    if (!email) return
+    
+    const telefone = prompt('Digite seu telefone:')
+    if (!telefone) return
+    
+    // Registra o interesse no produto com os dados coletados
+    addRequest(productId, {
+      nome,
+      email,
+      telefone,
+      dataHora: new Date().toISOString()
+    })
     alert('Interesse manifestado! O doador será notificado.')
   }
 
@@ -278,9 +285,9 @@ const Home = () => {
               <div className="product-bottom">
                 {product.status === 'available' && (
                   <div className="product-actions">
-                    {product.chatEnabled && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); startChat()}}>Chat</button>}
                     {product.whatsapp && <a href={`https://wa.me/55${product.whatsapp}`} className="btn btn-secondary" onClick={(e) => e.stopPropagation()}>WhatsApp</a>}
                     {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={(e) => {e.stopPropagation(); handleProductInterest(product.id)}}>Tenho Interesse</button>}
+                    {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Solicitações</button>}
                   </div>
                 )}
                 <button 

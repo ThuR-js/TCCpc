@@ -26,17 +26,28 @@ const Camisetas = () => {
     if (currentUser?.type !== 'donatario') {
       return
     }
-    addRequest(productId)
+    
+    // Coleta dados do usuário para a solicitação
+    const nome = prompt('Digite seu nome completo:')
+    if (!nome) return
+    
+    const email = prompt('Digite seu email:')
+    if (!email) return
+    
+    const telefone = prompt('Digite seu telefone:')
+    if (!telefone) return
+    
+    // Registra o interesse no produto com os dados coletados
+    addRequest(productId, {
+      nome,
+      email,
+      telefone,
+      dataHora: new Date().toISOString()
+    })
     alert('Interesse manifestado! O doador será notificado.')
   }
 
-  const startChat = () => {
-    if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
-      alert('Faça login para enviar mensagens.')
-      return
-    }
-    navigate('/chat')
-  }
+
 
   return (
     <div className="container">
@@ -89,14 +100,6 @@ const Camisetas = () => {
               </div>
               <div className="product-bottom">
                 <div className="product-actions">
-                  {product.chatEnabled && (
-                    <button className="btn btn-primary" onClick={(e) => {
-                      e.stopPropagation()
-                      startChat()
-                    }}>
-                      Chat
-                    </button>
-                  )}
                   {product.whatsapp && (
                     <a href={`https://wa.me/55${product.whatsapp}`} 
                        className="btn btn-secondary" 
@@ -110,6 +113,14 @@ const Camisetas = () => {
                       handleProductInterest(product.id)
                     }}>
                       Tenho Interesse
+                    </button>
+                  )}
+                  {currentUser && currentUser.id === product.donorId && (
+                    <button className="btn btn-primary" onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/product-requests/${product.id}`)
+                    }}>
+                      Ver Solicitações
                     </button>
                   )}
                 </div>

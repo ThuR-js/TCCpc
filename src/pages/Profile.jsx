@@ -568,29 +568,23 @@ const Profile = () => {
             
             <div className="profile-card">
               <h3>Solicitações Recebidas</h3>
-              {pendingDonorRequests.length === 0 ? (
-                <p>Nenhuma solicitação pendente.</p>
-              ) : (
-                <div className="requests-summary">
-                  {pendingDonorRequests.map(request => (
-                    <div key={request.id} className="request-summary-item">
-                      <div className="request-product">
-                        <img 
-                          src={request.productImage.startsWith('data:') ? request.productImage : `/${request.productImage}`} 
-                          alt={request.productName}
-                          className="request-thumb"
-                        />
-                        <div className="request-details">
-                          <strong>{request.productName}</strong>
-                          <p>Solicitado por: {request.userName}</p>
-                          <p>Data: {new Date(request.date).toLocaleDateString()}</p>
-                          <span className="status-pending">Aguardando sua resposta</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              <div className="profile-info">
+                <div className="info-item">
+                  <strong>Produtos com Solicitações:</strong>
+                  <span>{userProducts.filter(p => requests.some(r => r.productId === p.id)).length}</span>
                 </div>
-              )}
+                <div className="info-item">
+                  <strong>Total de Solicitações:</strong>
+                  <span>{requests.filter(r => r.donorId === currentUser?.id).length}</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/received-requests')}
+                className="btn btn-primary"
+                style={{ marginTop: '1rem', width: '100%' }}
+              >
+                Ver Todas as Solicitações
+              </button>
             </div>
           </>
         ) : (

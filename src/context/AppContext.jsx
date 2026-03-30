@@ -25,7 +25,10 @@ export const AppProvider = ({ children }) => {
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [requests, setRequests] = useState([])
+  const [requests, setRequests] = useState(() => {
+    const savedRequests = localStorage.getItem('requests')
+    return savedRequests ? JSON.parse(savedRequests) : []
+  })
 
   // Palavras-chave para pesquisa por categoria
   const searchKeywords = {
@@ -638,7 +641,7 @@ export const AppProvider = ({ children }) => {
     )
   }
 
-  const addRequest = (productId) => {
+  const addRequest = (productId, userData) => {
     if (!currentUser) return
     
     const product = products.find(p => p.id === productId)
@@ -664,9 +667,10 @@ export const AppProvider = ({ children }) => {
       donorId: product.donorId,
       donorName: product.donor,
       userId: currentUser.id,
-      userName: currentUser.name,
-      userEmail: currentUser.email,
-      date: new Date().toISOString(),
+      userName: userData.nome,
+      userEmail: userData.email,
+      userPhone: userData.telefone,
+      date: userData.dataHora,
       status: 'pending'
     }
     

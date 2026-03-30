@@ -38,12 +38,21 @@ const ProductDetails = () => {
     }
   }
 
-  const startChat = () => {
-    navigate('/chat')
-  }
-
   const handleProductInterest = () => {
     if (!currentUser || currentUser.type !== 'donatario') return
+    
+    const nome = prompt('Digite seu nome completo:')
+    if (!nome) return
+    
+    const email = prompt('Digite seu email:')
+    if (!email) return
+    
+    const telefone = prompt('Digite seu telefone:')
+    if (!telefone) return
+    
+    // Aqui você pode adicionar a lógica para salvar a solicitação
+    // addRequest(product.id, { nome, email, telefone, dataHora: new Date().toISOString() })
+    
     alert('Interesse manifestado! O doador será notificado.')
   }
 
@@ -89,9 +98,9 @@ const ProductDetails = () => {
             </div>
           </div>
           <div className="product-detail-actions">
-            {product.chatEnabled && <button className="btn btn-primary" onClick={startChat}>Chat</button>}
             {product.whatsapp && <a href={`https://wa.me/55${product.whatsapp}`} className="btn btn-secondary">WhatsApp</a>}
             {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>}
+            {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Solicitações</button>}
           </div>
         </div>
       </div>
