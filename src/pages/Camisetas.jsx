@@ -100,13 +100,6 @@ const Camisetas = () => {
               </div>
               <div className="product-bottom">
                 <div className="product-actions">
-                  {product.whatsapp && (
-                    <a href={`https://wa.me/55${product.whatsapp}`} 
-                       className="btn btn-secondary" 
-                       onClick={(e) => e.stopPropagation()}>
-                      WhatsApp
-                    </a>
-                  )}
                   {currentUser && currentUser.type === 'donatario' && (
                     <button className="btn btn-outline" onClick={(e) => {
                       e.stopPropagation()

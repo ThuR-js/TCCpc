@@ -220,7 +220,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/CortaVentoTheNorthFace2.webp"
       ],
       status: "available",
-      whatsapp: "11333333333",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -239,7 +239,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/JaquetaAmiri3.webp"
       ],
       status: "available",
-      whatsapp: "11222222222",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -258,7 +258,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/Jaquetapalacestella3.webp"
       ],
       status: "available",
-      whatsapp: "11555555555",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -277,7 +277,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/MoletomChampion3.webp"
       ],
       status: "available",
-      whatsapp: "11444444444",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -296,7 +296,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/MoletomChampionCapuzBlack3.webp"
       ],
       status: "available",
-      whatsapp: "11111111111",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -315,7 +315,7 @@ export const AppProvider = ({ children }) => {
         "images/Moletons/MoletomEssentials3.webp"
       ],
       status: "available",
-      whatsapp: "11000000000",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -335,7 +335,7 @@ export const AppProvider = ({ children }) => {
         "images/Camisetas/CamisetaBalenciaga4.webp"
       ],
       status: "available",
-      whatsapp: "11999888777",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -353,7 +353,7 @@ export const AppProvider = ({ children }) => {
         "images/Camisetas/CamisetaCorteiz2.webp"
       ],
       status: "available",
-      whatsapp: "11888777666",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -371,7 +371,7 @@ export const AppProvider = ({ children }) => {
         "images/Camisetas/CamisetaStussy2.webp"
       ],
       status: "available",
-      whatsapp: "11777666555",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -390,7 +390,7 @@ export const AppProvider = ({ children }) => {
         "images/Calças/Calça Louis Vuitton Carpenter.webp"
       ],
       status: "available",
-      whatsapp: "11666555444",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -409,7 +409,7 @@ export const AppProvider = ({ children }) => {
         "images/Calças/CalçaDenim tears3.webp"
       ],
       status: "available",
-      whatsapp: "11555444333",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -428,7 +428,7 @@ export const AppProvider = ({ children }) => {
         "images/Calças/CalçaMoletom3.webp"
       ],
       status: "available",
-      whatsapp: "11444333222",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -448,7 +448,7 @@ export const AppProvider = ({ children }) => {
         "images/Calças/EDHard4.webp"
       ],
       status: "available",
-      whatsapp: "11333222111",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -466,7 +466,7 @@ export const AppProvider = ({ children }) => {
         "images/Calças/CalçaPolarBig2.webp"
       ],
       status: "available",
-      whatsapp: "11222111000",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -485,7 +485,7 @@ export const AppProvider = ({ children }) => {
         "images/Shorts/ShortBurberry3.webp"
       ],
       status: "available",
-      whatsapp: "11111000999",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -504,7 +504,7 @@ export const AppProvider = ({ children }) => {
         "images/Shorts/ShortEssentials4.webp"
       ],
       status: "available",
-      whatsapp: "11000999888",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -523,7 +523,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/Air Force 1 Black3.webp"
       ],
       status: "available",
-      whatsapp: "11999888777",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -542,7 +542,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/AsicsGel3.webp"
       ],
       status: "available",
-      whatsapp: "11888777666",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -562,7 +562,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF4.webp"
       ],
       status: "available",
-      whatsapp: "11777666555",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -582,7 +582,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/DunkAlbinoBlack4.webp"
       ],
       status: "available",
-      whatsapp: "11666555444",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -603,7 +603,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/Jordan 1 next chapter5.webp"
       ],
       status: "available",
-      whatsapp: "11555444333",
+      whatsapp: "",
       chatEnabled: true
     },
     {
@@ -624,7 +624,7 @@ export const AppProvider = ({ children }) => {
         "images/Tenis/Timberland5.webp"
       ],
       status: "available",
-      whatsapp: "11444333222",
+      whatsapp: "",
       chatEnabled: true
     }
   ]

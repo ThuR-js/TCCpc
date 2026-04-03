@@ -98,7 +98,6 @@ const ProductDetails = () => {
             </div>
           </div>
           <div className="product-detail-actions">
-            {product.whatsapp && <a href={`https://wa.me/55${product.whatsapp}`} className="btn btn-secondary">WhatsApp</a>}
             {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>}
             {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Solicitações</button>}
           </div>
