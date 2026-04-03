@@ -265,7 +265,7 @@ const Home = () => {
             <div className="product-info">
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <h3 className="product-name">{product.name}</h3>
-                {currentUser && currentUser.id === product.donorId && (
+                {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && (
                   <button 
                     className="remove-btn"
                     onClick={(e) => handleRemoveClick(e, product)}
@@ -286,7 +286,7 @@ const Home = () => {
                 {product.status === 'available' && (
                   <div className="product-actions">
                     {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={(e) => {e.stopPropagation(); handleProductInterest(product.id)}}>Tenho Interesse</button>}
-                    {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Solicitações</button>}
+                    {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Solicitações</button>}
                   </div>
                 )}
                 <button 

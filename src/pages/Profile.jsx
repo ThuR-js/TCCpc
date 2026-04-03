@@ -38,16 +38,18 @@ const Profile = () => {
     return new Date().toLocaleDateString()
   }
 
-  const removeProduct = (productId) => {
-    if (confirm('Tem certeza que deseja remover este anúncio?')) {
-      const updatedProducts = products.filter(p => p.id !== productId)
-      setProducts(updatedProducts)
-      // Atualiza AMBOS os localStorage para garantir sincronização
-      localStorage.setItem('products', JSON.stringify(updatedProducts))
-      localStorage.setItem('products_global', JSON.stringify(updatedProducts))
-      // Dispara evento para atualizar outros componentes
-      window.dispatchEvent(new Event('localStorageUpdate'))
+  const removeProduct = async (productId) => {
+    if (!confirm('Tem certeza que deseja remover este anúncio?')) return
+    const apiId = String(productId).startsWith('api_') ? String(productId).replace('api_', '') : null
+    if (apiId) {
+      try {
+        await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${apiId}`, { method: 'DELETE' })
+      } catch (e) {
+        alert('Erro ao remover anúncio')
+        return
+      }
     }
+    setProducts(prev => prev.filter(p => p.id !== productId))
   }
 
   const handleDeactivateAccount = async () => {

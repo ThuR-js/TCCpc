@@ -15,7 +15,6 @@ const AdminPanel = () => {
     setErro(null)
     try {
       const data = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO)
-      console.log('Anúncios recebidos:', data)
       setAnuncios(Array.isArray(data) ? data : [])
     } catch (e) {
       console.error('Erro ao buscar anúncios:', e)
