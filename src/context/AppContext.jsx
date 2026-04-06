@@ -732,13 +732,13 @@ export const AppProvider = ({ children }) => {
       const mergedUser = {
         ...currentUser,
         ...updatedUserFromAPI,
-        name: updatedUserFromAPI.nome || currentUser.name
+        nome: userData.nome || updatedUserFromAPI.nome || currentUser.nome,
+        name: userData.nome || updatedUserFromAPI.nome || currentUser.name
       }
       setCurrentUser(mergedUser)
       sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
       return { success: true }
     } catch (error) {
-      console.error('Error updating user:', error)
       return { success: false, error: 'Erro de conexão' }
     }
   }
