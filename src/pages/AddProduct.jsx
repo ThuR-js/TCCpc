@@ -103,6 +103,11 @@ const AddProduct = () => {
       return
     }
     
+    if (!currentUser.doadorId) {
+      alert('Seu perfil de doador ainda não foi configurado. Complete seu cadastro antes de adicionar produtos.')
+      return
+    }
+
     if (images.length === 0) {
       alert('Adicione pelo menos uma imagem')
       return

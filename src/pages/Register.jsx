@@ -55,25 +55,27 @@ const Register = () => {
         body: JSON.stringify(usuario)
       })
       
-      // TODO: Implementar CRUD do doador no back-end
-      // Se for doador, criar registro na tabela doador
-      // if (userType === 'doador') {
-      //   const doadorData = {
-      //     nome: name,
-      //     dataNascimento: birthDate,
-      //     cpf: cpf,
-      //     cep: cep,
-      //     usuarioId: newUser.id
-      //   }
-      //   
-      //   const doadorResponse = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
-      //     method: 'POST',
-      //     body: JSON.stringify(doadorData)
-      //   })
-      // }
-      
-      setCurrentUser(newUser)
-      sessionStorage.setItem('currentUser', JSON.stringify(newUser))
+      let userData = { ...newUser }
+
+      if (userType === 'doador') {
+        const doador = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
+          method: 'POST',
+          body: JSON.stringify({
+            nome: name,
+            dataNascimento: birthDate,
+            cpf: cpf,
+            cep: cep,
+            usuario: { id: newUser.id }
+          })
+        })
+        userData.doadorId = doador.id
+        userData.cpf = cpf
+        userData.cep = cep
+        userData.dataNascimento = birthDate
+      }
+
+      setCurrentUser(userData)
+      sessionStorage.setItem('currentUser', JSON.stringify(userData))
       navigate('/')
     } catch (error) {
       // Se houve erro de conexão
@@ -138,6 +140,14 @@ const Register = () => {
               />
             </div>
 
+            <div className="form-group">
+              <label>Tipo de usuário</label>
+              <select value={userType} onChange={(e) => setUserType(e.target.value)}>
+                <option value="donatario">Quero receber doações</option>
+                <option value="doador">Quero doar roupas</option>
+              </select>
+            </div>
+
             {userType === 'doador' && (
               <>
                 <div className="form-group">
@@ -185,14 +195,6 @@ const Register = () => {
                 </div>
               </>
             )}
-
-            <div className="form-group">
-              <label>Tipo de usuário</label>
-              <select value={userType} onChange={(e) => setUserType(e.target.value)}>
-                <option value="donatario">Quero receber doações</option>
-                <option value="doador">Quero doar roupas</option>
-              </select>
-            </div>
 
             <button type="submit" className="login-btn">Criar Conta</button>
             

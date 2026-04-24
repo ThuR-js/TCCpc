@@ -12,7 +12,9 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState(currentUser?.email || '')
   const [isLoading, setIsLoading] = useState(false)
   const [showDeactivateModal, setShowDeactivateModal] = useState(false)
-  const [showDoadorForm, setShowDoadorForm] = useState(false)
+  const [showDoadorForm, setShowDoadorForm] = useState(
+    currentUser?.nivelAcesso === 'DOADOR' && !currentUser?.doadorId
+  )
   const [doadorCpf, setDoadorCpf] = useState('')
   const [doadorDataNasc, setDoadorDataNasc] = useState('')
   const [doadorCep, setDoadorCep] = useState('')
@@ -311,6 +313,23 @@ const Profile = () => {
               )}
             </div>
             
+            {currentUser?.nivelAcesso === 'DOADOR' && currentUser?.doadorId && (
+              <>
+                <div className="info-item">
+                  <strong>CPF:</strong>
+                  <span>{currentUser?.cpf || 'Não informado'}</span>
+                </div>
+                <div className="info-item">
+                  <strong>CEP:</strong>
+                  <span>{currentUser?.cep || 'Não informado'}</span>
+                </div>
+                <div className="info-item">
+                  <strong>Data de Nascimento:</strong>
+                  <span>{currentUser?.dataNascimento ? new Date(currentUser.dataNascimento).toLocaleDateString('pt-BR') : 'Não informado'}</span>
+                </div>
+              </>
+            )}
+
             {showDoadorForm && (
               <div style={{marginTop: '2rem', padding: '1.5rem', backgroundColor: '#1a1a1a', borderRadius: '12px', border: '2px solid #DFA983'}}>
                 <h4 style={{color: '#DFA983', marginBottom: '1.5rem', fontSize: '18px', fontWeight: '600', textAlign: 'center'}}>Informações de Doador</h4>
@@ -465,21 +484,22 @@ const Profile = () => {
                           dataNascimento: doadorDataNasc,
                           cep: doadorCep
                         }
-                        setCurrentUser(mergedUser)
-                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
                         setShowDoadorForm(false)
                         
-                        // TODO: Quando CRUD Doador estiver pronto, criar registro:
-                        // await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
-                        //   method: 'POST',
-                        //   body: JSON.stringify({
-                        //     cpf: doadorCpf,
-                        //     dataNascimento: doadorDataNasc,
-                        //     cep: doadorCep,
-                        //     usuarioId: currentUser.id
-                        //   })
-                        // })
-                        
+                        const doador = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            nome: currentUser.nome || currentUser.name,
+                            cpf: doadorCpf,
+                            dataNascimento: doadorDataNasc,
+                            cep: doadorCep,
+                            usuario: { id: currentUser.id }
+                          })
+                        })
+                        mergedUser.doadorId = doador.id
+                        setCurrentUser(mergedUser)
+                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+
                         alert('Conta alterada para Doador com sucesso!')
                       } catch (error) {
                         alert('Erro de conexão')

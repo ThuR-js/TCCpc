@@ -52,6 +52,9 @@ const Login = () => {
                 try {
                   const doador = await apiRequest(`${API_CONFIG.ENDPOINTS.DOADOR}/usuario/${user.id}`)
                   userData.doadorId = doador.id
+                  userData.cpf = doador.cpf
+                  userData.cep = doador.cep
+                  userData.dataNascimento = doador.dataNascimento
                 } catch (e) {}
               }
               setCurrentUser(userData)
