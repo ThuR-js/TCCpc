@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import ProductCarousel from '../components/ProductCarousel'
 import SimpleCarousel from '../components/SimpleCarousel'
+import { apiRequest, API_CONFIG } from '../api'
 
 // Componente principal da página inicial
 const Home = () => {
@@ -144,11 +145,20 @@ const Home = () => {
   }
 
   // Função que remove o produto quando usuário confirma
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
     if (productToRemove) {
-      removeProduct(productToRemove.id) // Remove da lista
-      setShowRemoveModal(false) // Fecha o modal
-      setProductToRemove(null) // Limpa a seleção
+      const apiId = String(productToRemove.id).startsWith('api_') ? String(productToRemove.id).replace('api_', '') : null
+      if (apiId) {
+        try {
+          await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${apiId}`, { method: 'DELETE' })
+        } catch (e) {
+          alert('Erro ao remover anúncio')
+          return
+        }
+      }
+      removeProduct(productToRemove.id)
+      setShowRemoveModal(false)
+      setProductToRemove(null)
     }
   }
 
