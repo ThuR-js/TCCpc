@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import ProductCarousel from '../components/ProductCarousel'
 import SimpleCarousel from '../components/SimpleCarousel'
+import DonorProfileModal from '../components/DonorProfileModal'
 import { apiRequest, API_CONFIG } from '../api'
 
 // Componente principal da página inicial
@@ -29,6 +30,8 @@ const Home = () => {
   // Estados locais para controle do modal de remoção
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [productToRemove, setProductToRemove] = useState(null)
+  const [showDonorModal, setShowDonorModal] = useState(false)
+  const [selectedDonor, setSelectedDonor] = useState(null)
 
   const getImageSrc = (img) => {
     if (!img) return '/images/avatar2.webp'
@@ -59,28 +62,72 @@ const Home = () => {
   }
 
   // Produtos para "Para você" - aplica filtros de categoria
-  const filteredProducts = getVisibleProducts().filter(product => {
-    // Aplica filtro de busca por nome do produto
-    if (searchTerm !== '') {
-      let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      if (!nameMatch) {
+  const filteredProducts = (() => {
+    let baseProducts = getVisibleProducts().filter(product => {
+      // Aplica filtro de busca por nome do produto
+      if (searchTerm !== '') {
+        let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        if (!nameMatch) {
+          return false
+        }
+      }
+      
+      // Aplica filtros de categoria, tamanho e condição
+      if (filters.type !== '' && product.type !== filters.type) {
         return false
       }
+      if (filters.size !== '' && product.size !== filters.size) {
+        return false
+      }
+      if (filters.condition !== '' && product.condition !== filters.condition) {
+        return false
+      }
+      
+      return true
+    })
+
+    // LIMITAÇÃO PARA "TODOS OS ITENS" - Evitar página inicial pesada
+    // Quando "Todos os itens" está selecionado, mostrar apenas:
+    // 2 camisas + 2 calças + 1 blusa + 1 tênis + 1 shorts = 7 produtos no total
+    if (filters.type === '' && searchTerm === '') {
+      const limitedProducts = []
+      
+      // 2 camisas
+      const camisas = baseProducts
+        .filter(p => p.type === 'camiseta' && p.status === 'available')
+        .slice(0, 2)
+      limitedProducts.push(...camisas)
+      
+      // 2 calças
+      const calcas = baseProducts
+        .filter(p => p.type === 'calca' && p.status === 'available')
+        .slice(0, 2)
+      limitedProducts.push(...calcas)
+      
+      // 1 blusa
+      const blusas = baseProducts
+        .filter(p => p.type === 'moletom' && p.status === 'available')
+        .slice(0, 1)
+      limitedProducts.push(...blusas)
+      
+      // 1 tênis
+      const tenis = baseProducts
+        .filter(p => p.type === 'tenis' && p.status === 'available')
+        .slice(0, 1)
+      limitedProducts.push(...tenis)
+      
+      // 1 shorts
+      const shorts = baseProducts
+        .filter(p => p.type === 'shorts' && p.status === 'available')
+        .slice(0, 1)
+      limitedProducts.push(...shorts)
+      
+      return limitedProducts
     }
     
-    // Aplica filtros de categoria, tamanho e condição
-    if (filters.type !== '' && product.type !== filters.type) {
-      return false
-    }
-    if (filters.size !== '' && product.size !== filters.size) {
-      return false
-    }
-    if (filters.condition !== '' && product.condition !== filters.condition) {
-      return false
-    }
-    
-    return true
-  })
+    // Para filtros específicos ou busca, mostrar todos os resultados
+    return baseProducts
+  })()
 
   // Produtos para "Recém-publicados" - mostra os mesmos que "Todos os itens" (sem filtro de categoria)
   const recentProducts = getVisibleProducts().filter(product => {
@@ -166,6 +213,15 @@ const Home = () => {
   const cancelRemove = () => {
     setShowRemoveModal(false) // Fecha o modal
     setProductToRemove(null) // Limpa a seleção
+  }
+
+  const handleDonorClick = (e, product) => {
+    e.stopPropagation()
+    setSelectedDonor({
+      id: product.donorId,
+      name: product.donor
+    })
+    setShowDonorModal(true)
   }
 
   return (
@@ -285,9 +341,25 @@ const Home = () => {
                 )}
               </div>
               <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
+              {product.region && (
+                <p className="product-region">Região: {product.region}</p>
+              )}
               <div className="product-donor">
-                <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
-                <span>{product.donor}</span>
+                <img 
+                  src={product.donorPhoto || 'images/avatar2.webp'} 
+                  alt="Avatar" 
+                  className="donor-avatar"
+                  onError={(e) => {
+                    e.target.src = 'images/avatar2.webp'
+                    e.target.onerror = null
+                  }}
+                />
+                <span 
+                  className="donor-name-link" 
+                  onClick={(e) => handleDonorClick(e, product)}
+                >
+                  {product.donor}
+                </span>
               </div>
               {product.status === 'pending' && <span className="product-status status-analyzing">Em Análise</span>}
               {product.status === 'analyzing' && <span className="product-status status-analyzing">Em Análise</span>}
@@ -296,18 +368,21 @@ const Home = () => {
                 {product.status === 'available' && (
                   <div className="product-actions">
                     {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={(e) => {e.stopPropagation(); handleProductInterest(product.id)}}>Tenho Interesse</button>}
-                    {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Solicitações</button>}
+                    {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Validações</button>}
                   </div>
                 )}
-                <button 
-                  className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(product.id);
-                  }}
-                >
-                  {favorites.includes(product.id) ? '♥' : '♡'}
-                </button>
+                {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
+                  <button 
+                    className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(product.id);
+                    }}
+                    title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  >
+                    {favorites.includes(product.id) ? '♥' : '♡'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -325,6 +400,13 @@ const Home = () => {
           </div>
         </div>
       )}
+      
+      <DonorProfileModal 
+        isOpen={showDonorModal}
+        onClose={() => setShowDonorModal(false)}
+        donorId={selectedDonor?.id}
+        donorName={selectedDonor?.name}
+      />
       </div>
     </>
   )

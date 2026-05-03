@@ -26,7 +26,7 @@ const ReceivedRequests = () => {
       <button onClick={() => navigate('/profile')} className="btn-back">← Voltar ao Perfil</button>
       
       <div style={{ padding: '2rem 0' }}>
-        <h2 style={{ color: '#4A230A', marginBottom: '2rem' }}>Solicitações Recebidas</h2>
+        <h2 style={{ color: '#4A230A', marginBottom: '2rem' }}>Validação de Anúncios Recebidos</h2>
         
         {userProducts.length === 0 ? (
           <div style={{ 
@@ -87,7 +87,7 @@ const ReceivedRequests = () => {
                         fontSize: '0.9rem',
                         color: requestCount > 0 ? '#28a745' : '#666'
                       }}>
-                        {requestCount > 0 ? `${requestCount} solicitação${requestCount !== 1 ? 'ões' : ''}` : 'Nenhuma solicitação'}
+                        {requestCount > 0 ? `${requestCount} validação${requestCount !== 1 ? 'ões' : ''}` : 'Nenhuma validação'}
                       </span>
                       <span style={{ 
                         fontSize: '0.8rem',

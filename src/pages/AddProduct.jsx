@@ -21,14 +21,16 @@ const AddProduct = () => {
       descricao: '',
       categoria: '',
       tamanho: '',
-      condicao: ''
+      condicao: '',
+      regiao: ''
     },
     {
       nome: { required: true, minLength: 3 },
       descricao: { required: true, minLength: 10 },
       categoria: { required: true },
       tamanho: { required: true },
-      condicao: { required: true }
+      condicao: { required: true },
+      regiao: { required: true }
     }
   )
   
@@ -122,6 +124,7 @@ const AddProduct = () => {
           descricao: formData.descricao,
           tamanho: formData.tamanho,
           condicao: formData.condicao,
+          regiao: formData.regiao,
           foto: fotoUrl,
           categoria: { id: formData.categoria },
           doador: { id: currentUser.doadorId || currentUser.id }
@@ -266,6 +269,19 @@ const AddProduct = () => {
                 <option value="usado">Usado</option>
               </select>
               {errors.condicao && <span className="error-message">{errors.condicao}</span>}
+            </div>
+
+            <div className="form-group">
+              <label>Região</label>
+              <input
+                type="text"
+                name="regiao"
+                value={formData.regiao}
+                onChange={handleInputChange}
+                placeholder="Ex: Barueri, São Paulo"
+                required
+              />
+              {errors.regiao && <span className="error-message">{errors.regiao}</span>}
             </div>
 
             <button type="submit" className="btn btn-primary" style={{width: '100%', padding: '1rem'}} disabled={loading}>

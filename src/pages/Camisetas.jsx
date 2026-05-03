@@ -117,15 +117,18 @@ const Camisetas = () => {
                     </button>
                   )}
                 </div>
-                <button 
-                  className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleFavorite(product.id)
-                  }}
-                >
-                  {favorites.includes(product.id) ? '♥' : '♡'}
-                </button>
+                {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
+                  <button 
+                    className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleFavorite(product.id)
+                    }}
+                    title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  >
+                    {favorites.includes(product.id) ? '♥' : '♡'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

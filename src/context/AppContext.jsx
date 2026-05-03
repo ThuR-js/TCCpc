@@ -20,7 +20,10 @@ export const AppProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null
   })
   const [products, setProducts] = useState([])
-  const [favorites, setFavorites] = useState([])
+  const [favorites, setFavorites] = useState(() => {
+    const savedFavorites = localStorage.getItem('favorites')
+    return savedFavorites ? JSON.parse(savedFavorites) : []
+  })
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -73,8 +76,10 @@ export const AppProvider = ({ children }) => {
           type: categoriaParaType(a.categoria?.nome),
           size: a.tamanho,
           condition: a.condicao,
+          region: a.regiao,
           donor: a.doador?.nome,
           donorId: a.doador?.id,
+          donorPhoto: a.doador?.fotoPerfil,
           image: a.foto || 'images/avatar2.webp',
           images: [a.foto || 'images/avatar2.webp'],
           status: a.statusAnuncio === 'APROVADO' ? 'available' : a.statusAnuncio === 'PENDENTE' ? 'pending' : 'analyzing',
@@ -98,6 +103,7 @@ export const AppProvider = ({ children }) => {
       type: "camiseta",
       size: "P",
       condition: "seminovo",
+      region: "São Paulo, SP",
       donor: "Maria Silva",
       donorId: 1,
       image: "images/Camisetas/camiseta-hellstar.webp",
@@ -116,6 +122,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "G",
       condition: "usado",
+      region: "Rio de Janeiro, RJ",
       donor: "João Santos",
       donorId: 2,
       image: "images/Calças/calca-baggy.webp",
@@ -135,6 +142,7 @@ export const AppProvider = ({ children }) => {
       type: "shorts",
       size: "GG",
       condition: "novo",
+      region: "Belo Horizonte, MG",
       donor: "Ana Costa",
       donorId: 3,
       image: "images/Shorts/shorts-eric.webp",
@@ -154,6 +162,7 @@ export const AppProvider = ({ children }) => {
       type: "shorts",
       size: "M",
       condition: "seminovo",
+      region: "Salvador, BA",
       donor: "Carlos Lima",
       donorId: 4,
       image: "images/Shorts/shorts-nike2.webp",
@@ -172,6 +181,7 @@ export const AppProvider = ({ children }) => {
       type: "camiseta",
       size: "G",
       condition: "usado",
+      region: "Curitiba, PR",
       donor: "Fernanda Oliveira",
       donorId: 5,
       image: "images/Camisetas/camiseta-stone.webp",
@@ -192,6 +202,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "P",
       condition: "novo",
+      region: "Barueri, SP",
       donor: "Patricia Mendes",
       donorId: 6,
       image: "images/Calças/calca-corteiz.webp",
@@ -212,6 +223,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "M",
       condition: "seminovo",
+      region: "Florianópolis, SC",
       donor: "Rafael Costa",
       donorId: 7,
       image: "images/Moletons/CortaVentoTheNorthFace.webp",
@@ -230,6 +242,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "M",
       condition: "novo",
+      region: "Brasília, DF",
       donor: "Gustavo Silva",
       donorId: 8,
       image: "images/Moletons/JaquetaAmiri.webp",
@@ -249,6 +262,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "M",
       condition: "seminovo",
+      region: "Recife, PE",
       donor: "Lucas Ferreira",
       donorId: 9,
       image: "images/Moletons/Jaquetapalacestella.webp",
@@ -268,6 +282,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "GG",
       condition: "usado",
+      region: "Fortaleza, CE",
       donor: "Beatriz Santos",
       donorId: 10,
       image: "images/Moletons/MoletomChampion.webp",
@@ -287,6 +302,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "M",
       condition: "seminovo",
+      region: "Porto Alegre, RS",
       donor: "Diego Almeida",
       donorId: 11,
       image: "images/Moletons/MoletomChampionCapuzBlack.webp",
@@ -306,6 +322,7 @@ export const AppProvider = ({ children }) => {
       type: "moletom",
       size: "M",
       condition: "novo",
+      region: "Goiânia, GO",
       donor: "Amanda Rocha",
       donorId: 12,
       image: "images/Moletons/MoletomEssentials.webp",
@@ -325,6 +342,7 @@ export const AppProvider = ({ children }) => {
       type: "camiseta",
       size: "G",
       condition: "novo",
+      region: "Campinas, SP",
       donor: "Sophia Lima",
       donorId: 13,
       image: "images/Camisetas/CamisetaBalenciaga.webp",
@@ -345,6 +363,7 @@ export const AppProvider = ({ children }) => {
       type: "camiseta",
       size: "M",
       condition: "seminovo",
+      region: "Vitória, ES",
       donor: "Pedro Santos",
       donorId: 14,
       image: "images/Camisetas/CamisetaCorteiz.webp",
@@ -363,6 +382,7 @@ export const AppProvider = ({ children }) => {
       type: "camiseta",
       size: "M",
       condition: "usado",
+      region: "Manaus, AM",
       donor: "Mateus Oliveira",
       donorId: 15,
       image: "images/Camisetas/CamisetaStussy.webp",
@@ -381,6 +401,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "M",
       condition: "novo",
+      region: "Niterói, RJ",
       donor: "Isabella Costa",
       donorId: 16,
       image: "images/Calças/Calça Louis Vuitton Carpenter3.webp",
@@ -400,6 +421,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "GG",
       condition: "seminovo",
+      region: "Natal, RN",
       donor: "Gabriel Ferreira",
       donorId: 17,
       image: "images/Calças/CalçaDenim tears.webp",
@@ -419,6 +441,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "M",
       condition: "usado",
+      region: "Macaé, RJ",
       donor: "Larissa Silva",
       donorId: 18,
       image: "images/Calças/CalçaMoletom.webp",
@@ -438,6 +461,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "M",
       condition: "seminovo",
+      region: "Aracaju, SE",
       donor: "Thiago Rocha",
       donorId: 19,
       image: "images/Calças/EDHard.webp",
@@ -458,6 +482,7 @@ export const AppProvider = ({ children }) => {
       type: "calca",
       size: "M",
       condition: "usado",
+      region: "Joinville, SC",
       donor: "Vinicius Alves",
       donorId: 20,
       image: "images/Calças/CalçaPolarBig.webp",
@@ -476,6 +501,7 @@ export const AppProvider = ({ children }) => {
       type: "shorts",
       size: "M",
       condition: "novo",
+      region: "Ribeirão Preto, SP",
       donor: "Camila Martins",
       donorId: 21,
       image: "images/Shorts/ShortBurberry.webp",
@@ -495,6 +521,7 @@ export const AppProvider = ({ children }) => {
       type: "shorts",
       size: "M",
       condition: "seminovo",
+      region: "Sorocaba, SP",
       donor: "Rafael Mendes",
       donorId: 22,
       image: "images/Shorts/ShortEssentials2.webp",
@@ -514,6 +541,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "38",
       condition: "seminovo",
+      region: "Santos, SP",
       donor: "Bruno Silva",
       donorId: 23,
       image: "images/Tenis/Air Force 1 Black.webp",
@@ -533,6 +561,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "40",
       condition: "usado",
+      region: "Londrina, PR",
       donor: "Fernanda Costa",
       donorId: 24,
       image: "images/Tenis/AsicsGel.webp",
@@ -552,6 +581,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "42",
       condition: "novo",
+      region: "Campo Grande, MS",
       donor: "Carlos Eduardo",
       donorId: 25,
       image: "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF.webp",
@@ -572,6 +602,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "41",
       condition: "seminovo",
+      region: "Uberlândia, MG",
       donor: "Matheus Oliveira",
       donorId: 26,
       image: "images/Tenis/DunkAlbinoBlack.webp",
@@ -592,6 +623,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "44",
       condition: "novo",
+      region: "Teresina, PI",
       donor: "Leonardo Santos",
       donorId: 27,
       image: "images/Tenis/Jordan 1 next chapter.webp",
@@ -613,6 +645,7 @@ export const AppProvider = ({ children }) => {
       type: "tenis",
       size: "43",
       condition: "usado",
+      region: "São Luís, MA",
       donor: "Rodrigo Lima",
       donorId: 28,
       image: "images/Tenis/Timberland.webp",
@@ -634,11 +667,14 @@ export const AppProvider = ({ children }) => {
   }, [])
 
   const toggleFavorite = (productId) => {
-    setFavorites(prev => 
-      prev.includes(productId) 
+    setFavorites(prev => {
+      const newFavorites = prev.includes(productId) 
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
-    )
+      
+      localStorage.setItem('favorites', JSON.stringify(newFavorites))
+      return newFavorites
+    })
   }
 
   const addRequest = (productId, userData) => {

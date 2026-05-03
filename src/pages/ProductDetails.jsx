@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import DonorProfileModal from '../components/DonorProfileModal'
 
 const ProductDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { products, currentUser } = useApp()
+  const { products, currentUser, favorites, toggleFavorite } = useApp()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showDonorModal, setShowDonorModal] = useState(false)
   
   const product = products.find(p => String(p.id) === String(id))
 
@@ -56,6 +58,10 @@ const ProductDetails = () => {
     alert('Interesse manifestado! O doador será notificado.')
   }
 
+  const handleDonorClick = () => {
+    setShowDonorModal(true)
+  }
+
   return (
     <div className="container">
       <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
@@ -92,14 +98,42 @@ const ProductDetails = () => {
             <p><strong>Tamanho:</strong> {product.type === 'tenis' ? product.size : product.size}</p>
             <p><strong>Tipo:</strong> {product.type === 'moletom' ? 'Blusa' : product.type.charAt(0).toUpperCase() + product.type.slice(1)}</p>
             <p><strong>Condição:</strong> {product.condition}</p>
+            {product.region && (
+              <p><strong>Região:</strong> {product.region}</p>
+            )}
             <div className="product-donor">
-              <img src="/images/avatar2.webp" alt="Avatar" className="donor-avatar" />
-              <span><strong>Doador:</strong> {product.donor}</span>
+              <img 
+                src={product.donorPhoto || '/images/avatar2.webp'} 
+                alt="Avatar" 
+                className="donor-avatar"
+                onError={(e) => {
+                  e.target.src = '/images/avatar2.webp'
+                  e.target.onerror = null
+                }}
+              />
+              <span><strong>Doador:</strong> </span>
+              <span 
+                className="donor-name-link" 
+                onClick={handleDonorClick}
+              >
+                {product.donor}
+              </span>
             </div>
           </div>
           <div className="product-detail-actions">
-            {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>}
-            {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Solicitações</button>}
+            <div className="action-buttons">
+              {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>}
+              {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Validações</button>}
+            </div>
+            {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
+              <button 
+                className={`favorite-btn-detail ${favorites.includes(product.id) ? 'favorited' : ''}`}
+                onClick={() => toggleFavorite(product.id)}
+                title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              >
+                {favorites.includes(product.id) ? '♥' : '♡'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -124,14 +158,37 @@ const ProductDetails = () => {
                 <h3 className="product-name">{relatedProduct.name}</h3>
                 <p className="product-details">{relatedProduct.size} • {relatedProduct.condition}</p>
                 <div className="product-donor">
-                  <img src="/images/avatar2.webp" alt="Avatar" className="donor-avatar" />
-                  <span>{relatedProduct.donor}</span>
+                  <img 
+                    src={relatedProduct.donorPhoto || '/images/avatar2.webp'} 
+                    alt="Avatar" 
+                    className="donor-avatar"
+                    onError={(e) => {
+                      e.target.src = '/images/avatar2.webp'
+                      e.target.onerror = null
+                    }}
+                  />
+                  <span 
+                    className="donor-name-link" 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowDonorModal(true)
+                    }}
+                  >
+                    {relatedProduct.donor}
+                  </span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+      
+      <DonorProfileModal 
+        isOpen={showDonorModal}
+        onClose={() => setShowDonorModal(false)}
+        donorId={product?.donorId}
+        donorName={product?.donor}
+      />
     </div>
   )
 }

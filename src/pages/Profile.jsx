@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useState } from 'react'
 import { apiRequest, API_CONFIG } from '../api'
+import { isValidImageType, isValidFileSize } from '../utils'
 
 const Profile = () => {
   const navigate = useNavigate()
@@ -21,6 +22,11 @@ const Profile = () => {
   const [cpfSaved, setCpfSaved] = useState(false)
   const [dataSaved, setDataSaved] = useState(false)
   const [cepSaved, setCepSaved] = useState(false)
+  
+  // Estados para foto de perfil
+  const [profileImage, setProfileImage] = useState(null)
+  const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.fotoPerfil || null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
   const pendingRequests = userRequests.filter(req => req.status === 'pending')
@@ -68,6 +74,98 @@ const Profile = () => {
       alert('Erro de conexão')
     }
     setShowDeactivateModal(false)
+  }
+
+  // Função para upload de imagem no Cloudinary
+  const uploadImageToCloudinary = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'ml_default')
+    
+    const response = await fetch('https://api.cloudinary.com/v1_1/dod8l2rsn/image/upload', {
+      method: 'POST',
+      body: formData
+    })
+    
+    const data = await response.json()
+    if (!data.secure_url) {
+      throw new Error('Falha no upload da imagem')
+    }
+    return data.secure_url
+  }
+
+  // Função para selecionar imagem
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validações
+    if (!isValidImageType(file)) {
+      alert('Apenas imagens JPG, PNG e WEBP são permitidas')
+      return
+    }
+    
+    if (!isValidFileSize(file, 5)) {
+      alert('A imagem deve ter no máximo 5MB')
+      return
+    }
+
+    setProfileImage(file)
+    
+    // Criar preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setProfileImagePreview(e.target.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Função para salvar foto de perfil
+  const handleSaveProfileImage = async () => {
+    if (!profileImage) {
+      alert('Selecione uma imagem primeiro')
+      return
+    }
+
+    setIsUploadingImage(true)
+    try {
+      // Upload da imagem
+      const imageUrl = await uploadImageToCloudinary(profileImage)
+      
+      // Atualizar usuário com a nova foto
+      const result = await updateUser({ fotoPerfil: imageUrl })
+      
+      if (result.success) {
+        alert('Foto de perfil atualizada com sucesso!')
+        setProfileImage(null)
+      } else {
+        alert(result.error || 'Erro ao atualizar foto de perfil')
+      }
+    } catch (error) {
+      alert('Erro ao fazer upload da imagem: ' + error.message)
+    }
+    setIsUploadingImage(false)
+  }
+
+  // Função para remover foto de perfil
+  const handleRemoveProfileImage = async () => {
+    if (!confirm('Tem certeza que deseja remover sua foto de perfil?')) return
+    
+    setIsUploadingImage(true)
+    try {
+      const result = await updateUser({ fotoPerfil: null })
+      
+      if (result.success) {
+        setProfileImagePreview(null)
+        setProfileImage(null)
+        alert('Foto de perfil removida com sucesso!')
+      } else {
+        alert(result.error || 'Erro ao remover foto de perfil')
+      }
+    } catch (error) {
+      alert('Erro ao remover foto de perfil')
+    }
+    setIsUploadingImage(false)
   }
 
 
@@ -572,6 +670,93 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Seção de Foto de Perfil */}
+        <div className="profile-card">
+          <h3>Foto de Perfil</h3>
+          <div className="profile-photo-section">
+            <div className="current-photo">
+              <img 
+                src={profileImagePreview || currentUser?.fotoPerfil || '/images/avatar2.webp'} 
+                alt="Foto de perfil"
+                className="profile-photo-display"
+                onError={(e) => {
+                  e.target.src = '/images/avatar2.webp'
+                  e.target.onerror = null
+                }}
+              />
+            </div>
+            
+            <div className="photo-controls">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                style={{ display: 'none' }}
+                id="profile-image-input"
+              />
+              
+              <label 
+                htmlFor="profile-image-input" 
+                className="btn btn-secondary"
+                style={{
+                  display: 'inline-block',
+                  padding: '10px 20px',
+                  backgroundColor: '#4A230A',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  marginRight: '10px'
+                }}
+              >
+                Selecionar Foto
+              </label>
+              
+              {profileImage && (
+                <button 
+                  onClick={handleSaveProfileImage}
+                  disabled={isUploadingImage}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: isUploadingImage ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    marginRight: '10px'
+                  }}
+                >
+                  {isUploadingImage ? 'Salvando...' : 'Salvar Foto'}
+                </button>
+              )}
+              
+              {(currentUser?.fotoPerfil || profileImagePreview) && (
+                <button 
+                  onClick={handleRemoveProfileImage}
+                  disabled={isUploadingImage}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: isUploadingImage ? 'not-allowed' : 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Remover Foto
+                </button>
+              )}
+            </div>
+            
+            <p style={{ color: '#666', fontSize: '12px', marginTop: '10px', fontStyle: 'italic' }}>
+              Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB
+            </p>
+          </div>
+        </div>
+
         {(currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR') ? (
           <>
             <div className="profile-card">
@@ -589,14 +774,14 @@ const Profile = () => {
             </div>
             
             <div className="profile-card">
-              <h3>Solicitações Recebidas</h3>
+              <h3>Validações de Anúncios Recebidas</h3>
               <div className="profile-info">
                 <div className="info-item">
-                  <strong>Produtos com Solicitações:</strong>
+                  <strong>Produtos com Validações:</strong>
                   <span>{userProducts.filter(p => requests.some(r => r.productId === p.id)).length}</span>
                 </div>
                 <div className="info-item">
-                  <strong>Total de Solicitações:</strong>
+                  <strong>Total de Validações:</strong>
                   <span>{requests.filter(r => r.donorId === currentUser?.id).length}</span>
                 </div>
               </div>
@@ -605,15 +790,15 @@ const Profile = () => {
                 className="btn btn-primary"
                 style={{ marginTop: '1rem', width: '100%' }}
               >
-                Ver Todas as Solicitações
+                Ver Todas as Validações
               </button>
             </div>
           </>
         ) : (
           <div className="profile-card">
-            <h3>Solicitações em Andamento</h3>
+            <h3>Validações de Anúncios em Andamento</h3>
             {pendingRequests.length === 0 ? (
-              <p>Nenhuma solicitação pendente.</p>
+              <p>Nenhuma validação pendente.</p>
             ) : (
               <div className="requests-summary">
                 {pendingRequests.map(request => (
@@ -626,7 +811,7 @@ const Profile = () => {
                       />
                       <div className="request-details">
                         <strong>{request.productName}</strong>
-                        <p>Solicitado em: {new Date(request.date).toLocaleDateString()}</p>
+                        <p>Validado em: {new Date(request.date).toLocaleDateString()}</p>
                         <span className="status-pending">Aguardando resposta</span>
                       </div>
                     </div>

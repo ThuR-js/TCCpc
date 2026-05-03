@@ -69,6 +69,40 @@
   margin: 10px auto 0 auto;
 }
 
+.carousel-image-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.carousel-favorite-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  color: #ccc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.carousel-favorite-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 1);
+}
+
+.carousel-favorite-btn.favorited {
+  color: #e91e63;
+}
+
 .carousel-card .product-info {
   padding: 1rem;
 }
@@ -87,6 +121,41 @@
   color: #666;
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
+}
+
+.product-region {
+  color: #4A230A;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
+.product-donor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.donor-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.donor-name-link {
+  color: #4A230A;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s, text-decoration 0.2s;
+  font-weight: 500;
+}
+
+.donor-name-link:hover {
+  color: #B27148;
+  text-decoration: underline;
 }
 
 .carousel-btn {

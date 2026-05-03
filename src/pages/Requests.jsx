@@ -78,7 +78,7 @@ const Requests = () => {
 
       <div className="chat-container">
         <div className="chat-sidebar">
-          <h3>{currentUser?.isAdmin ? 'Validação de Anúncios' : 'Solicitações'}</h3>
+          <h3>Validação de Anúncios</h3>
 
           {loading ? (
             <p style={{ color: 'white', padding: '1rem' }}>Carregando...</p>

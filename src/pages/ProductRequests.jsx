@@ -16,7 +16,7 @@ const ProductRequests = () => {
         <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <h2>Acesso negado</h2>
-          <p>Você não tem permissão para ver as solicitações deste produto.</p>
+          <p>Você não tem permissão para ver as validações deste produto.</p>
         </div>
       </div>
     )
@@ -57,7 +57,7 @@ const ProductRequests = () => {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#4A230A' }}>Solicitações Recebidas</h3>
+          <h3 style={{ color: '#4A230A' }}>Validações de Anúncios Recebidas</h3>
           <span style={{ 
             background: '#4A230A', 
             color: 'white', 
@@ -65,7 +65,7 @@ const ProductRequests = () => {
             borderRadius: '20px',
             fontSize: '0.9rem'
           }}>
-            {productRequests.length} solicitação{productRequests.length !== 1 ? 'ões' : ''}
+            {productRequests.length} validação{productRequests.length !== 1 ? 'ões' : ''}
           </span>
         </div>
 
@@ -77,7 +77,7 @@ const ProductRequests = () => {
             borderRadius: '8px',
             color: '#666'
           }}>
-            <p>Nenhuma solicitação recebida para este produto ainda.</p>
+            <p>Nenhuma validação de anúncio recebida para este produto ainda.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -98,7 +98,7 @@ const ProductRequests = () => {
                       {request.userName}
                     </h4>
                     <p style={{ margin: '0.25rem 0 0 0', color: '#666', fontSize: '0.9rem' }}>
-                      Solicitado em {formatDate(request.date)}
+                      Validado em {formatDate(request.date)}
                     </p>
                   </div>
                   <span style={{ 

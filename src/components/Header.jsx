@@ -266,7 +266,7 @@ const Header = () => {
                         e.preventDefault();
                         navigate('/requests');
                         setShowDropdown(false);
-                      }}>Solicitações</a>
+                      }}>Validação de Anúncios</a>
                       {(currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
                         <a href="#" onClick={(e) => {
                           e.preventDefault();
