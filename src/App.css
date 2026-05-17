@@ -209,9 +209,44 @@ body {
     flex-shrink: 0;
 }
 
-.recent-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+.recent-card.donated {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(80%);
+    background: rgba(139, 69, 19, 0.15);
+    border-color: #999;
+    position: relative;
+}
+
+.recent-card.donated:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.recent-card.donated::before {
+    content: "DOADO";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #dc3545;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.recent-card.donated .product-image {
+    filter: grayscale(100%) brightness(0.6) contrast(0.8);
+}
+
+.recent-card.donated .product-name,
+.recent-card.donated .product-details,
+.recent-card.donated .product-region {
+    color: #999 !important;
 }
 
 .recent-card .product-image {
@@ -363,12 +398,33 @@ body {
 }
 
 .product-card.donated {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(80%);
+    background: rgba(139, 69, 19, 0.15);
+    border-color: #999;
+    position: relative;
 }
 
 .product-card.donated:hover {
     transform: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.product-card.donated::before {
+    content: "DOADO";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .product-card.pending {
@@ -393,7 +449,7 @@ body {
 }
 
 .product-image.donated {
-    filter: grayscale(100%) brightness(0.7);
+    filter: grayscale(100%) brightness(0.6) contrast(0.8);
 }
 
 .product-info {
@@ -430,9 +486,53 @@ body {
     color: white;
 }
 
-.status-donated {
-    background: #d4edda;
-    color: #155724;
+/* Donated Product Details */
+.product-detail-container.donated {
+    opacity: 0.7;
+    filter: grayscale(60%);
+    background: rgba(139, 69, 19, 0.15);
+    border-color: #999;
+    position: relative;
+}
+
+.product-detail-container.donated::before {
+    content: "PRODUTO DOADO";
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #dc3545;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.product-detail-container.donated .carousel-image {
+    filter: grayscale(100%) brightness(0.6) contrast(0.8);
+}
+
+.product-detail-container.donated .product-detail-title,
+.product-detail-container.donated .product-detail-description {
+    color: #666 !important;
+}
+
+/* Disabled buttons for donated products */
+.btn-outline.disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-outline.disabled:hover {
+    background: #e9ecef;
+    color: #6c757d;
+    border-color: #dee2e6;
 }
 
 .product-actions {
@@ -709,160 +809,6 @@ button[type="submit"]:hover {
     color: #e91e63;
     border-color: #e91e63;
     background: rgba(233, 30, 99, 0.1);
-}
-
-/* Chat */
-.chat-container {
-    display: flex;
-    height: 600px;
-    background: #A18777;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.chat-sidebar {
-    width: 300px;
-    border-right: 2px solid #D2B48C;
-    padding: 1rem;
-    background: #6e4d32d0;
-}
-
-.chat-sidebar h3 {
-    color: white;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.chat-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #E5D5C8;
-}
-
-#chatMessages {
-    flex: 1;
-    padding: 1rem;
-    overflow-y: auto;
-    background: #E5D5C8;
-}
-
-.chat-input {
-    display: flex;
-    padding: 1rem;
-    border-top: 2px solid #4a230a;
-    background: #A18777;
-}
-
-.chat-input input {
-    flex: 1;
-    margin-right: 0.5rem;
-    padding: 0.75rem;
-    border: 1px solid #4a230a;
-    border-radius: 25px;
-    outline: none;
-    background: white;
-    color: #4A230A;
-}
-
-.chat-input input::placeholder {
-    color: #4A230A;
-    opacity: 0.7;
-}
-
-.chat-input button {
-    background: #4A230A;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
-}
-
-.chat-input button:hover {
-    background: #B27148;
-}
-
-.chat-item {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    color: white;
-}
-
-.chat-item:hover {
-    background: rgba(161, 135, 119, 0.3);
-    transform: translateX(5px);
-}
-
-.chat-item.active {
-    background: white;
-    color: black;
-    transform: translateX(10px);
-}
-
-.chat-preview strong {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
-}
-
-.chat-preview p {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.message {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: 15px;
-    max-width: 70%;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    animation: fadeIn 0.3s ease-in;
-}
-
-.message.sent {
-    background: #4A230A;
-    color: white;
-    margin-left: auto;
-    border-bottom-right-radius: 5px;
-}
-
-.message.received {
-    background: white;
-    color: black;
-    border: 1px solid #B27148;
-    border-bottom-left-radius: 5px;
-}
-
-.message strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.no-chat-selected {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: white;
-    font-size: 1.1rem;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive */
@@ -1373,6 +1319,68 @@ button[type="submit"]:hover {
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* My Ads Page */
+.my-ad-card {
+    transition: all 0.3s ease;
+}
+
+.my-ad-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.status-available {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-badge.status-pending {
+    background-color: #FF9800;
+    color: white;
+}
+
+.status-badge.status-analyzing {
+    background-color: #2196F3;
+    color: white;
+}
+
+.status-badge.status-donated {
+    background-color: #9E9E9E;
+    color: white;
+}
+
+.status-badge.status-unknown {
+    background-color: #6c757d;
+    color: white;
+}
+
+.empty-ads {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(161, 135, 119, 0.8);
+    border-radius: 12px;
+    color: white;
+}
+
+.empty-ads h3 {
+    color: #DFA983;
+    margin-bottom: 1rem;
+}
+
+.empty-ads p {
+    color: #ccc;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {

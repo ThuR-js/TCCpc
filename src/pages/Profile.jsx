@@ -13,6 +13,15 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState(currentUser?.email || '')
   const [isLoading, setIsLoading] = useState(false)
   const [showDeactivateModal, setShowDeactivateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  
+  // Estados para alteração de senha
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [showDoadorForm, setShowDoadorForm] = useState(
     currentUser?.nivelAcesso === 'DOADOR' && !currentUser?.doadorId
   )
@@ -74,6 +83,69 @@ const Profile = () => {
       alert('Erro de conexão')
     }
     setShowDeactivateModal(false)
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
+        method: 'DELETE'
+      })
+      
+      alert('Conta excluída permanentemente!')
+      setCurrentUser(null)
+      sessionStorage.removeItem('currentUser')
+      navigate('/')
+    } catch (error) {
+      alert('Erro ao excluir conta')
+    }
+    setShowDeleteModal(false)
+  }
+
+  const handlePasswordChange = async () => {
+    // Limpar erros anteriores
+    setPasswordError('')
+    
+    // Validações
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError('Todos os campos são obrigatórios')
+      return
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError('A nova senha e a confirmação não são iguais')
+      return
+    }
+    
+    if (newPassword.length < 6) {
+      setPasswordError('A nova senha deve ter pelo menos 6 caracteres')
+      return
+    }
+    
+    if (currentPassword === newPassword) {
+      setPasswordError('A nova senha deve ser diferente da senha atual')
+      return
+    }
+    
+    setIsChangingPassword(true)
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}/alterar-senha`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          senhaAtual: currentPassword,
+          novaSenha: newPassword
+        })
+      })
+      
+      alert('Senha alterada com sucesso!')
+      // Limpar campos
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setShowPasswordForm(false)
+    } catch (error) {
+      setPasswordError('Erro ao alterar senha. Verifique se a senha atual está correta.')
+    }
+    setIsChangingPassword(false)
   }
 
   // Função para upload de imagem no Cloudinary
@@ -427,6 +499,142 @@ const Profile = () => {
                 </div>
               </>
             )}
+            
+            {/* Seção de Alteração de Senha */}
+            <div className="info-item" style={{marginTop: '2rem'}}>
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem'}}>
+                <strong>Alterar Senha:</strong>
+                <button 
+                  onClick={() => {
+                    setShowPasswordForm(!showPasswordForm)
+                    if (showPasswordForm) {
+                      // Limpar campos ao fechar
+                      setCurrentPassword('')
+                      setNewPassword('')
+                      setConfirmPassword('')
+                      setPasswordError('')
+                    }
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: showPasswordForm ? '#f44336' : '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  {showPasswordForm ? 'Cancelar' : 'Alterar Senha'}
+                </button>
+              </div>
+              
+              {showPasswordForm && (
+                <div style={{
+                  padding: '1.5rem',
+                  backgroundColor: '#1a1a1a',
+                  borderRadius: '8px',
+                  border: '1px solid #333',
+                  marginTop: '1rem'
+                }}>
+                  <h4 style={{color: '#DFA983', marginBottom: '1.5rem', fontSize: '16px'}}>Alterar Senha</h4>
+                  
+                  {passwordError && (
+                    <div style={{
+                      padding: '10px',
+                      backgroundColor: '#ffebee',
+                      border: '1px solid #f44336',
+                      borderRadius: '4px',
+                      marginBottom: '1rem',
+                      color: '#d32f2f',
+                      fontSize: '14px'
+                    }}>
+                      {passwordError}
+                    </div>
+                  )}
+                  
+                  <div style={{marginBottom: '1rem'}}>
+                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Senha Atual:</label>
+                    <input 
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Digite sua senha atual"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc',
+                        fontSize: '14px',
+                        backgroundColor: 'white'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{marginBottom: '1rem'}}>
+                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Nova Senha:</label>
+                    <input 
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Digite a nova senha (mín. 6 caracteres)"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc',
+                        fontSize: '14px',
+                        backgroundColor: 'white'
+                      }}
+                    />
+                  </div>
+                  
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Confirmar Nova Senha:</label>
+                    <input 
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Digite novamente a nova senha"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        border: confirmPassword && newPassword !== confirmPassword ? '2px solid #f44336' : '1px solid #ccc',
+                        fontSize: '14px',
+                        backgroundColor: 'white'
+                      }}
+                    />
+                    {confirmPassword && newPassword !== confirmPassword && (
+                      <p style={{color: '#f44336', fontSize: '12px', marginTop: '5px', marginBottom: '0'}}>As senhas não coincidem</p>
+                    )}
+                  </div>
+                  
+                  <div style={{textAlign: 'center'}}>
+                    <button 
+                      onClick={handlePasswordChange}
+                      disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: (currentPassword && newPassword && confirmPassword && newPassword === confirmPassword) ? '#4CAF50' : '#666',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: (currentPassword && newPassword && confirmPassword && newPassword === confirmPassword) ? 'pointer' : 'not-allowed',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
+                    </button>
+                  </div>
+                  
+                  <p style={{color: '#999', fontSize: '12px', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic'}}>
+                    💡 A senha deve ter pelo menos 6 caracteres e ser diferente da atual
+                  </p>
+                </div>
+              )}
+            </div>
 
             {showDoadorForm && (
               <div style={{marginTop: '2rem', padding: '1.5rem', backgroundColor: '#1a1a1a', borderRadius: '12px', border: '2px solid #DFA983'}}>
@@ -661,11 +869,28 @@ const Profile = () => {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  marginRight: '10px'
                 }}
               >
                 Inativar Conta
               </button>
+              <button 
+                onClick={() => setShowDeleteModal(true)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#8B0000',
+                  color: 'white',
+                  border: '2px solid #ff0000',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Excluir Conta
+              </button>
+              <p style={{color: '#ff6666', marginTop: '0.5rem', fontSize: '12px', fontStyle: 'italic'}}>⚠️ A exclusão da conta é permanente e não pode ser desfeita!</p>
             </div>
           </div>
         </div>
@@ -944,6 +1169,66 @@ const Profile = () => {
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: '#2a2a2a',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '450px',
+            textAlign: 'center',
+            border: '2px solid #ff0000'
+          }}>
+            <h3 style={{color: '#ff0000', marginBottom: '1rem', fontSize: '20px'}}>⚠️ EXCLUIR CONTA PERMANENTEMENTE</h3>
+            <p style={{color: '#fff', marginBottom: '1rem', fontSize: '16px', fontWeight: 'bold'}}>Esta ação é IRREVERSÍVEL!</p>
+            <p style={{color: '#ccc', marginBottom: '2rem', fontSize: '14px'}}>Todos os seus dados, anúncios e histórico serão perdidos para sempre. Você não poderá recuperar sua conta após a exclusão.</p>
+            <p style={{color: '#ff6666', marginBottom: '2rem', fontSize: '14px', fontStyle: 'italic'}}>Tem absoluta certeza que deseja excluir sua conta?</p>
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
+              <button 
+                onClick={handleDeleteAccount}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#8B0000',
+                  color: 'white',
+                  border: '2px solid #ff0000',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                SIM, EXCLUIR PERMANENTEMENTE
+              </button>
+              <button 
+                onClick={() => setShowDeleteModal(false)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
               >
                 Cancelar

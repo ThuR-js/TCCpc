@@ -254,11 +254,6 @@ const Header = () => {
                     <div className="menu-dropdown show">
                       <a href="#" onClick={(e) => {
                         e.preventDefault();
-                        navigate('/chat');
-                        setShowDropdown(false);
-                      }}>Chats</a>
-                      <a href="#" onClick={(e) => {
-                        e.preventDefault();
                         navigate('/favorites');
                         setShowDropdown(false);
                       }}>Favoritos ({favorites.length})</a>
@@ -268,11 +263,18 @@ const Header = () => {
                         setShowDropdown(false);
                       }}>Validação de Anúncios</a>
                       {(currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
-                        <a href="#" onClick={(e) => {
-                          e.preventDefault();
-                          navigate('/add-product');
-                          setShowDropdown(false);
-                        }}>Adicionar Produto</a>
+                        <>
+                          <a href="#" onClick={(e) => {
+                            e.preventDefault();
+                            navigate('/my-ads');
+                            setShowDropdown(false);
+                          }}>Meus Anúncios</a>
+                          <a href="#" onClick={(e) => {
+                            e.preventDefault();
+                            navigate('/add-product');
+                            setShowDropdown(false);
+                          }}>Adicionar Produto</a>
+                        </>
                       )}
                       <a href="#" onClick={(e) => {
                         e.preventDefault();

@@ -47,8 +47,18 @@ const Favorites = () => {
       ) : (
         <div className="products-grid">
           {favoriteProducts.map(product => (
-            <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
-                 onClick={() => navigate(`/product/${product.id}`)}>
+            <div 
+              key={product.id} 
+              className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
+              onClick={() => {
+                if (product.status !== 'donated') {
+                  navigate(`/product/${product.id}`)
+                }
+              }}
+              style={{
+                cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+              }}
+            >
               <img 
                 src={getImageSrc(product.image)} 
                 alt={product.name} 
@@ -60,7 +70,9 @@ const Favorites = () => {
               />
               <div className="product-info">
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                  <h3 className="product-name">{product.name}</h3>
+                  <h3 className="product-name" style={{
+                    color: product.status === 'donated' ? '#999' : 'inherit'
+                  }}>{product.name}</h3>
                   <button 
                     className="favorite-btn-card favorited"
                     onClick={(e) => {
@@ -72,15 +84,22 @@ const Favorites = () => {
                     ♥
                   </button>
                 </div>
-                <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
+                <p className="product-details" style={{
+                  color: product.status === 'donated' ? '#999' : '#666'
+                }}>Tam. <span style={{color: product.status === 'donated' ? '#999' : '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
                 {product.region && (
-                  <p className="product-region">Região: {product.region}</p>
+                  <p className="product-region" style={{
+                    color: product.status === 'donated' ? '#999' : '#4A230A'
+                  }}>Região: {product.region}</p>
                 )}
                 <div className="product-donor">
                   <img 
                     src={product.donorPhoto || '/images/avatar2.webp'} 
                     alt="Avatar" 
                     className="donor-avatar"
+                    style={{
+                      opacity: product.status === 'donated' ? 0.5 : 1
+                    }}
                     onError={(e) => {
                       e.target.src = '/images/avatar2.webp'
                       e.target.onerror = null
@@ -88,7 +107,15 @@ const Favorites = () => {
                   />
                   <span 
                     className="donor-name-link" 
-                    onClick={(e) => handleDonorClick(e, product)}
+                    onClick={(e) => {
+                      if (product.status !== 'donated') {
+                        handleDonorClick(e, product)
+                      }
+                    }}
+                    style={{
+                      color: product.status === 'donated' ? '#999' : '#4A230A',
+                      cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     {product.donor}
                   </span>

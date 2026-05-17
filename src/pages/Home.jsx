@@ -154,6 +154,13 @@ const Home = () => {
 
   // Função que registra interesse em um produto
   const handleProductInterest = (productId) => {
+    // Verificar se o produto está doado
+    const product = products.find(p => p.id === productId)
+    if (product?.status === 'donated') {
+      alert('Este produto já foi doado e não está mais disponível.')
+      return
+    }
+    
     // Verifica se o usuário é convidado (não logado)
     if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
       alert('Faça login para manifestar interesse.')
@@ -335,8 +342,25 @@ const Home = () => {
                   <button 
                     className="remove-btn"
                     onClick={(e) => handleRemoveClick(e, product)}
+                    style={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#c82333'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#dc3545'
+                    }}
                   >
-                    Remover
+                    Remover Anúncio
                   </button>
                 )}
               </div>
@@ -371,14 +395,25 @@ const Home = () => {
                     {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Validações</button>}
                   </div>
                 )}
+                {product.status === 'donated' && (
+                  <div className="product-actions">
+                    <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
+                  </div>
+                )}
                 {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
                   <button 
                     className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(product.id);
+                      if (product.status !== 'donated') {
+                        toggleFavorite(product.id);
+                      }
                     }}
-                    title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                    title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
+                    style={{
+                      opacity: product.status === 'donated' ? 0.5 : 1,
+                      cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                    }}
                   >
                     {favorites.includes(product.id) ? '♥' : '♡'}
                   </button>
@@ -390,12 +425,65 @@ const Home = () => {
       </div>
       
       {showRemoveModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Deseja remover esse anúncio?</h3>
-            <div style={{display: 'flex', gap: '1rem', marginTop: '2rem'}}>
-              <button onClick={confirmRemove} className="btn btn-primary">Sim</button>
-              <button onClick={cancelRemove} className="btn btn-secondary">Não</button>
+        <div className="modal" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: '#2a2a2a',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            textAlign: 'center',
+            border: '2px solid #dc3545'
+          }}>
+            <h3 style={{color: '#dc3545', marginBottom: '1rem'}}>⚠️ Confirmar Remoção</h3>
+            <p style={{color: '#fff', marginBottom: '1rem'}}>Tem certeza que deseja remover o anúncio:</p>
+            <p style={{
+              color: '#DFA983',
+              fontWeight: 'bold',
+              marginBottom: '2rem',
+              fontSize: '1.1rem'
+            }}>"{ productToRemove?.name}"</p>
+            <p style={{color: '#ccc', marginBottom: '2rem', fontSize: '0.9rem'}}>Esta ação não pode ser desfeita.</p>
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
+              <button 
+                onClick={confirmRemove}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Sim, Remover
+              </button>
+              <button 
+                onClick={cancelRemove}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

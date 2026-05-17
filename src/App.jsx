@@ -4,13 +4,13 @@ import { NotificationContainer } from './components/Notification'
 import Header from './components/Header'
 import Home from './pages/Home'
 import Favorites from './pages/Favorites'
-import Chat from './pages/Chat'
 import ProductDetails from './pages/ProductDetails'
 import ProductRequests from './pages/ProductRequests'
 import ReceivedRequests from './pages/ReceivedRequests'
 import Requests from './pages/Requests'
 import AddProduct from './pages/AddProduct'
 import Profile from './pages/Profile'
+import MyAds from './pages/MyAds'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminPanel from './pages/AdminPanel'
@@ -49,14 +49,6 @@ function App() {
                 </main>
               </ProtectedRoute>
             } />
-            <Route path="/chat" element={
-              <ProtectedRoute>
-                <Header />
-                <main className="main">
-                  <Chat />
-                </main>
-              </ProtectedRoute>
-            } />
             <Route path="/requests" element={
               <ProtectedRoute>
                 <Header />
@@ -78,6 +70,14 @@ function App() {
                 <Header />
                 <main className="main">
                   <Profile />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/my-ads" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <MyAds />
                 </main>
               </ProtectedRoute>
             } />

@@ -80,7 +80,18 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
           </div>
         )}
         {products.map(product => (
-          <div key={product.id} className="carousel-card" onClick={() => navigate(`/product/${product.id}`)}>
+          <div 
+            key={product.id} 
+            className={`carousel-card ${product.status === 'donated' ? 'donated' : ''}`} 
+            onClick={() => {
+              if (product.status !== 'donated') {
+                navigate(`/product/${product.id}`)
+              }
+            }}
+            style={{
+              cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+            }}
+          >
             <div className="carousel-image-container">
               <img 
                 src={getImageSrc(product.image)} 
@@ -96,25 +107,40 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                   className={`carousel-favorite-btn ${favorites.includes(product.id) ? 'favorited' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation()
-                    toggleFavorite(product.id)
+                    if (product.status !== 'donated') {
+                      toggleFavorite(product.id)
+                    }
                   }}
-                  title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                  title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
+                  style={{
+                    opacity: product.status === 'donated' ? 0.5 : 1,
+                    cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {favorites.includes(product.id) ? '♥' : '♡'}
                 </button>
               )}
             </div>
             <div className="product-info">
-              <h3 className="product-name">{product.name}</h3>
-              <p className="product-details">{product.size} • {product.condition}</p>
+              <h3 className="product-name" style={{
+                color: product.status === 'donated' ? '#999' : 'inherit'
+              }}>{product.name}</h3>
+              <p className="product-details" style={{
+                color: product.status === 'donated' ? '#999' : '#666'
+              }}>{product.size} • {product.condition}</p>
               {product.region && (
-                <p className="product-region">Região: {product.region}</p>
+                <p className="product-region" style={{
+                  color: product.status === 'donated' ? '#999' : '#4A230A'
+                }}>Região: {product.region}</p>
               )}
               <div className="product-donor">
                 <img 
                   src={product.donorPhoto || '/images/avatar2.webp'} 
                   alt="Avatar" 
                   className="donor-avatar"
+                  style={{
+                    opacity: product.status === 'donated' ? 0.5 : 1
+                  }}
                   onError={(e) => {
                     e.target.src = '/images/avatar2.webp'
                     e.target.onerror = null
@@ -122,7 +148,15 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                 />
                 <span 
                   className="donor-name-link" 
-                  onClick={(e) => handleDonorClick(e, product)}
+                  onClick={(e) => {
+                    if (product.status !== 'donated') {
+                      handleDonorClick(e, product)
+                    }
+                  }}
+                  style={{
+                    color: product.status === 'donated' ? '#999' : '#4A230A',
+                    cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   {product.donor}
                 </span>

@@ -41,6 +41,12 @@ const ProductDetails = () => {
   }
 
   const handleProductInterest = () => {
+    // Verificar se o produto está doado
+    if (product?.status === 'donated') {
+      alert('Este produto já foi doado e não está mais disponível.')
+      return
+    }
+    
     if (!currentUser || currentUser.type !== 'donatario') return
     
     const nome = prompt('Digite seu nome completo:')
@@ -65,7 +71,7 @@ const ProductDetails = () => {
   return (
     <div className="container">
       <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
-      <div className="product-detail-container">
+      <div className={`product-detail-container ${product.status === 'donated' ? 'donated' : ''}`}>
         <div className="carousel-container">
           <div className="carousel">
             <img 
@@ -122,14 +128,27 @@ const ProductDetails = () => {
           </div>
           <div className="product-detail-actions">
             <div className="action-buttons">
-              {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>}
+              {currentUser && currentUser.type === 'donatario' && product.status === 'available' && (
+                <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>
+              )}
+              {currentUser && currentUser.type === 'donatario' && product.status === 'donated' && (
+                <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
+              )}
               {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Validações</button>}
             </div>
             {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
               <button 
                 className={`favorite-btn-detail ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                onClick={() => toggleFavorite(product.id)}
-                title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                onClick={() => {
+                  if (product.status !== 'donated') {
+                    toggleFavorite(product.id)
+                  }
+                }}
+                title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
+                style={{
+                  opacity: product.status === 'donated' ? 0.5 : 1,
+                  cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                }}
               >
                 {favorites.includes(product.id) ? '♥' : '♡'}
               </button>
