@@ -1,0 +1,782 @@
+import { createContext, useContext, useState, useEffect } from 'react'
+import { apiRequest, API_CONFIG } from '../api'
+import { useNotification } from '../components/Notification'
+
+const AppContext = createContext()
+
+export const useApp = () => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error('useApp deve ser usado dentro de AppProvider')
+  }
+  return context
+}
+
+export const AppProvider = ({ children }) => {
+  const notification = useNotification()
+  
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = sessionStorage.getItem('currentUser')
+    return savedUser ? JSON.parse(savedUser) : null
+  })
+  const [products, setProducts] = useState([])
+  const [favorites, setFavorites] = useState(() => {
+    const savedFavorites = localStorage.getItem('favorites')
+    return savedFavorites ? JSON.parse(savedFavorites) : []
+  })
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [requests, setRequests] = useState(() => {
+    const savedRequests = localStorage.getItem('requests')
+    return savedRequests ? JSON.parse(savedRequests) : []
+  })
+
+  // Palavras-chave para pesquisa por categoria
+  const searchKeywords = {
+    camiseta: ['camisa', 'camisetas', 'cropped'],
+    calca: ['calça', 'short', 'saia'],
+    moletom: ['blusas', 'moletom'],
+    tenis: ['calçado', 'sandalia', 'tenis', 'sapato']
+  }
+
+  // Função para verificar se o termo de pesquisa corresponde a alguma categoria
+  const getProductTypeFromSearch = (searchTerm) => {
+    const term = searchTerm.toLowerCase().trim()
+    
+    for (const [productType, keywords] of Object.entries(searchKeywords)) {
+      if (keywords.some(keyword => term.includes(keyword))) {
+        return productType
+      }
+    }
+    return null
+  }
+
+  const categoriaParaType = (nome) => {
+    if (!nome) return ''
+    const n = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (n.includes('calca')) return 'calca'
+    if (n.includes('camiseta')) return 'camiseta'
+    if (n.includes('moleton') || n.includes('blusa')) return 'moletom'
+    if (n.includes('tenis')) return 'tenis'
+    if (n.includes('short')) return 'shorts'
+    return n
+  }
+
+  const mapAnuncio = (a, status) => ({
+    id: `api_${a.id}`,
+    apiId: a.id,
+    name: a.nome,
+    description: a.descricao,
+    type: categoriaParaType(a.categoria?.nome),
+    size: a.tamanho,
+    condition: a.condicao,
+    region: a.regiao,
+    donor: a.doador?.nome,
+    donorId: a.doador?.id,
+    donorPhoto: a.doador?.fotoPerfil,
+    image: a.foto || 'images/avatar2.webp',
+    images: [a.foto || 'images/avatar2.webp'],
+    status,
+    statusAnuncio: a.statusAnuncio,
+    dataCadastro: a.dataCadastro
+  })
+
+  const fetchProducts = async (user) => {
+    try {
+      const data = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO)
+      let fromApi = Array.isArray(data) ? data.map(a => mapAnuncio(a, 'available')) : []
+
+      const doadorId = user?.doadorId
+      if (doadorId) {
+        try {
+          const pendentes = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO_POR_DOADOR(doadorId))
+          if (Array.isArray(pendentes)) {
+            const ids = new Set(fromApi.map(p => p.id))
+            const pendentesMap = pendentes
+              .filter(a => a.statusAnuncio === 'PENDENTE')
+              .map(a => mapAnuncio(a, 'pending'))
+              .filter(p => !ids.has(p.id))
+            fromApi = [...fromApi, ...pendentesMap]
+          }
+        } catch (e) { console.error('Erro ao buscar pendentes:', e) }
+      }
+
+      setProducts([...fromApi, ...sampleProducts])
+    } catch (e) {
+      console.error('Erro fetchProducts:', e.message, e)
+      setProducts(sampleProducts)
+    }
+  }
+
+  const sampleProducts = [
+    {
+      id: 1,
+      name: "Camiseta Hellstar Cinza",
+      description: "Camiseta 100% algodão em ótimo estado",
+      type: "camiseta",
+      size: "P",
+      condition: "seminovo",
+      region: "São Paulo, SP",
+      donor: "Maria Silva",
+      donorId: 1,
+      image: "images/Camisetas/camiseta-hellstar.webp",
+      images: [
+        "images/Camisetas/camiseta-hellstar.webp",
+        "images/Camisetas/camiseta-hellstar2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 2,
+      name: "Calça Baggy Lavagem Preta",
+      description: "Calça jeans azul, tamanho 40",
+      type: "calca",
+      size: "G",
+      condition: "usado",
+      region: "Rio de Janeiro, RJ",
+      donor: "João Santos",
+      donorId: 2,
+      image: "images/Calças/calca-baggy.webp",
+      images: [
+        "images/Calças/calca-baggy.webp",
+        "images/Calças/calca-baggy2.webp",
+        "images/Calças/calca-baggy3.webp"
+      ],
+      status: "analyzing"
+    },
+    {
+      id: 3,
+      name: "Shorts Eric Emanuel",
+      description: "Vestido estampado, nunca usado",
+      type: "shorts",
+      size: "GG",
+      condition: "novo",
+      region: "Belo Horizonte, MG",
+      donor: "Ana Costa",
+      donorId: 3,
+      image: "images/Shorts/shorts-eric.webp",
+      images: [
+        "images/Shorts/shorts-eric.webp",
+        "images/Shorts/shorts-eric.webp",
+        "images/Shorts/shorts-eric.webp"
+      ],
+      status: "donated"
+    },
+    {
+      id: 4,
+      name: "Shorts Nike",
+      description: "Tênis para corrida, pouco usado",
+      type: "shorts",
+      size: "M",
+      condition: "seminovo",
+      region: "Salvador, BA",
+      donor: "Carlos Lima",
+      donorId: 4,
+      image: "images/Shorts/shorts-nike2.webp",
+      images: [
+        "images/Shorts/shorts-nike.webp",
+        "images/Shorts/shorts-nike2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 5,
+      name: "Camiseta Stone Island Year of Dragon",
+      description: "Casaco de lã quentinho para o inverno",
+      type: "camiseta",
+      size: "G",
+      condition: "usado",
+      region: "Curitiba, PR",
+      donor: "Fernanda Oliveira",
+      donorId: 5,
+      image: "images/Camisetas/camiseta-stone.webp",
+      images: [
+        "images/Camisetas/camiseta-stone.webp",
+        "images/Camisetas/camiseta-stone2.webp",
+        "images/Camisetas/camiseta-stone3.webp",
+        "images/Camisetas/camiseta-stone4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 6,
+      name: "Calça Corteiz Devil Island",
+      description: "Saia social preta, ideal para trabalho",
+      type: "calca",
+      size: "P",
+      condition: "novo",
+      region: "Barueri, SP",
+      donor: "Patricia Mendes",
+      donorId: 6,
+      image: "images/Calças/calca-corteiz.webp",
+      images: [
+        "images/Calças/calca-corteiz.webp",
+        "images/Calças/calca-corteiz2.webp",
+        "images/Calças/calca-corteiz3.webp",
+        "images/Calças/calca-corteiz4.webp"
+      ],
+      status: "analyzing"
+    },
+    {
+      id: 7,
+      name: "Corta Vento The North Face",
+      description: "Corta vento The North Face original, perfeito para atividades ao ar livre",
+      type: "moletom",
+      size: "M",
+      condition: "seminovo",
+      region: "Florianópolis, SC",
+      donor: "Rafael Costa",
+      donorId: 7,
+      image: "images/Moletons/CortaVentoTheNorthFace.webp",
+      images: [
+        "images/Moletons/CortaVentoTheNorthFace.webp",
+        "images/Moletons/CortaVentoTheNorthFace2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 8,
+      name: "Jaqueta Amiri",
+      description: "Jaqueta Amiri de luxo, design exclusivo e alta qualidade",
+      type: "moletom",
+      size: "M",
+      condition: "novo",
+      region: "Brasília, DF",
+      donor: "Gustavo Silva",
+      donorId: 8,
+      image: "images/Moletons/JaquetaAmiri.webp",
+      images: [
+        "images/Moletons/JaquetaAmiri.webp",
+        "images/Moletons/JaquetaAmiri2.webp",
+        "images/Moletons/JaquetaAmiri3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 9,
+      name: "Jaqueta Palace Stella",
+      description: "Jaqueta Palace Stella em ótimo estado, pouco usada",
+      type: "moletom",
+      size: "M",
+      condition: "seminovo",
+      region: "Recife, PE",
+      donor: "Lucas Ferreira",
+      donorId: 9,
+      image: "images/Moletons/Jaquetapalacestella.webp",
+      images: [
+        "images/Moletons/Jaquetapalacestella.webp",
+        "images/Moletons/Jaquetapalacestella2.webp",
+        "images/Moletons/Jaquetapalacestella3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 10,
+      name: "Moletom Champion",
+      description: "Moletom Champion original, muito confortável",
+      type: "moletom",
+      size: "GG",
+      condition: "usado",
+      region: "Fortaleza, CE",
+      donor: "Beatriz Santos",
+      donorId: 10,
+      image: "images/Moletons/MoletomChampion.webp",
+      images: [
+        "images/Moletons/MoletomChampion.webp",
+        "images/Moletons/MoletomChampion2.webp",
+        "images/Moletons/MoletomChampion3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 11,
+      name: "Moletom Champion Capuz Black",
+      description: "Moletom Champion preto com capuz, estilo urbano",
+      type: "moletom",
+      size: "M",
+      condition: "seminovo",
+      region: "Porto Alegre, RS",
+      donor: "Diego Almeida",
+      donorId: 11,
+      image: "images/Moletons/MoletomChampionCapuzBlack.webp",
+      images: [
+        "images/Moletons/MoletomChampionCapuzBlack.webp",
+        "images/Moletons/MoletomChampionCapuzBlack2.webp",
+        "images/Moletons/MoletomChampionCapuzBlack3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 12,
+      name: "Moletom Essentials",
+      description: "Moletom Essentials minimalista, conforto e estilo",
+      type: "moletom",
+      size: "M",
+      condition: "novo",
+      region: "Goiânia, GO",
+      donor: "Amanda Rocha",
+      donorId: 12,
+      image: "images/Moletons/MoletomEssentials.webp",
+      images: [
+        "images/Moletons/MoletomEssentials.webp",
+        "images/Moletons/MoletomEssentials2.webp",
+        "images/Moletons/MoletomEssentials3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 13,
+      name: "Camiseta Balenciaga",
+      description: "Camiseta Balenciaga original, design exclusivo",
+      type: "camiseta",
+      size: "G",
+      condition: "novo",
+      region: "Campinas, SP",
+      donor: "Sophia Lima",
+      donorId: 13,
+      image: "images/Camisetas/CamisetaBalenciaga.webp",
+      images: [
+        "images/Camisetas/CamisetaBalenciaga.webp",
+        "images/Camisetas/CamisetaBalenciaga2.webp",
+        "images/Camisetas/CamisetaBalenciaga3.webp",
+        "images/Camisetas/CamisetaBalenciaga4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 14,
+      name: "Camiseta Corteiz",
+      description: "Camiseta Corteiz streetwear, estilo urbano",
+      type: "camiseta",
+      size: "M",
+      condition: "seminovo",
+      region: "Vitória, ES",
+      donor: "Pedro Santos",
+      donorId: 14,
+      image: "images/Camisetas/CamisetaCorteiz.webp",
+      images: [
+        "images/Camisetas/CamisetaCorteiz.webp",
+        "images/Camisetas/CamisetaCorteiz2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 15,
+      name: "Camiseta Stussy",
+      description: "Camiseta Stussy clássica, marca icônica do streetwear",
+      type: "camiseta",
+      size: "M",
+      condition: "usado",
+      region: "Manaus, AM",
+      donor: "Mateus Oliveira",
+      donorId: 15,
+      image: "images/Camisetas/CamisetaStussy.webp",
+      images: [
+        "images/Camisetas/CamisetaStussy.webp",
+        "images/Camisetas/CamisetaStussy2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 16,
+      name: "Calça Louis Vuitton Carpenter",
+      description: "Calça Louis Vuitton Carpenter de luxo, design exclusivo",
+      type: "calca",
+      size: "M",
+      condition: "novo",
+      region: "Niterói, RJ",
+      donor: "Isabella Costa",
+      donorId: 16,
+      image: "images/Calças/Calça Louis Vuitton Carpenter3.webp",
+      images: [
+        "images/Calças/Calça Louis Vuitton Carpenter3.webp",
+        "images/Calças/Calça Louis Vuitton Carpenter2.webp",
+        "images/Calças/Calça Louis Vuitton Carpenter.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 17,
+      name: "Calça Denim Tears",
+      description: "Calça Denim Tears streetwear, design único e moderno",
+      type: "calca",
+      size: "GG",
+      condition: "seminovo",
+      region: "Natal, RN",
+      donor: "Gabriel Ferreira",
+      donorId: 17,
+      image: "images/Calças/CalçaDenim tears.webp",
+      images: [
+        "images/Calças/CalçaDenim tears.webp",
+        "images/Calças/CalçaDenim tears2.webp",
+        "images/Calças/CalçaDenim tears3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 18,
+      name: "Calça Moletom",
+      description: "Calça de moletom confortável, ideal para o dia a dia",
+      type: "calca",
+      size: "M",
+      condition: "usado",
+      region: "Macaé, RJ",
+      donor: "Larissa Silva",
+      donorId: 18,
+      image: "images/Calças/CalçaMoletom.webp",
+      images: [
+        "images/Calças/CalçaMoletom.webp",
+        "images/Calças/CalçaMoletom2.webp",
+        "images/Calças/CalçaMoletom3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 19,
+      name: "Calça Ed Hardy",
+      description: "Calça Ed Hardy com estampas exclusivas, estilo rock",
+      type: "calca",
+      size: "M",
+      condition: "seminovo",
+      region: "Aracaju, SE",
+      donor: "Thiago Rocha",
+      donorId: 19,
+      image: "images/Calças/EDHard.webp",
+      images: [
+        "images/Calças/EDHard.webp",
+        "images/Calças/EDHard2.webp",
+        "images/Calças/EDHard3.webp",
+        "images/Calças/EDHard4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 20,
+      name: "Calça Polar Big",
+      description: "Calça Polar Big skate, estilo urbano e confortável",
+      type: "calca",
+      size: "M",
+      condition: "usado",
+      region: "Joinville, SC",
+      donor: "Vinicius Alves",
+      donorId: 20,
+      image: "images/Calças/CalçaPolarBig.webp",
+      images: [
+        "images/Calças/CalçaPolarBig.webp",
+        "images/Calças/CalçaPolarBig2.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 21,
+      name: "Short Burberry",
+      description: "Short Burberry de luxo, padrão xadrez clássico",
+      type: "shorts",
+      size: "M",
+      condition: "novo",
+      region: "Ribeirão Preto, SP",
+      donor: "Camila Martins",
+      donorId: 21,
+      image: "images/Shorts/ShortBurberry.webp",
+      images: [
+        "images/Shorts/ShortBurberry.webp",
+        "images/Shorts/ShortBurberry2.webp",
+        "images/Shorts/ShortBurberry3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 22,
+      name: "Short Essentials",
+      description: "Short Essentials minimalista, conforto e estilo",
+      type: "shorts",
+      size: "M",
+      condition: "seminovo",
+      region: "Sorocaba, SP",
+      donor: "Rafael Mendes",
+      donorId: 22,
+      image: "images/Shorts/ShortEssentials2.webp",
+      images: [
+        "images/Shorts/ShortEssentials2.webp",
+        "images/Shorts/ShortEssentials3.webp",
+        "images/Shorts/ShortEssentials4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 23,
+      name: "Air Force 1 Black",
+      description: "Nike Air Force 1 preto clássico, ícone do streetwear",
+      type: "tenis",
+      size: "38",
+      condition: "seminovo",
+      region: "Santos, SP",
+      donor: "Bruno Silva",
+      donorId: 23,
+      image: "images/Tenis/Air Force 1 Black.webp",
+      images: [
+        "images/Tenis/Air Force 1 Black.webp",
+        "images/Tenis/Air Force 1 Black2.webp",
+        "images/Tenis/Air Force 1 Black3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 24,
+      name: "Asics Gel",
+      description: "Tênis Asics Gel para corrida, conforto e performance",
+      type: "tenis",
+      size: "40",
+      condition: "usado",
+      region: "Londrina, PR",
+      donor: "Fernanda Costa",
+      donorId: 24,
+      image: "images/Tenis/AsicsGel.webp",
+      images: [
+        "images/Tenis/AsicsGel.webp",
+        "images/Tenis/AsicsGel2.webp",
+        "images/Tenis/AsicsGel3.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 25,
+      name: "Chuteira Nike Air Zoom Mercurial Superfly 10 Elite TF",
+      description: "Chuteira Nike profissional para futebol, alta performance",
+      type: "tenis",
+      size: "42",
+      condition: "novo",
+      region: "Campo Grande, MS",
+      donor: "Carlos Eduardo",
+      donorId: 25,
+      image: "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF.webp",
+      images: [
+        "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF.webp",
+        "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF2.webp",
+        "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF3.webp",
+        "images/Tenis/ChuteiraNikeAirZoomMercurialSuperfly10 EliteTF4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 26,
+      name: "Dunk Albino Black",
+      description: "Nike Dunk Albino Black, edição especial e limitada",
+      type: "tenis",
+      size: "41",
+      condition: "seminovo",
+      region: "Uberlândia, MG",
+      donor: "Matheus Oliveira",
+      donorId: 26,
+      image: "images/Tenis/DunkAlbinoBlack.webp",
+      images: [
+        "images/Tenis/DunkAlbinoBlack.webp",
+        "images/Tenis/DunkAlbinoBlack2.webp",
+        "images/Tenis/DunkAlbinoBlack3.webp",
+        "images/Tenis/DunkAlbinoBlack4.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 27,
+      name: "Jordan 1 Next Chapter",
+      description: "Air Jordan 1 Next Chapter, clássico atemporal do basquete",
+      type: "tenis",
+      size: "44",
+      condition: "novo",
+      region: "Teresina, PI",
+      donor: "Leonardo Santos",
+      donorId: 27,
+      image: "images/Tenis/Jordan 1 next chapter.webp",
+      images: [
+        "images/Tenis/Jordan 1 next chapter.webp",
+        "images/Tenis/Jordan 1 next chapter2.webp",
+        "images/Tenis/Jordan 1 next chapter3.webp",
+        "images/Tenis/Jordan 1 next chapter4.webp",
+        "images/Tenis/Jordan 1 next chapter5.webp"
+      ],
+      status: "available"
+    },
+    {
+      id: 28,
+      name: "Timberland",
+      description: "Bota Timberland clássica, resistência e estilo urbano",
+      type: "tenis",
+      size: "43",
+      condition: "usado",
+      region: "São Luís, MA",
+      donor: "Rodrigo Lima",
+      donorId: 28,
+      image: "images/Tenis/Timberland.webp",
+      images: [
+        "images/Tenis/Timberland.webp",
+        "images/Tenis/Timberland2.webp",
+        "images/Tenis/Timberland3.webp",
+        "images/Tenis/Timberland4.webp",
+        "images/Tenis/Timberland5.webp"
+      ],
+      status: "available"
+    }
+  ]
+
+  useEffect(() => {
+    fetchProducts(currentUser)
+  }, [currentUser?.doadorId, currentUser?.isAdmin])
+
+  const toggleFavorite = (productId) => {
+    setFavorites(prev => {
+      const newFavorites = prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+      
+      localStorage.setItem('favorites', JSON.stringify(newFavorites))
+      return newFavorites
+    })
+  }
+
+  const addRequest = (productId, userData) => {
+    if (!currentUser) return
+    
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+    
+    // Verificar se já existe uma solicitação pendente para este produto pelo mesmo usuário
+    const existingRequest = requests.find(req => 
+      req.productId === productId && 
+      req.userId === currentUser.id && 
+      req.status === 'pending'
+    )
+    
+    if (existingRequest) {
+      alert('Você já tem uma solicitação pendente para este produto!')
+      return
+    }
+    
+    const newRequest = {
+      id: Date.now(),
+      productId,
+      productName: product.name,
+      productImage: product.image,
+      donorId: product.donorId,
+      donorName: product.donor,
+      userId: currentUser.id,
+      userName: userData.nome,
+      userEmail: userData.email,
+      userPhone: userData.telefone,
+      date: userData.dataHora,
+      status: 'pending'
+    }
+    
+    const updatedRequests = [...requests, newRequest]
+    setRequests(updatedRequests)
+    localStorage.setItem('requests', JSON.stringify(updatedRequests))
+  }
+
+  const updateRequestStatus = (requestId, status) => {
+    const updatedRequests = requests.map(request => 
+      request.id === requestId 
+        ? { ...request, status }
+        : request
+    )
+    setRequests(updatedRequests)
+    localStorage.setItem('requests', JSON.stringify(updatedRequests))
+  }
+
+  const addProduct = (productData) => {
+    const newProduct = {
+      id: Date.now(),
+      ...productData
+    }
+    const updatedProducts = [newProduct, ...products]
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
+  }
+
+  const removeProduct = (productId) => {
+    const updatedProducts = products.filter(product => product.id !== productId)
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
+  }
+
+  const removeProductByName = (productName) => {
+    const updatedProducts = products.filter(product => 
+      !product.name.toLowerCase().includes(productName.toLowerCase())
+    )
+    setProducts(updatedProducts)
+    localStorage.setItem('products', JSON.stringify(updatedProducts))
+    localStorage.setItem('products_global', JSON.stringify(updatedProducts))
+  }
+
+  const updateUser = async (userData) => {
+    try {
+      // Preserva TODOS os dados existentes e só atualiza os campos enviados
+      const fullUserData = {
+        ...currentUser, // Mantém todos os dados atuais
+        ...userData     // Sobrescreve apenas os campos enviados
+      }
+      
+      const updatedUserFromAPI = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(fullUserData)
+      })
+      
+      const mergedUser = {
+        ...currentUser,
+        ...updatedUserFromAPI,
+        nome: userData.nome || updatedUserFromAPI.nome || currentUser.nome,
+        name: userData.nome || updatedUserFromAPI.nome || currentUser.name
+      }
+      setCurrentUser(mergedUser)
+      sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Erro de conexão' }
+    }
+  }
+
+  const resetProducts = () => {
+    setProducts(sampleProducts)
+    setRequests([])
+    localStorage.setItem('products', JSON.stringify(sampleProducts))
+    localStorage.setItem('products_global', JSON.stringify(sampleProducts))
+    localStorage.removeItem('requests')
+  }
+
+    const value = {
+    currentUser,
+    setCurrentUser,
+    products,
+    setProducts,
+    fetchProducts,
+    favorites,
+    toggleFavorite,
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilters,
+    currentImageIndex,
+    setCurrentImageIndex,
+    showDropdown,
+    setShowDropdown,
+    requests,
+    addRequest,
+    updateRequestStatus,
+    addProduct,
+    removeProduct,
+    removeProductByName,
+    getProductTypeFromSearch,
+    updateUser,
+    resetProducts,
+    notification // Adiciona o sistema de notificações
+  }
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  )
+}

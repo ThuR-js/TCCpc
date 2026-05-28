@@ -1,0 +1,169 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AppProvider, useApp } from './context/AppContext'
+import { NotificationContainer } from './components/Notification'
+import Header from './components/Header'
+import Home from './pages/Home'
+import Favorites from './pages/Favorites'
+import ProductDetails from './pages/ProductDetails'
+import ProductRequests from './pages/ProductRequests'
+import ReceivedRequests from './pages/ReceivedRequests'
+import Requests from './pages/Requests'
+import AddProduct from './pages/AddProduct'
+import Profile from './pages/Profile'
+import MyAds from './pages/MyAds'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import AdminPanel from './pages/AdminPanel'
+import Camisetas from './pages/Camisetas'
+import Calcas from './pages/Calcas'
+import Blusas from './pages/Blusas'
+import Tenis from './pages/Tenis'
+import Shorts from './pages/Shorts'
+import ProtectedRoute from './components/ProtectedRoute'
+import './App.css'
+import './AdminStyles.css'
+import './components.css'
+
+function App() {
+  return (
+    <AppProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Home />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/favorites" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Favorites />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/requests" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Requests />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/add-product" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <AddProduct />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Profile />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/my-ads" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <MyAds />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/product/:id" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ProductDetails />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/product-requests/:productId" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ProductRequests />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/received-requests" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <ReceivedRequests />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/camisetas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Camisetas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/calcas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Calcas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/blusas" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Blusas />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/tenis" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Tenis />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="/shorts" element={
+              <ProtectedRoute>
+                <Header />
+                <main className="main">
+                  <Shorts />
+                </main>
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <AppNotifications />
+        </div>
+      </Router>
+    </AppProvider>
+  )
+}
+
+// Componente para renderizar notificações
+const AppNotifications = () => {
+  const { notification } = useApp()
+  
+  return (
+    <NotificationContainer 
+      notifications={notification.notifications}
+      onRemove={notification.removeNotification}
+    />
+  )
+}
+
+export default App

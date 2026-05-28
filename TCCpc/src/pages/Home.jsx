@@ -1,0 +1,484 @@
+// Importações necessárias para estado, navegação e contexto
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useApp } from '../context/AppContext'
+import ProductCarousel from '../components/ProductCarousel'
+import SimpleCarousel from '../components/SimpleCarousel'
+import DonorProfileModal from '../components/DonorProfileModal'
+import { apiRequest, API_CONFIG } from '../api'
+
+// Componente principal da página inicial
+const Home = () => {
+  // Hook para navegação entre páginas
+  const navigate = useNavigate()
+  
+  // Desestruturação do contexto global para acessar estados e funções
+  const { 
+    products, // Lista de todos os produtos
+    filters, // Filtros ativos (tipo, tamanho, condição)
+    setFilters, // Função para atualizar filtros
+    searchTerm, // Termo de busca atual
+    favorites, // Lista de IDs dos produtos favoritos
+    toggleFavorite, // Função para adicionar/remover favoritos
+    currentUser, // Usuário atualmente logado
+    addRequest, // Função para adicionar solicitação de produto
+    removeProduct, // Função para remover produto por ID
+    removeProductByName, // Função para remover produto por nome
+    getProductTypeFromSearch // Função que identifica tipo de produto pela busca
+  } = useApp()
+  
+  // Estados locais para controle do modal de remoção
+  const [showRemoveModal, setShowRemoveModal] = useState(false)
+  const [productToRemove, setProductToRemove] = useState(null)
+  const [showDonorModal, setShowDonorModal] = useState(false)
+  const [selectedDonor, setSelectedDonor] = useState(null)
+
+  const getImageSrc = (img) => {
+    if (!img) return '/images/avatar2.webp'
+    if (img.startsWith('http') || img.startsWith('data:')) return img
+    return `/${img}`
+  }
+
+  // Função base para filtrar produtos por visibilidade
+  const getVisibleProducts = () => {
+    return products.filter(product => {
+      const isAdmin = currentUser?.isAdmin
+      const isDoador = currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR'
+      const isDonatario = currentUser?.type === 'donatario' || currentUser?.nivelAcesso === 'DONATARIO'
+      
+      if (isAdmin) {
+        return true
+      } else if (isDoador) {
+        const match = String(product.donorId) === String(currentUser?.doadorId) || product.status === 'available'
+        return match
+      } else if (isDonatario) {
+        return product.status === 'available'
+      } else {
+        return product.status === 'available'
+      }
+    })
+  }
+
+  // Produtos para "Para você" - aplica filtros de categoria
+  const filteredProducts = (() => {
+    let baseProducts = getVisibleProducts().filter(product => {
+      // Aplica filtro de busca por nome do produto
+      if (searchTerm !== '') {
+        let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        if (!nameMatch) {
+          return false
+        }
+      }
+      
+      // Aplica filtros de categoria, tamanho e condição
+      if (filters.type !== '' && product.type !== filters.type) {
+        return false
+      }
+      if (filters.size !== '' && product.size !== filters.size) {
+        return false
+      }
+      if (filters.condition !== '' && product.condition !== filters.condition) {
+        return false
+      }
+      
+      return true
+    })
+
+    // LIMITAÇÃO PARA "TODOS OS ITENS" - Evitar página inicial pesada
+    // Quando "Todos os itens" está selecionado, mostrar apenas:
+    // 2 camisas + 2 calças + 1 blusa + 1 tênis + 1 shorts = 7 produtos no total
+    if (filters.type === '' && searchTerm === '') {
+      // Inclui pendentes do doador logado primeiro
+      const pendentesDoador = baseProducts.filter(p => p.status === 'pending')
+      const limitedProducts = [...pendentesDoador]
+      
+      const pendentesIds = new Set(limitedProducts.map(p => p.id))
+      const camisas = baseProducts.filter(p => p.type === 'camiseta' && p.status === 'available').slice(0, 2)
+      limitedProducts.push(...camisas.filter(p => !pendentesIds.has(p.id)))
+      const calcas = baseProducts.filter(p => p.type === 'calca' && p.status === 'available').slice(0, 2)
+      limitedProducts.push(...calcas.filter(p => !pendentesIds.has(p.id)))
+      const blusas = baseProducts.filter(p => p.type === 'moletom' && p.status === 'available').slice(0, 1)
+      limitedProducts.push(...blusas.filter(p => !pendentesIds.has(p.id)))
+      const tenis = baseProducts.filter(p => p.type === 'tenis' && p.status === 'available').slice(0, 1)
+      limitedProducts.push(...tenis.filter(p => !pendentesIds.has(p.id)))
+      const shorts = baseProducts.filter(p => p.type === 'shorts' && p.status === 'available').slice(0, 1)
+      limitedProducts.push(...shorts.filter(p => !pendentesIds.has(p.id)))
+
+      return limitedProducts
+    }
+    
+    // Para filtros específicos ou busca, mostrar todos os resultados
+    return baseProducts
+  })()
+
+  // Produtos para "Recém-publicados" - mostra os mesmos que "Todos os itens" (sem filtro de categoria)
+  const recentProducts = getVisibleProducts().filter(product => {
+    // Aplica filtro de busca por nome do produto
+    if (searchTerm !== '') {
+      let nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      if (!nameMatch) {
+        return false
+      }
+    }
+    
+    // Aplica filtros de tamanho e condição, mas NÃO de categoria
+    if (filters.size !== '' && product.size !== filters.size) {
+      return false
+    }
+    if (filters.condition !== '' && product.condition !== filters.condition) {
+      return false
+    }
+    
+    return true
+  }).sort((a, b) => new Date(b.approvedDate || b.id) - new Date(a.approvedDate || a.id))
+
+
+
+  // Função que registra interesse em um produto
+  const handleProductInterest = (productId) => {
+    // Verificar se o produto está doado
+    const product = products.find(p => p.id === productId)
+    if (product?.status === 'donated') {
+      alert('Este produto já foi doado e não está mais disponível.')
+      return
+    }
+    
+    // Verifica se o usuário é convidado (não logado)
+    if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
+      alert('Faça login para manifestar interesse.')
+      return // Para a execução aqui
+    }
+    // Verifica se o usuário é donatário (quem recebe doações)
+    if (currentUser?.type !== 'donatario') {
+      return // Só donatários podem manifestar interesse
+    }
+    
+    // Coleta dados do usuário para a solicitação
+    const nome = prompt('Digite seu nome completo:')
+    if (!nome) return
+    
+    const email = prompt('Digite seu email:')
+    if (!email) return
+    
+    const telefone = prompt('Digite seu telefone:')
+    if (!telefone) return
+    
+    // Registra o interesse no produto com os dados coletados
+    addRequest(productId, {
+      nome,
+      email,
+      telefone,
+      dataHora: new Date().toISOString()
+    })
+    alert('Interesse manifestado! O doador será notificado.')
+  }
+
+  // Função que abre o modal para confirmar remoção
+  const handleRemoveClick = (e, product) => {
+    e.stopPropagation() // Evita abrir a página do produto
+    setProductToRemove(product) // Guarda qual produto vai ser removido
+    setShowRemoveModal(true) // Mostra o modal de confirmação
+  }
+
+  const confirmRemove = async () => {
+    if (!productToRemove) return
+    const apiId = String(productToRemove.id).startsWith('api_') ? String(productToRemove.id).replace('api_', '') : null
+    if (!apiId) {
+      removeProduct(productToRemove.id)
+      setShowRemoveModal(false)
+      setProductToRemove(null)
+      return
+    }
+    try {
+      await apiRequest(`${API_CONFIG.ENDPOINTS.ANUNCIO}/${apiId}`, {
+        method: 'DELETE'
+      })
+      removeProduct(productToRemove.id)
+      setShowRemoveModal(false)
+      setProductToRemove(null)
+    } catch (e) {
+      alert('Erro ao remover anúncio')
+    }
+  }
+
+  // Função que cancela a remoção
+  const cancelRemove = () => {
+    setShowRemoveModal(false) // Fecha o modal
+    setProductToRemove(null) // Limpa a seleção
+  }
+
+  const handleDonorClick = (e, product) => {
+    e.stopPropagation()
+    setSelectedDonor({
+      id: product.donorId,
+      name: product.donor
+    })
+    setShowDonorModal(true)
+  }
+
+  return (
+    <>
+      <SimpleCarousel />
+      <div className="container">
+        <div className="recent-section">
+        <h2 className="section-title">Recém-publicados</h2>
+        <ProductCarousel 
+          products={products.filter(product => product.status === 'available').slice(0, 6)} 
+          showAddCard={true} 
+          currentUser={currentUser}
+        />
+      </div>
+      
+      <div className="categories-section">
+        <h2 className="section-title">Para você</h2>
+        <div className="categories-nav">
+          <button className={`category-btn ${filters.type === '' ? 'active' : ''}`} 
+                  onClick={() => setFilters({...filters, type: ''})}>
+            Todos os itens
+          </button>
+          <button className="category-btn" 
+                  onClick={() => navigate('/camisetas')}>
+            Camisetas
+          </button>
+          <button className="category-btn" 
+                  onClick={() => navigate('/calcas')}>
+            Calças
+          </button>
+          <button className="category-btn" 
+                  onClick={() => navigate('/blusas')}>
+            Blusas
+          </button>
+          <button className="category-btn" 
+                  onClick={() => navigate('/tenis')}>
+            Tênis
+          </button>
+          <button className="category-btn" 
+                  onClick={() => navigate('/shorts')}>
+            Shorts
+          </button>
+        </div>
+      </div>
+      
+      <div className="search-filters">
+        <select value={filters.type} onChange={(e) => setFilters({...filters, type: e.target.value})}>
+          <option value="">Todos os tipos</option>
+          <option value="camiseta">Camiseta</option>
+          <option value="calca">Calça</option>
+          <option value="moletom">Blusa</option>
+          <option value="tenis">Tênis</option>
+          <option value="shorts">Shorts</option>
+        </select>
+        <select value={filters.size} onChange={(e) => setFilters({...filters, size: e.target.value})}>
+          <option value="">Todos os tamanhos</option>
+          {filters.type === 'tenis' ? (
+            <>
+              <option value="34">34</option>
+              <option value="35">35</option>
+              <option value="36">36</option>
+              <option value="37">37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="40">40</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44</option>
+              <option value="45">45</option>
+              <option value="46">46</option>
+              <option value="47">47</option>
+              <option value="48">48</option>
+            </>
+          ) : (
+            <>
+              <option value="PP">PP</option>
+              <option value="P">P</option>
+              <option value="M">M</option>
+              <option value="G">G</option>
+              <option value="GG">GG</option>
+              <option value="XG">XG</option>
+            </>
+          )}
+        </select>
+        <select value={filters.condition} onChange={(e) => setFilters({...filters, condition: e.target.value})}>
+          <option value="">Todas as condições</option>
+          <option value="novo">Novo</option>
+          <option value="seminovo">Seminovo</option>
+          <option value="usado">Usado</option>
+        </select>
+      </div>
+      
+      <div className="products-grid">
+        {filteredProducts.map(product => (
+          <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
+               onClick={() => navigate(`/product/${product.id}`)}>
+            <img 
+              src={getImageSrc(product.image)} 
+              alt={product.name} 
+              className={`product-image ${product.status === 'donated' ? 'donated' : ''}`} 
+              onError={(e) => {
+                e.target.src = '/images/placeholder.jpg'
+                e.target.onerror = null
+              }}
+            />
+            <div className="product-info">
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <h3 className="product-name">{product.name}</h3>
+                {(currentUser?.isAdmin || (currentUser?.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId)) && (
+                  <button 
+                    className="remove-btn"
+                    onClick={(e) => handleRemoveClick(e, product)}
+                    style={{
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.3s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+              <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
+              {product.region && (
+                <p className="product-region">Região: {product.region}</p>
+              )}
+              <div className="product-donor">
+                <img 
+                  src={product.donorPhoto || 'images/avatar2.webp'} 
+                  alt="Avatar" 
+                  className="donor-avatar"
+                  onError={(e) => {
+                    e.target.src = 'images/avatar2.webp'
+                    e.target.onerror = null
+                  }}
+                />
+                <span 
+                  className="donor-name-link" 
+                  onClick={(e) => handleDonorClick(e, product)}
+                >
+                  {product.donor}
+                </span>
+              </div>
+              {product.status === 'pending' && <span className="product-status status-analyzing">Em Análise</span>}
+              {product.status === 'analyzing' && <span className="product-status status-analyzing">Em Análise</span>}
+              {product.status === 'donated' && <span className="product-status status-donated">Doado</span>}
+              <div className="product-bottom">
+                {product.status === 'available' && (
+                  <div className="product-actions">
+                    {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={(e) => {e.stopPropagation(); handleProductInterest(product.id)}}>Tenho Interesse</button>}
+                    {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Validações</button>}
+                  </div>
+                )}
+                {product.status === 'donated' && (
+                  <div className="product-actions">
+                    <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
+                  </div>
+                )}
+                {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
+                  <button 
+                    className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (product.status !== 'donated') {
+                        toggleFavorite(product.id);
+                      }
+                    }}
+                    title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
+                    style={{
+                      opacity: product.status === 'donated' ? 0.5 : 1,
+                      cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    {favorites.includes(product.id) ? '♥' : '♡'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {showRemoveModal && (
+        <div className="modal" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: '#2a2a2a',
+            padding: '2rem',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            textAlign: 'center',
+            border: '2px solid #dc3545'
+          }}>
+            <h3 style={{color: '#dc3545', marginBottom: '1rem'}}>⚠️ Confirmar Remoção</h3>
+            <p style={{color: '#fff', marginBottom: '1rem'}}>Tem certeza que deseja remover o anúncio:</p>
+            <p style={{
+              color: '#DFA983',
+              fontWeight: 'bold',
+              marginBottom: '2rem',
+              fontSize: '1.1rem'
+            }}>"{ productToRemove?.name}"</p>
+            <p style={{color: '#ccc', marginBottom: '2rem', fontSize: '0.9rem'}}>Esta ação não pode ser desfeita.</p>
+            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
+              <button 
+                onClick={confirmRemove}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Sim, Remover
+              </button>
+              <button 
+                onClick={cancelRemove}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <DonorProfileModal 
+        isOpen={showDonorModal}
+        onClose={() => setShowDonorModal(false)}
+        donorId={selectedDonor?.id}
+        donorName={selectedDonor?.name}
+      />
+      </div>
+    </>
+  )
+}
+
+export default Home

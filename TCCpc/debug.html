@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Teste de Debug</h1>
+    <script>
+        // Teste se o React está rodando
+        fetch('http://localhost:5173')
+            .then(response => {
+                console.log('React Status:', response.status);
+                document.body.innerHTML += '<p>React está rodando na porta 5173</p>';
+            })
+            .catch(error => {
+                console.error('Erro ao conectar com React:', error);
+                document.body.innerHTML += '<p>Erro ao conectar com React</p>';
+            });
+
+        // Teste se a API está rodando
+        fetch('http://localhost:8080/api/v1/usuario')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Response:', data);
+                document.body.innerHTML += '<p>API está funcionando</p>';
+            })
+            .catch(error => {
+                console.error('Erro ao conectar com API:', error);
+                document.body.innerHTML += '<p>Erro ao conectar com API</p>';
+            });
+    </script>
+</body>
+</html>
