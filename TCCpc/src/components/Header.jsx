@@ -252,16 +252,13 @@ const Header = () => {
                   </button>
                   {showDropdown && (
                     <div className="menu-dropdown show">
-                      <a href="#" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/favorites');
-                        setShowDropdown(false);
-                      }}>Favoritos ({favorites.length})</a>
-                      <a href="#" onClick={(e) => {
-                        e.preventDefault();
-                        navigate('/requests');
-                        setShowDropdown(false);
-                      }}>Validação de Anúncios</a>
+                      {currentUser.isAdmin && (
+                        <a href="#" onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/requests');
+                          setShowDropdown(false);
+                        }}>Validação de Anúncios</a>
+                      )}
                       {(currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
                         <>
                           <a href="#" onClick={(e) => {

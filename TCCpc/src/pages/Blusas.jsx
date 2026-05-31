@@ -17,35 +17,26 @@ const Blusas = () => {
     product.type === 'moletom' && product.status === 'available'
   )
 
+  /* BOTÃO "TENHO INTERESSE" - DESATIVADO NO WEB
+     Deve aparecer apenas no mobile (React Native).
+     Para reativar: remova os comentários do bloco abaixo e da função handleProductInterest.
+     Chama: POST /api/v1/solicitacao com { usuario: { id }, anuncio: { id }, telefone }
   const handleProductInterest = (productId) => {
     if (currentUser?.isGuest === true || currentUser?.type === 'convidado') {
       alert('Faça login para manifestar interesse.')
       return
     }
-    if (currentUser?.type !== 'donatario') {
-      return
-    }
-    
+    if (currentUser?.type !== 'donatario') return
     const nome = prompt('Digite seu nome completo:')
     if (!nome) return
-    
     const email = prompt('Digite seu email:')
     if (!email) return
-    
     const telefone = prompt('Digite seu telefone:')
     if (!telefone) return
-    
-    addRequest(productId, {
-      nome,
-      email,
-      telefone,
-      dataHora: new Date().toISOString()
-    })
+    addRequest(productId, { nome, email, telefone, dataHora: new Date().toISOString() })
     alert('Interesse manifestado! O doador será notificado.')
   }
-
-
-
+  */
   return (
     <div className="container">
       <button className="btn-back" onClick={() => navigate('/')}>
@@ -97,14 +88,13 @@ const Blusas = () => {
               </div>
               <div className="product-bottom">
                 <div className="product-actions">
+                  {/* BOTÃO "TENHO INTERESSE" - DESATIVADO NO WEB
+                     Para reativar: remova este comentário e descomente a função handleProductInterest acima.
                   {currentUser && currentUser.type === 'donatario' && (
-                    <button className="btn btn-outline" onClick={(e) => {
-                      e.stopPropagation()
-                      handleProductInterest(product.id)
-                    }}>
+                    <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); handleProductInterest(product.id) }}>
                       Tenho Interesse
                     </button>
-                  )}
+                  )} */}
                   {currentUser && currentUser.id === product.donorId && (
                     <button className="btn btn-primary" onClick={(e) => {
                       e.stopPropagation()

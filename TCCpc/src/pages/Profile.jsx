@@ -34,7 +34,7 @@ const Profile = () => {
   
   // Estados para foto de perfil
   const [profileImage, setProfileImage] = useState(null)
-  const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.fotoPerfil || null)
+  const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.foto || null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
@@ -204,10 +204,10 @@ const Profile = () => {
       // Upload da imagem
       const imageUrl = await uploadImageToCloudinary(profileImage)
       
-      // Atualizar usuário com a nova foto
-      const result = await updateUser({ fotoPerfil: imageUrl })
+      const result = await updateUser({ foto: imageUrl })
       
       if (result.success) {
+        setProfileImagePreview(imageUrl)
         alert('Foto de perfil atualizada com sucesso!')
         setProfileImage(null)
       } else {

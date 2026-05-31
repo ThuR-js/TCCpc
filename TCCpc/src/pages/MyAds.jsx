@@ -12,7 +12,9 @@ const MyAds = () => {
 
   // Filtrar apenas os anúncios do doador atual
   const myAds = products.filter(product => 
-    currentUser?.doadorId && String(product.donorId) === String(currentUser.doadorId)
+    currentUser?.doadorId && 
+    String(product.donorId) === String(currentUser.doadorId) &&
+    String(product.id).startsWith('api_')
   )
 
   const getImageSrc = (img) => {

@@ -127,9 +127,13 @@ const ProductDetails = () => {
           </div>
           <div className="product-detail-actions">
             <div className="action-buttons">
-              {currentUser && currentUser.type === 'donatario' && product.status === 'available' && (
+              {/* BOTÃO "TENHO INTERESSE" - DESATIVADO NO WEB
+                  Deve aparecer apenas no mobile. Para reativar: remova o comentário.
+                  Chama: POST /api/v1/solicitacao com { usuario: { id }, anuncio: { id }, telefone }
+              */}
+              {/* currentUser && currentUser.type === 'donatario' && product.status === 'available' && (
                 <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>
-              )}
+              ) */}
               {currentUser && currentUser.type === 'donatario' && product.status === 'donated' && (
                 <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
               )}

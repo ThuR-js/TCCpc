@@ -56,6 +56,15 @@ const Requests = () => {
 
   const pendentes = anuncios.filter(a => a.statusAnuncio === 'PENDENTE')
 
+  if (!currentUser?.isAdmin) {
+    return (
+      <div className="container">
+        <h2 style={{ color: 'white' }}>Acesso Negado</h2>
+        <button onClick={() => navigate('/')} className="btn btn-primary">Voltar</button>
+      </div>
+    )
+  }
+
   const getStatusColor = (status) => {
     if (status === 'APROVADO') return '#28a745'
     if (status === 'PENDENTE') return '#ffc107'

@@ -102,7 +102,7 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                   e.target.onerror = null
                 }}
               />
-              {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
+              {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO' || currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
                 <button 
                   className={`carousel-favorite-btn ${favorites.includes(product.id) ? 'favorited' : ''}`}
                   onClick={(e) => {

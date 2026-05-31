@@ -310,6 +310,7 @@ const Home = () => {
       <div className="products-grid">
         {filteredProducts.map(product => (
           <div key={product.id} className={`product-card ${product.status === 'donated' ? 'donated' : ''} ${product.status === 'pending' ? 'pending' : ''}`} 
+               style={{position: 'relative'}}
                onClick={() => navigate(`/product/${product.id}`)}>
             <img 
               src={getImageSrc(product.image)} 
@@ -370,36 +371,31 @@ const Home = () => {
               {product.status === 'analyzing' && <span className="product-status status-analyzing">Em Análise</span>}
               {product.status === 'donated' && <span className="product-status status-donated">Doado</span>}
               <div className="product-bottom">
-                {product.status === 'available' && (
-                  <div className="product-actions">
-                    {currentUser && currentUser.type === 'donatario' && <button className="btn btn-outline" onClick={(e) => {e.stopPropagation(); handleProductInterest(product.id)}}>Tenho Interesse</button>}
-                    {currentUser && currentUser.doadorId && String(product.id).startsWith('api_') && currentUser.doadorId === product.donorId && <button className="btn btn-primary" onClick={(e) => {e.stopPropagation(); navigate(`/product-requests/${product.id}`)}}>Ver Validações</button>}
-                  </div>
-                )}
                 {product.status === 'donated' && (
                   <div className="product-actions">
                     <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
                   </div>
                 )}
-                {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
-                  <button 
-                    className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (product.status !== 'donated') {
-                        toggleFavorite(product.id);
-                      }
-                    }}
-                    title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
-                    style={{
-                      opacity: product.status === 'donated' ? 0.5 : 1,
-                      cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    {favorites.includes(product.id) ? '♥' : '♡'}
-                  </button>
-                )}
               </div>
+              {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO' || currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
+                <button
+                  className={`carousel-favorite-btn ${favorites.includes(product.id) ? 'favorited' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (product.status !== 'donated') toggleFavorite(product.id)
+                  }}
+                  title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
+                  style={{
+                    position: 'absolute',
+                    bottom: '1rem',
+                    right: '1rem',
+                    opacity: product.status === 'donated' ? 0.5 : 1,
+                    cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {favorites.includes(product.id) ? '♥' : '♡'}
+                </button>
+              )}
             </div>
           </div>
         ))}
