@@ -32,9 +32,14 @@ const Login = () => {
         body: JSON.stringify({ email, senha: password })
       })
 
+      if (data.nivelAcesso === 'DONATARIO') {
+        alert('Acesso negado. Donatários devem usar o aplicativo mobile.')
+        return
+      }
+
       let userData = {
         ...data,
-        type: data.nivelAcesso === 'DOADOR' ? 'doador' : 'donatario'
+        type: 'doador'
       }
 
       if (data.nivelAcesso === 'DOADOR') {

@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { SolicitacaoService, AnuncioService } from '../services'
 
 const ProductRequests = () => {
-  const { productId } = useParams()
+  const { productId: rawProductId } = useParams()
+  const productId = String(rawProductId).startsWith('api_') ? rawProductId.replace('api_', '') : rawProductId
   const navigate = useNavigate()
   const [anuncio, setAnuncio] = useState(null)
   const [solicitacoes, setSolicitacoes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [erro, setErro] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,6 +22,7 @@ const ProductRequests = () => {
         setSolicitacoes(solic)
       } catch (e) {
         console.error('Erro ao carregar:', e)
+        setErro(e.message)
       } finally {
         setLoading(false)
       }
@@ -37,7 +40,8 @@ const ProductRequests = () => {
   }
 
   if (loading) return <div className="container"><p>Carregando...</p></div>
-  if (!anuncio) return <div className="container"><p>Anúncio não encontrado.</p></div>
+  if (erro) return <div className="container"><p>Erro ao carregar anúncio: {erro}</p></div>
+  if (!anuncio) return <div className="container"><p>Anúncio não encontrado. (ID: {productId})</p></div>
 
   const getStatusColor = (status) => {
     if (status === 'ACEITA') return '#28a745'

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import DonorProfileModal from '../components/DonorProfileModal'
-import { SolicitacaoService } from '../services'
 
 const ProductDetails = () => {
   const { id } = useParams()
@@ -38,28 +37,6 @@ const ProductDetails = () => {
   const prevImage = () => {
     if (product.images) {
       setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
-    }
-  }
-
-  const handleProductInterest = async () => {
-    if (product?.status === 'donated') {
-      alert('Este produto já foi doado e não está mais disponível.')
-      return
-    }
-    if (!currentUser) return
-
-    const telefone = prompt('Digite seu telefone para contato:')
-    if (!telefone) return
-
-    try {
-      await SolicitacaoService.create({
-        usuario: { id: currentUser.id },
-        anuncio: { id: product.apiId },
-        telefone
-      })
-      alert('Interesse manifestado! O doador será notificado.')
-    } catch (e) {
-      alert('Erro ao enviar solicitação: ' + e.message)
     }
   }
 
@@ -127,35 +104,9 @@ const ProductDetails = () => {
           </div>
           <div className="product-detail-actions">
             <div className="action-buttons">
-              {/* BOTÃO "TENHO INTERESSE" - DESATIVADO NO WEB
-                  Deve aparecer apenas no mobile. Para reativar: remova o comentário.
-                  Chama: POST /api/v1/solicitacao com { usuario: { id }, anuncio: { id }, telefone }
-              */}
-              {/* currentUser && currentUser.type === 'donatario' && product.status === 'available' && (
-                <button className="btn btn-outline" onClick={handleProductInterest}>Tenho Interesse</button>
-              ) */}
-              {currentUser && currentUser.type === 'donatario' && product.status === 'donated' && (
-                <button className="btn btn-outline disabled" disabled title="Este produto já foi doado">Produto Doado</button>
-              )}
+              {/* Solicitações são exclusivas do Mobile (Donatário) */}
               {currentUser && currentUser.id === product.donorId && <button className="btn btn-primary" onClick={() => navigate(`/product-requests/${product.id}`)}>Ver Validações</button>}
             </div>
-            {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
-              <button 
-                className={`favorite-btn-detail ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                onClick={() => {
-                  if (product.status !== 'donated') {
-                    toggleFavorite(product.id)
-                  }
-                }}
-                title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
-                style={{
-                  opacity: product.status === 'donated' ? 0.5 : 1,
-                  cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {favorites.includes(product.id) ? '♥' : '♡'}
-              </button>
-            )}
           </div>
         </div>
       </div>
