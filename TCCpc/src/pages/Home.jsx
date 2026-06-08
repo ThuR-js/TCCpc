@@ -18,8 +18,6 @@ const Home = () => {
     filters, // Filtros ativos (tipo, tamanho, condição)
     setFilters, // Função para atualizar filtros
     searchTerm, // Termo de busca atual
-    favorites, // Lista de IDs dos produtos favoritos
-    toggleFavorite, // Função para adicionar/remover favoritos
     currentUser, // Usuário atualmente logado
     addRequest, // Função para adicionar solicitação de produto
     removeProduct, // Função para remover produto por ID
@@ -346,20 +344,15 @@ const Home = () => {
                   </button>
                 )}
               </div>
-              <p className="product-details">Tam. <span style={{color: '#4A230A', fontWeight: 'bold'}}>{product.type === 'tenis' ? product.size : product.size}</span> • {product.type === 'moletom' ? 'Blusa' : product.type ? product.type.charAt(0).toUpperCase() + product.type.slice(1) : 'Produto'} • {product.condition}</p>
+              <p className="product-details">{product.size} • {product.condition}</p>
               {product.region && (
-                <p className="product-region">Região: {product.region}</p>
+                <p className="product-region">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0, marginRight: '8px'}}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {product.region}
+                </p>
               )}
               <div className="product-donor">
-                <img 
-                  src={product.donorPhoto || 'images/avatar2.webp'} 
-                  alt="Avatar" 
-                  className="donor-avatar"
-                  onError={(e) => {
-                    e.target.src = 'images/avatar2.webp'
-                    e.target.onerror = null
-                  }}
-                />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0, marginRight: '8px'}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span 
                   className="donor-name-link" 
                   onClick={(e) => handleDonorClick(e, product)}
@@ -377,25 +370,6 @@ const Home = () => {
                   </div>
                 )}
               </div>
-              {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO' || currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
-                <button
-                  className={`carousel-favorite-btn ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (product.status !== 'donated') toggleFavorite(product.id)
-                  }}
-                  title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
-                  style={{
-                    position: 'absolute',
-                    bottom: '1rem',
-                    right: '1rem',
-                    opacity: product.status === 'donated' ? 0.5 : 1,
-                    cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {favorites.includes(product.id) ? '♥' : '♡'}
-                </button>
-              )}
             </div>
           </div>
         ))}

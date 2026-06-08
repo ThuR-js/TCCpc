@@ -20,10 +20,6 @@ export const AppProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null
   })
   const [products, setProducts] = useState([])
-  const [favorites, setFavorites] = useState(() => {
-    const savedFavorites = localStorage.getItem('favorites')
-    return savedFavorites ? JSON.parse(savedFavorites) : []
-  })
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -626,14 +622,7 @@ export const AppProvider = ({ children }) => {
   }, [currentUser?.doadorId, currentUser?.isAdmin])
 
   const toggleFavorite = (productId) => {
-    setFavorites(prev => {
-      const newFavorites = prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-      
-      localStorage.setItem('favorites', JSON.stringify(newFavorites))
-      return newFavorites
-    })
+    // Função removida - favoritos não existem mais
   }
 
   const addRequest = (productId, userData) => {
@@ -744,6 +733,7 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('products', JSON.stringify(sampleProducts))
     localStorage.setItem('products_global', JSON.stringify(sampleProducts))
     localStorage.removeItem('requests')
+    localStorage.removeItem('favorites') // Remove favoritos do localStorage
   }
 
     const value = {
@@ -752,8 +742,6 @@ export const AppProvider = ({ children }) => {
     products,
     setProducts,
     fetchProducts,
-    favorites,
-    toggleFavorite,
     searchTerm,
     setSearchTerm,
     filters,

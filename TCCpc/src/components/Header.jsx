@@ -182,7 +182,7 @@ const Header = () => {
 
   return (
     <header className="header">
-      <div className="container">
+      <div className="container" style={{maxWidth: '1400px'}}>
         <div className="logo">
           <h1>DoeConect+</h1>
         </div>

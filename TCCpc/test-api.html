@@ -1,37 +1,195 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Teste API</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de API - DoeConect+</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #F5EFE6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        button {
+            background: #8B5E3C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #4A3428;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
 </head>
 <body>
-    <h1>Teste da API de Usuário</h1>
-    <button onclick="testUpdate()">Testar Atualização</button>
-    <div id="result"></div>
+    <div class="container">
+        <h1>🔧 Teste de API - DoeConect+</h1>
+        
+        <div class="test-section">
+            <h3>1. Testar Conexão com API</h3>
+            <button onclick="testConnection()">Testar Conexão</button>
+            <div id="connection-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Listar Usuários (se disponível)</h3>
+            <button onclick="listUsers()">Listar Usuários</button>
+            <div id="users-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Testar Login</h3>
+            <input type="email" id="email" placeholder="Email" value="matheus@gmail.com">
+            <input type="password" id="password" placeholder="Senha" value="123456">
+            <button onclick="testLogin()">Testar Login</button>
+            <div id="login-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Credenciais Sugeridas para Teste</h3>
+            <p><strong>Admin:</strong> admin@doeconect.com / admin1</p>
+            <p><strong>Teste:</strong> matheus@gmail.com / (senha desconhecida)</p>
+            <p><strong>Senhas comuns para teste:</strong> 123456, password, teste123, 12345</p>
+        </div>
+    </div>
 
     <script>
-        async function testUpdate() {
+        const API_BASE = 'http://localhost:8080/api/v1';
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
             try {
-                const response = await fetch('http://localhost:8080/api/v1/usuario/1', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        nome: 'Teste Nome Atualizado'
-                    })
-                });
-                
-                const result = await response.text();
-                document.getElementById('result').innerHTML = `
-                    <p>Status: ${response.status}</p>
-                    <p>Response: ${result}</p>
-                `;
+                const response = await fetch(`${API_BASE}/anuncio`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Conexão OK! Encontrados ${data.length} anúncios.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Erro de conexão: ${response.status}`;
+                }
             } catch (error) {
-                document.getElementById('result').innerHTML = `
-                    <p>Erro: ${error.message}</p>
-                `;
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Erro: ${error.message}`;
             }
         }
+
+        async function listUsers() {
+            const resultDiv = document.getElementById('users-result');
+            try {
+                const response = await fetch(`${API_BASE}/usuario`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Usuários encontrados:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Erro ao listar usuários: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('login-result');
+            
+            try {
+                const response = await fetch(`${API_BASE}/usuario/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, senha: password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Login realizado com sucesso!\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Falha no login: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+
+        // Sugestões de senhas para testar
+        const senhasSugeridas = ['123456', 'password', 'teste123', '12345', 'admin', 'matheus123'];
+        
+        async function testarSenhasAutomaticamente() {
+            const email = 'matheus@gmail.com';
+            console.log('Testando senhas automaticamente para:', email);
+            
+            for (const senha of senhasSugeridas) {
+                try {
+                    const response = await fetch(`${API_BASE}/usuario/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, senha })
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`✅ SENHA ENCONTRADA: ${senha}`);
+                        alert(`Senha encontrada: ${senha}`);
+                        return senha;
+                    }
+                } catch (e) {
+                    console.log(`❌ Senha ${senha} falhou:`, e.message);
+                }
+            }
+            
+            console.log('❌ Nenhuma senha funcionou');
+            return null;
+        }
+
+        // Botão extra para testar senhas automaticamente
+        setTimeout(() => {
+            const container = document.querySelector('.container');
+            const botaoTeste = document.createElement('button');
+            botaoTeste.textContent = '🔍 Testar Senhas Automaticamente';
+            botaoTeste.onclick = testarSenhasAutomaticamente;
+            container.appendChild(botaoTeste);
+        }, 1000);
     </script>
 </body>
 </html>

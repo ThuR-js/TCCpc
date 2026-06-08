@@ -3,7 +3,381 @@ import { useApp } from '../context/AppContext'
 import { useState } from 'react'
 import { apiRequest, API_CONFIG } from '../api'
 import { isValidImageType, isValidFileSize } from '../utils'
+import { User, Mail, Calendar, BadgeCheck, Lock, ClipboardList, AlertTriangle } from 'lucide-react'
 
+/* ─── Inline Styles ─────────────────────────────────────── */
+const S = {
+  page: {
+    background: '#FAF7F2',
+    minHeight: '100vh',
+  },
+  wrapper: {
+    maxWidth: 1400,
+    margin: '0 auto',
+    padding: '32px',
+  },
+  breadcrumb: {
+    color: '#8D8178',
+    fontSize: 14,
+    fontWeight: 500,
+    marginBottom: 24,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+  },
+  bcLink: {
+    cursor: 'pointer',
+    color: '#8D8178',
+    textDecoration: 'none',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '45% 55%',
+    gap: 40,
+    marginBottom: 40,
+  },
+  card: {
+    background: '#FFFFFF',
+    border: '1px solid #ECE4DA',
+    borderRadius: 20,
+    padding: 40,
+  },
+  photoCard: {
+    background: '#FFFFFF',
+    border: '1px solid #ECE4DA',
+    borderRadius: 20,
+    padding: 40,
+    height: 600,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
+  },
+  avatar: {
+    width: 220,
+    height: 220,
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: '4px solid #8B4A20',
+    boxShadow: '0 8px 24px rgba(139,74,32,0.2)',
+  },
+  selectPhotoLabel: {
+    background: '#8B4A20',
+    color: 'white',
+    borderRadius: 12,
+    height: 52,
+    padding: '0 32px',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    border: 'none',
+    transition: 'background 0.2s',
+  },
+  savePhotoBtn: {
+    background: '#4CAF50',
+    color: 'white',
+    borderRadius: 12,
+    height: 52,
+    padding: '0 32px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+  },
+  removePhotoBtn: {
+    background: 'white',
+    color: '#E74C3C',
+    borderRadius: 12,
+    height: 44,
+    padding: '0 24px',
+    border: '1px solid #E74C3C',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+  },
+  photoHint: {
+    color: '#9C928A',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 1.5,
+  },
+  infoTitle: {
+    fontSize: 38,
+    fontWeight: 700,
+    color: '#2E241E',
+    marginBottom: 32,
+    lineHeight: 1.1,
+  },
+  infoRow: {
+    height: 72,
+    display: 'flex',
+    alignItems: 'center',
+    borderBottom: '1px solid #ECE4DA',
+    gap: 16,
+  },
+  infoIcon: {
+    color: '#8B4A20',
+    flexShrink: 0,
+  },
+  infoLabel: {
+    color: '#6F665F',
+    fontSize: '0.9rem',
+    fontWeight: 500,
+    minWidth: 140,
+    flexShrink: 0,
+  },
+  infoValue: {
+    color: '#2E241E',
+    fontSize: '0.95rem',
+    fontWeight: 500,
+    flex: 1,
+  },
+  editBtn: {
+    height: 40,
+    padding: '0 20px',
+    borderRadius: 10,
+    border: '1px solid #D6C7B7',
+    background: 'transparent',
+    color: '#6F665F',
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+    flexShrink: 0,
+    transition: 'background 0.2s',
+  },
+  editInput: {
+    padding: '8px 12px',
+    borderRadius: 8,
+    border: '1px solid #D6C7B7',
+    fontSize: '0.9rem',
+    outline: 'none',
+    flex: 1,
+  },
+  saveBtn: {
+    padding: '6px 14px',
+    background: '#8B4A20',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+  },
+  cancelBtn: {
+    padding: '6px 14px',
+    background: '#9C928A',
+    color: 'white',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+  },
+  select: {
+    padding: '8px 12px',
+    borderRadius: 8,
+    border: '1px solid #D6C7B7',
+    fontSize: '0.9rem',
+    background: 'white',
+    color: '#2E241E',
+    outline: 'none',
+    flex: 1,
+  },
+  sectionCard: (mt = 40) => ({
+    background: '#FFFFFF',
+    border: '1px solid #ECE4DA',
+    borderRadius: 20,
+    padding: 32,
+    marginTop: mt,
+  }),
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  sectionTitleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    color: '#2E241E',
+  },
+  sectionSub: {
+    color: '#6F665F',
+    fontSize: '0.9rem',
+    marginTop: 4,
+    marginLeft: 36,
+  },
+  primaryBtn: {
+    background: '#8B4A20',
+    color: 'white',
+    height: 52,
+    borderRadius: 12,
+    padding: '0 28px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    transition: 'background 0.2s',
+  },
+  dangerCard: {
+    background: '#FFF8F7',
+    border: '1px solid #F3C7C2',
+    borderRadius: 20,
+    padding: 32,
+    marginTop: 40,
+  },
+  dangerTitle: {
+    fontSize: '1.2rem',
+    fontWeight: 700,
+    color: '#C0392B',
+    marginLeft: 12,
+  },
+  dangerText: {
+    color: '#6F665F',
+    fontSize: '0.9rem',
+    marginTop: 4,
+    marginLeft: 36,
+    marginBottom: 20,
+  },
+  dangerBtns: {
+    display: 'flex',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  inactivateBtn: {
+    background: 'white',
+    border: '1px solid #E74C3C',
+    color: '#E74C3C',
+    height: 48,
+    padding: '0 24px',
+    borderRadius: 12,
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+  },
+  deleteBtn: {
+    background: '#E74C3C',
+    color: 'white',
+    height: 48,
+    padding: '0 24px',
+    borderRadius: 12,
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: 600,
+    transition: 'background 0.2s',
+  },
+  pwForm: {
+    marginTop: 20,
+    padding: 24,
+    background: '#FAF7F2',
+    borderRadius: 12,
+    border: '1px solid #ECE4DA',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  pwLabel: {
+    display: 'block',
+    color: '#6F665F',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+    marginBottom: 6,
+  },
+  pwInput: {
+    width: '100%',
+    padding: '10px 14px',
+    borderRadius: 10,
+    border: '1px solid #D6C7B7',
+    fontSize: '0.9rem',
+    outline: 'none',
+    background: 'white',
+  },
+  errorBox: {
+    padding: '10px 16px',
+    background: '#FFEBEE',
+    border: '1px solid #FFCDD2',
+    borderRadius: 10,
+    color: '#C0392B',
+    fontSize: '0.85rem',
+  },
+  modal: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  },
+  modalBox: (danger) => ({
+    background: 'white',
+    borderRadius: 20,
+    padding: 40,
+    maxWidth: 440,
+    width: '90%',
+    textAlign: 'center',
+    border: danger ? '2px solid #E74C3C' : '1px solid #ECE4DA',
+  }),
+  modalTitle: (danger) => ({
+    fontSize: '1.3rem',
+    fontWeight: 700,
+    color: danger ? '#C0392B' : '#2E241E',
+    marginBottom: 12,
+  }),
+  modalText: {
+    color: '#6F665F',
+    fontSize: '0.9rem',
+    marginBottom: 24,
+    lineHeight: 1.6,
+  },
+  modalBtns: {
+    display: 'flex',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  doadorForm: {
+    marginTop: 24,
+    padding: 24,
+    background: '#FAF7F2',
+    borderRadius: 16,
+    border: '2px solid #8B4A20',
+  },
+  doadorTitle: {
+    fontSize: '1.1rem',
+    fontWeight: 700,
+    color: '#8B4A20',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  doadorRow: {
+    marginBottom: 16,
+  },
+  doadorLabel: {
+    color: '#6F665F',
+    fontSize: '0.85rem',
+    fontWeight: 500,
+    display: 'block',
+    marginBottom: 6,
+  },
+  doadorInputRow: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+  },
+  savedBadge: {
+    color: '#4CAF50',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+  },
+}
+
+/* ─── Component ─────────────────────────────────────────── */
 const Profile = () => {
   const navigate = useNavigate()
   const { currentUser, requests, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
@@ -14,14 +388,14 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [showDeactivateModal, setShowDeactivateModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  
-  // Estados para alteração de senha
+
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+
   const [showDoadorForm, setShowDoadorForm] = useState(
     currentUser?.nivelAcesso === 'DOADOR' && !currentUser?.doadorId
   )
@@ -31,23 +405,19 @@ const Profile = () => {
   const [cpfSaved, setCpfSaved] = useState(false)
   const [dataSaved, setDataSaved] = useState(false)
   const [cepSaved, setCepSaved] = useState(false)
-  
-  // Estados para foto de perfil
+
   const [profileImage, setProfileImage] = useState(null)
   const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.foto || null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const userRequests = requests.filter(req => req.userId === currentUser?.id)
   const pendingRequests = userRequests.filter(req => req.status === 'pending')
-  
-  // Para doadores
   const donorRequests = requests.filter(req => req.donorId === currentUser?.id)
   const pendingDonorRequests = donorRequests.filter(req => req.status === 'pending')
   const approvedDonations = donorRequests.filter(req => req.status === 'approved').length
   const userProducts = products.filter(product => product.donorId === currentUser?.id)
 
   const getRegistrationDate = () => {
-    // Como não temos data real, vamos simular baseado no ID
     if (currentUser?.id) {
       const date = new Date(currentUser.id)
       return date.toLocaleDateString()
@@ -71,10 +441,7 @@ const Profile = () => {
 
   const handleDeactivateAccount = async () => {
     try {
-      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}/inativar`, {
-        method: 'PUT'
-      })
-      
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}/inativar`, { method: 'PUT' })
       alert('Conta inativada com sucesso!')
       setCurrentUser(null)
       sessionStorage.removeItem('currentUser')
@@ -87,10 +454,7 @@ const Profile = () => {
 
   const handleDeleteAccount = async () => {
     try {
-      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
-        method: 'DELETE'
-      })
-      
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, { method: 'DELETE' })
       alert('Conta excluída permanentemente!')
       setCurrentUser(null)
       sessionStorage.removeItem('currentUser')
@@ -102,42 +466,30 @@ const Profile = () => {
   }
 
   const handlePasswordChange = async () => {
-    // Limpar erros anteriores
     setPasswordError('')
-    
-    // Validações
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordError('Todos os campos são obrigatórios')
       return
     }
-    
     if (newPassword !== confirmPassword) {
       setPasswordError('A nova senha e a confirmação não são iguais')
       return
     }
-    
     if (newPassword.length < 6) {
       setPasswordError('A nova senha deve ter pelo menos 6 caracteres')
       return
     }
-    
     if (currentPassword === newPassword) {
       setPasswordError('A nova senha deve ser diferente da senha atual')
       return
     }
-    
     setIsChangingPassword(true)
     try {
       await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}/alterar-senha`, {
         method: 'PUT',
-        body: JSON.stringify({
-          senhaAtual: currentPassword,
-          novaSenha: newPassword
-        })
+        body: JSON.stringify({ senhaAtual: currentPassword, novaSenha: newPassword }),
       })
-      
       alert('Senha alterada com sucesso!')
-      // Limpar campos
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
@@ -148,64 +500,36 @@ const Profile = () => {
     setIsChangingPassword(false)
   }
 
-  // Função para upload de imagem no Cloudinary
   const uploadImageToCloudinary = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('upload_preset', 'ml_default')
-    
     const response = await fetch('https://api.cloudinary.com/v1_1/dod8l2rsn/image/upload', {
       method: 'POST',
-      body: formData
+      body: formData,
     })
-    
     const data = await response.json()
-    if (!data.secure_url) {
-      throw new Error('Falha no upload da imagem')
-    }
+    if (!data.secure_url) throw new Error('Falha no upload da imagem')
     return data.secure_url
   }
 
-  // Função para selecionar imagem
   const handleImageSelect = (e) => {
     const file = e.target.files[0]
     if (!file) return
-
-    // Validações
-    if (!isValidImageType(file)) {
-      alert('Apenas imagens JPG, PNG e WEBP são permitidas')
-      return
-    }
-    
-    if (!isValidFileSize(file, 5)) {
-      alert('A imagem deve ter no máximo 5MB')
-      return
-    }
-
+    if (!isValidImageType(file)) { alert('Apenas imagens JPG, PNG e WEBP são permitidas'); return }
+    if (!isValidFileSize(file, 5)) { alert('A imagem deve ter no máximo 5MB'); return }
     setProfileImage(file)
-    
-    // Criar preview
     const reader = new FileReader()
-    reader.onload = (e) => {
-      setProfileImagePreview(e.target.result)
-    }
+    reader.onload = (e) => setProfileImagePreview(e.target.result)
     reader.readAsDataURL(file)
   }
 
-  // Função para salvar foto de perfil
   const handleSaveProfileImage = async () => {
-    if (!profileImage) {
-      alert('Selecione uma imagem primeiro')
-      return
-    }
-
+    if (!profileImage) { alert('Selecione uma imagem primeiro'); return }
     setIsUploadingImage(true)
     try {
-      // Upload da imagem
       const imageUrl = await uploadImageToCloudinary(profileImage)
-      
       const result = await updateUser({ foto: imageUrl })
-      
       if (result.success) {
         setProfileImagePreview(imageUrl)
         alert('Foto de perfil atualizada com sucesso!')
@@ -219,14 +543,11 @@ const Profile = () => {
     setIsUploadingImage(false)
   }
 
-  // Função para remover foto de perfil
   const handleRemoveProfileImage = async () => {
     if (!confirm('Tem certeza que deseja remover sua foto de perfil?')) return
-    
     setIsUploadingImage(true)
     try {
       const result = await updateUser({ fotoPerfil: null })
-      
       if (result.success) {
         setProfileImagePreview(null)
         setProfileImage(null)
@@ -240,999 +561,518 @@ const Profile = () => {
     setIsUploadingImage(false)
   }
 
-
-
-
-
-  // Verificar se o usuário está carregado
   if (!currentUser) {
     return (
-      <div className="container">
-        <p style={{color: 'white'}}>Carregando perfil...</p>
+      <div style={S.page}>
+        <div style={S.wrapper}>
+          <p style={{ color: '#6F665F' }}>Carregando perfil...</p>
+        </div>
       </div>
     )
   }
 
+  const isDonor = currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR'
+
+  const accountType = currentUser?.isAdmin
+    ? 'Administrador'
+    : isDonor ? 'Doador' : 'Donatário'
+
   return (
-    <div className="container">
-      {/* Botão de teste simples */}
-      <button 
-        onClick={() => {
-          console.log('Botão clicado!')
-          navigate('/')
-        }} 
-        className="btn-back"
-        style={{
-          display: 'inline-block',
-          visibility: 'visible',
-          opacity: 1,
-          backgroundColor: '#4A230A',
-          color: 'white',
-          padding: '10px 20px',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
-      >
-        ← Voltar
-      </button>
-      
-
-      
-      <h2 style={{marginBottom: '2rem', color: 'white'}}>Perfil</h2>
-      
-      <div className="profile-container">
-        <div className="profile-card">
-          <h3>Informações da Conta</h3>
-          <div className="profile-info">
-            <div className="info-item">
-              <strong>Nome:</strong>
-              {isEditingName ? (
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input 
-                    type="text" 
-                    value={newName} 
-                    onChange={(e) => setNewName(e.target.value)}
-                    style={{ 
-                      padding: '5px', 
-                      borderRadius: '4px', 
-                      border: '1px solid #ccc',
-                      fontSize: '14px'
-                    }}
-                  />
-                  <button 
-                    onClick={async () => {
-                      if (!newName.trim()) {
-                        alert('Nome não pode estar vazio')
-                        return
-                      }
-                      setIsLoading(true)
-                      const result = await updateUser({ nome: newName.trim() })
-                      if (result.success) {
-                        setIsEditingName(false)
-                        alert('Nome atualizado com sucesso!')
-                      } else {
-                        alert(result.error || 'Erro ao atualizar nome')
-                      }
-                      setIsLoading(false)
-                    }}
-                    disabled={isLoading}
-                    style={{ 
-                      padding: '5px 10px', 
-                      backgroundColor: '#4CAF50', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    {isLoading ? 'Salvando...' : 'Salvar'}
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setIsEditingName(false)
-                      setNewName(currentUser?.name || currentUser?.nome || '')
-                    }}
-                    style={{ 
-                      padding: '5px 10px', 
-                      backgroundColor: '#f44336', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>{currentUser?.name || currentUser?.nome}</span>
-                  <button 
-                    onClick={() => setIsEditingName(true)}
-                    style={{ 
-                      padding: '3px 8px', 
-                      backgroundColor: '#2196F3', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '11px',
-                      display: 'inline-block',
-                      visibility: 'visible',
-                      opacity: 1
-                    }}
-                  >
-                    Editar
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="info-item">
-              <strong>Email:</strong>
-              {isEditingEmail ? (
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '14px' }}
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!newEmail.trim()) {
-                        alert('Email não pode estar vazio')
-                        return
-                      }
-                      setIsLoading(true)
-                      const result = await updateUser({ email: newEmail.trim() })
-                      if (result.success) {
-                        setIsEditingEmail(false)
-                        alert('Email atualizado com sucesso!')
-                      } else {
-                        alert(result.error || 'Erro ao atualizar email')
-                      }
-                      setIsLoading(false)
-                    }}
-                    disabled={isLoading}
-                    style={{ padding: '5px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                  >
-                    {isLoading ? 'Salvando...' : 'Salvar'}
-                  </button>
-                  <button
-                    onClick={() => { setIsEditingEmail(false); setNewEmail(currentUser?.email || '') }}
-                    style={{ padding: '5px 10px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span>{currentUser?.email}</span>
-                  <button
-                    onClick={() => setIsEditingEmail(true)}
-                    style={{ padding: '3px 8px', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
-                  >
-                    Editar
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="info-item">
-              <strong>Data de Registro:</strong>
-              <span>{currentUser?.dataCadastro || getRegistrationDate()}</span>
-            </div>
-            
-
-            <div className="info-item">
-              <strong>Tipo de Conta:</strong>
-              {currentUser?.isAdmin ? (
-                <span>Administrador</span>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <select 
-                    value={currentUser?.nivelAcesso || (currentUser?.type === 'donatario' ? 'DONATARIO' : 'DOADOR')}
-                    onChange={async (e) => {
-                      const newType = e.target.value
-                      
-                      if (newType === 'DOADOR') {
-                        setShowDoadorForm(true)
-                        return
-                      }
-                      
-                      console.log('Current user before change:', currentUser)
-                      setIsLoading(true)
-                      try {
-                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
-                          method: 'PUT',
-                          body: JSON.stringify({
-                            ...currentUser,
-                            nivelAcesso: newType
-                          })
-                        })
-                        
-                        const mergedUser = {
-                          ...currentUser,
-                          ...updatedUser,
-                          nivelAcesso: newType
-                        }
-                        setCurrentUser(mergedUser)
-                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
-                        alert(`Tipo de conta alterado para ${newType === 'DOADOR' ? 'Doador' : 'Donatário'} com sucesso!`)
-                      } catch (error) {
-                        alert('Erro de conexão')
-                      }
-                      setIsLoading(false)
-                    }}
-                    disabled={isLoading}
-                    style={{
-                      padding: '5px 10px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '14px',
-                      backgroundColor: 'white'
-                    }}
-                  >
-                    <option value="DONATARIO">Donatário</option>
-                    <option value="DOADOR">Doador</option>
-                  </select>
-                  {isLoading && <span style={{fontSize: '12px', color: '#ccc'}}>Salvando...</span>}
-                </div>
-              )}
-            </div>
-            
-            {currentUser?.nivelAcesso === 'DOADOR' && currentUser?.doadorId && (
-              <>
-                <div className="info-item">
-                  <strong>CPF:</strong>
-                  <span>{currentUser?.cpf || 'Não informado'}</span>
-                </div>
-                <div className="info-item">
-                  <strong>CEP:</strong>
-                  <span>{currentUser?.cep || 'Não informado'}</span>
-                </div>
-                <div className="info-item">
-                  <strong>Data de Nascimento:</strong>
-                  <span>{currentUser?.dataNascimento ? new Date(currentUser.dataNascimento).toLocaleDateString('pt-BR') : 'Não informado'}</span>
-                </div>
-              </>
-            )}
-            
-            {/* Seção de Alteração de Senha */}
-            <div className="info-item" style={{marginTop: '2rem'}}>
-              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem'}}>
-                <strong>Alterar Senha:</strong>
-                <button 
-                  onClick={() => {
-                    setShowPasswordForm(!showPasswordForm)
-                    if (showPasswordForm) {
-                      // Limpar campos ao fechar
-                      setCurrentPassword('')
-                      setNewPassword('')
-                      setConfirmPassword('')
-                      setPasswordError('')
-                    }
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: showPasswordForm ? '#f44336' : '#2196F3',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
-                >
-                  {showPasswordForm ? 'Cancelar' : 'Alterar Senha'}
-                </button>
-              </div>
-              
-              {showPasswordForm && (
-                <div style={{
-                  padding: '1.5rem',
-                  backgroundColor: '#1a1a1a',
-                  borderRadius: '8px',
-                  border: '1px solid #333',
-                  marginTop: '1rem'
-                }}>
-                  <h4 style={{color: '#DFA983', marginBottom: '1.5rem', fontSize: '16px'}}>Alterar Senha</h4>
-                  
-                  {passwordError && (
-                    <div style={{
-                      padding: '10px',
-                      backgroundColor: '#ffebee',
-                      border: '1px solid #f44336',
-                      borderRadius: '4px',
-                      marginBottom: '1rem',
-                      color: '#d32f2f',
-                      fontSize: '14px'
-                    }}>
-                      {passwordError}
-                    </div>
-                  )}
-                  
-                  <div style={{marginBottom: '1rem'}}>
-                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Senha Atual:</label>
-                    <input 
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Digite sua senha atual"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{marginBottom: '1rem'}}>
-                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Nova Senha:</label>
-                    <input 
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Digite a nova senha (mín. 6 caracteres)"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    />
-                  </div>
-                  
-                  <div style={{marginBottom: '1.5rem'}}>
-                    <label style={{display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px'}}>Confirmar Nova Senha:</label>
-                    <input 
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Digite novamente a nova senha"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '4px',
-                        border: confirmPassword && newPassword !== confirmPassword ? '2px solid #f44336' : '1px solid #ccc',
-                        fontSize: '14px',
-                        backgroundColor: 'white'
-                      }}
-                    />
-                    {confirmPassword && newPassword !== confirmPassword && (
-                      <p style={{color: '#f44336', fontSize: '12px', marginTop: '5px', marginBottom: '0'}}>As senhas não coincidem</p>
-                    )}
-                  </div>
-                  
-                  <div style={{textAlign: 'center'}}>
-                    <button 
-                      onClick={handlePasswordChange}
-                      disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
-                      style={{
-                        padding: '12px 24px',
-                        backgroundColor: (currentPassword && newPassword && confirmPassword && newPassword === confirmPassword) ? '#4CAF50' : '#666',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: (currentPassword && newPassword && confirmPassword && newPassword === confirmPassword) ? 'pointer' : 'not-allowed',
-                        fontSize: '14px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
-                    </button>
-                  </div>
-                  
-                  <p style={{color: '#999', fontSize: '12px', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic'}}>
-                    💡 A senha deve ter pelo menos 6 caracteres e ser diferente da atual
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {showDoadorForm && (
-              <div style={{marginTop: '2rem', padding: '1.5rem', backgroundColor: '#1a1a1a', borderRadius: '12px', border: '2px solid #DFA983'}}>
-                <h4 style={{color: '#DFA983', marginBottom: '1.5rem', fontSize: '18px', fontWeight: '600', textAlign: 'center'}}>Informações de Doador</h4>
-                  
-                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
-                  <strong style={{color: '#fff', fontSize: '14px'}}>CPF (obrigatório):</strong>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
-                    <input 
-                      type="text"
-                      placeholder="00000000000"
-                      maxLength="11"
-                      value={doadorCpf}
-                      onChange={(e) => setDoadorCpf(e.target.value.replace(/\D/g, ''))}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '4px',
-                        border: cpfSaved ? '2px solid #4CAF50' : '1px solid #ccc',
-                        backgroundColor: cpfSaved ? '#e8f5e9' : 'white',
-                        fontSize: '14px',
-                        width: '150px'
-                      }}
-                    />
-                    <button 
-                      onClick={() => {
-                        if (doadorCpf.length !== 11) {
-                          alert('CPF deve ter 11 dígitos')
-                          return
-                        }
-                        setCpfSaved(true)
-                      }}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: cpfSaved ? '#4CAF50' : '#2196F3',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      {cpfSaved ? '✓ Salvo' : 'Salvar'}
-                    </button>
-                  </div>
-                </div>
-                
-                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
-                  <strong style={{color: '#fff', fontSize: '14px'}}>Data de Nascimento (obrigatório):</strong>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
-                    <input 
-                      type="date"
-                      value={doadorDataNasc}
-                      onChange={(e) => setDoadorDataNasc(e.target.value)}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '4px',
-                        border: dataSaved ? '2px solid #4CAF50' : '1px solid #ccc',
-                        backgroundColor: dataSaved ? '#e8f5e9' : 'white',
-                        fontSize: '14px',
-                        width: '150px'
-                      }}
-                    />
-                    <button 
-                      onClick={() => {
-                        if (!doadorDataNasc) {
-                          alert('Data de nascimento é obrigatória')
-                          return
-                        }
-                        setDataSaved(true)
-                      }}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: dataSaved ? '#4CAF50' : '#2196F3',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      {dataSaved ? '✓ Salvo' : 'Salvar'}
-                    </button>
-                  </div>
-                </div>
-                
-                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
-                  <strong style={{color: '#fff', fontSize: '14px'}}>CEP (obrigatório):</strong>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', justifyContent: 'center' }}>
-                    <input 
-                      type="text"
-                      placeholder="00000000"
-                      maxLength="8"
-                      value={doadorCep}
-                      onChange={(e) => setDoadorCep(e.target.value.replace(/\D/g, ''))}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '4px',
-                        border: cepSaved ? '2px solid #4CAF50' : '1px solid #ccc',
-                        backgroundColor: cepSaved ? '#e8f5e9' : 'white',
-                        fontSize: '14px',
-                        width: '150px'
-                      }}
-                    />
-                    <button 
-                      onClick={() => {
-                        if (doadorCep.length !== 8) {
-                          alert('CEP deve ter 8 dígitos')
-                          return
-                        }
-                        setCepSaved(true)
-                      }}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: cepSaved ? '#4CAF50' : '#2196F3',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      {cepSaved ? '✓ Salvo' : 'Salvar'}
-                    </button>
-                  </div>
-                </div>
-                
-                <div style={{textAlign: 'center', marginTop: '2rem'}}>
-                  <button 
-                    onClick={async () => {
-                      if (!cpfSaved || !dataSaved || !cepSaved) {
-                        alert('Salve todos os campos antes de enviar')
-                        return
-                      }
-                      
-                      setIsLoading(true)
-                      try {
-                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
-                          method: 'PUT',
-                          body: JSON.stringify({
-                            ...currentUser,
-                            nivelAcesso: 'DOADOR',
-                            cpf: doadorCpf,
-                            dataNascimento: doadorDataNasc,
-                            cep: doadorCep
-                          })
-                        })
-                        
-                        const mergedUser = {
-                          ...currentUser,
-                          ...updatedUser,
-                          nivelAcesso: 'DOADOR',
-                          cpf: doadorCpf,
-                          dataNascimento: doadorDataNasc,
-                          cep: doadorCep
-                        }
-                        setShowDoadorForm(false)
-                        
-                        const doador = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
-                          method: 'POST',
-                          body: JSON.stringify({
-                            nome: currentUser.nome || currentUser.name,
-                            cpf: doadorCpf,
-                            dataNascimento: doadorDataNasc,
-                            cep: doadorCep,
-                            usuario: { id: currentUser.id }
-                          })
-                        })
-                        mergedUser.doadorId = doador.id
-                        setCurrentUser(mergedUser)
-                        sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
-
-                        alert('Conta alterada para Doador com sucesso!')
-                      } catch (error) {
-                        alert('Erro de conexão')
-                      }
-                      setIsLoading(false)
-                    }}
-                    disabled={isLoading || !cpfSaved || !dataSaved || !cepSaved}
-                    style={{
-                      padding: '12px 30px',
-                      backgroundColor: (cpfSaved && dataSaved && cepSaved) ? '#4CAF50' : '#666',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: (cpfSaved && dataSaved && cepSaved) ? 'pointer' : 'not-allowed',
-                      fontSize: '14px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {isLoading ? 'Enviando...' : 'Enviar e Mudar para Doador'}
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setShowDoadorForm(false)
-                      setDoadorCpf('')
-                      setDoadorDataNasc('')
-                      setDoadorCep('')
-                      setCpfSaved(false)
-                      setDataSaved(false)
-                      setCepSaved(false)
-                    }}
-                    style={{
-                      padding: '12px 30px',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      marginLeft: '10px'
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-                
-                <p style={{color: '#ff9800', fontSize: '13px', marginTop: '1rem', fontStyle: 'italic', textAlign: 'center', backgroundColor: '#2a1a0a', padding: '10px', borderRadius: '6px'}}>
-                  ⚠️ Estes campos são obrigatórios para se tornar doador
-                </p>
-              </div>
-            )}
-            
-            <div className="danger-zone" style={{marginTop: '2rem', padding: '1rem', border: '2px solid #ff4444', borderRadius: '8px', backgroundColor: '#2a1a1a'}}>
-              <h4 style={{color: '#ff4444', marginBottom: '1rem'}}>Zona de Perigo</h4>
-              <p style={{color: '#ccc', marginBottom: '1rem', fontSize: '14px'}}>Inativar sua conta irá desabilitar o acesso. Você pode reativar fazendo login novamente.</p>
-              <button 
-                onClick={() => setShowDeactivateModal(true)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#ff4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  marginRight: '10px'
-                }}
-              >
-                Inativar Conta
-              </button>
-              <button 
-                onClick={() => setShowDeleteModal(true)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#8B0000',
-                  color: 'white',
-                  border: '2px solid #ff0000',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 'bold'
-                }}
-              >
-                Excluir Conta
-              </button>
-              <p style={{color: '#ff6666', marginTop: '0.5rem', fontSize: '12px', fontStyle: 'italic'}}>⚠️ A exclusão da conta é permanente e não pode ser desfeita!</p>
-            </div>
-          </div>
+    <div style={S.page}>
+      <div style={S.wrapper}>
+        {/* ── Breadcrumb ─────────────────────────── */}
+        <div style={S.breadcrumb}>
+          <span style={S.bcLink} onClick={() => navigate('/')}>Início</span>
+          <span>›</span>
+          <span>Perfil</span>
         </div>
 
-        {/* Seção de Foto de Perfil */}
-        <div className="profile-card">
-          <h3>Foto de Perfil</h3>
-          <div className="profile-photo-section">
-            <div className="current-photo">
-              <img 
-                src={profileImagePreview || currentUser?.fotoPerfil || '/images/avatar2.webp'} 
-                alt="Foto de perfil"
-                className="profile-photo-display"
-                onError={(e) => {
-                  e.target.src = '/images/avatar2.webp'
-                  e.target.onerror = null
-                }}
-              />
-            </div>
-            
-            <div className="photo-controls">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                style={{ display: 'none' }}
-                id="profile-image-input"
-              />
-              
-              <label 
-                htmlFor="profile-image-input" 
-                className="btn btn-secondary"
-                style={{
-                  display: 'inline-block',
-                  padding: '10px 20px',
-                  backgroundColor: '#4A230A',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  marginRight: '10px'
-                }}
-              >
-                Selecionar Foto
-              </label>
-              
-              {profileImage && (
-                <button 
-                  onClick={handleSaveProfileImage}
-                  disabled={isUploadingImage}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: isUploadingImage ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    marginRight: '10px'
-                  }}
-                >
-                  {isUploadingImage ? 'Salvando...' : 'Salvar Foto'}
-                </button>
-              )}
-              
+        {/* ── Main Grid: Foto + Informações ─────── */}
+        <div style={S.grid}>
+          {/* Foto de Perfil */}
+          <div style={S.photoCard}>
+            <img
+              src={profileImagePreview || currentUser?.fotoPerfil || '/images/avatar2.webp'}
+              alt="Foto de perfil"
+              style={S.avatar}
+              onError={(e) => { e.target.src = '/images/avatar2.webp'; e.target.onerror = null }}
+            />
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  style={{ display: 'none' }}
+                  id="profile-image-input"
+                />
+                <label htmlFor="profile-image-input" style={S.selectPhotoLabel}>
+                  Selecionar Foto
+                </label>
+
+                {profileImage && (
+                  <button
+                    onClick={handleSaveProfileImage}
+                    disabled={isUploadingImage}
+                    style={S.savePhotoBtn}
+                  >
+                    {isUploadingImage ? 'Salvando...' : 'Salvar Foto'}
+                  </button>
+                )}
+              </div>
+
               {(currentUser?.fotoPerfil || profileImagePreview) && (
-                <button 
+                <button
                   onClick={handleRemoveProfileImage}
                   disabled={isUploadingImage}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: isUploadingImage ? 'not-allowed' : 'pointer',
-                    fontSize: '14px'
-                  }}
+                  style={S.removePhotoBtn}
                 >
                   Remover Foto
                 </button>
               )}
             </div>
-            
-            <p style={{ color: '#666', fontSize: '12px', marginTop: '10px', fontStyle: 'italic' }}>
-              Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB
+
+            <p style={S.photoHint}>
+              Formatos aceitos: JPG, PNG, WEBP<br />
+              Tamanho máximo: 5MB
             </p>
+          </div>
+
+          {/* Informações da Conta */}
+          <div style={S.card}>
+            <h1 style={S.infoTitle}>Informações da Conta</h1>
+
+            {/* Nome */}
+            <div style={S.infoRow}>
+              <User size={20} style={S.infoIcon} />
+              <span style={S.infoLabel}>Nome</span>
+              {isEditingName ? (
+                <div style={{ display: 'flex', gap: 8, flex: 1, alignItems: 'center' }}>
+                  <input
+                    style={S.editInput}
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                  />
+                  <button style={S.saveBtn} disabled={isLoading} onClick={async () => {
+                    if (!newName.trim()) { alert('Nome não pode estar vazio'); return }
+                    setIsLoading(true)
+                    const result = await updateUser({ nome: newName.trim() })
+                    if (result.success) { setIsEditingName(false); alert('Nome atualizado!') }
+                    else alert(result.error || 'Erro ao atualizar nome')
+                    setIsLoading(false)
+                  }}>
+                    {isLoading ? '...' : 'Salvar'}
+                  </button>
+                  <button style={S.cancelBtn} onClick={() => { setIsEditingName(false); setNewName(currentUser?.name || currentUser?.nome || '') }}>
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span style={S.infoValue}>{currentUser?.name || currentUser?.nome}</span>
+                  <button
+                    style={S.editBtn}
+                    onMouseEnter={e => e.target.style.background = '#FAF1E8'}
+                    onMouseLeave={e => e.target.style.background = 'transparent'}
+                    onClick={() => setIsEditingName(true)}
+                  >
+                    Editar
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Email */}
+            <div style={S.infoRow}>
+              <Mail size={20} style={S.infoIcon} />
+              <span style={S.infoLabel}>Email</span>
+              {isEditingEmail ? (
+                <div style={{ display: 'flex', gap: 8, flex: 1, alignItems: 'center' }}>
+                  <input
+                    type="email"
+                    style={S.editInput}
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                  />
+                  <button style={S.saveBtn} disabled={isLoading} onClick={async () => {
+                    if (!newEmail.trim()) { alert('Email não pode estar vazio'); return }
+                    setIsLoading(true)
+                    const result = await updateUser({ email: newEmail.trim() })
+                    if (result.success) { setIsEditingEmail(false); alert('Email atualizado!') }
+                    else alert(result.error || 'Erro ao atualizar email')
+                    setIsLoading(false)
+                  }}>
+                    {isLoading ? '...' : 'Salvar'}
+                  </button>
+                  <button style={S.cancelBtn} onClick={() => { setIsEditingEmail(false); setNewEmail(currentUser?.email || '') }}>
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span style={S.infoValue}>{currentUser?.email}</span>
+                  <button
+                    style={S.editBtn}
+                    onMouseEnter={e => e.target.style.background = '#FAF1E8'}
+                    onMouseLeave={e => e.target.style.background = 'transparent'}
+                    onClick={() => setIsEditingEmail(true)}
+                  >
+                    Editar
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Data de Registro */}
+            <div style={S.infoRow}>
+              <Calendar size={20} style={S.infoIcon} />
+              <span style={S.infoLabel}>Data de Registro</span>
+              <span style={S.infoValue}>{currentUser?.dataCadastro || getRegistrationDate()}</span>
+            </div>
+
+            {/* Tipo de Conta */}
+            <div style={S.infoRow}>
+              <BadgeCheck size={20} style={S.infoIcon} />
+              <span style={S.infoLabel}>Tipo de Conta</span>
+              {currentUser?.isAdmin ? (
+                <span style={S.infoValue}>Administrador</span>
+              ) : (
+                <>
+                  <select
+                    style={S.select}
+                    value={currentUser?.nivelAcesso || (currentUser?.type === 'donatario' ? 'DONATARIO' : 'DOADOR')}
+                    disabled={isLoading}
+                    onChange={async (e) => {
+                      const newType = e.target.value
+                      if (newType === 'DOADOR') { setShowDoadorForm(true); return }
+                      setIsLoading(true)
+                      try {
+                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
+                          method: 'PUT',
+                          body: JSON.stringify({ ...currentUser, nivelAcesso: newType }),
+                        })
+                        const merged = { ...currentUser, ...updatedUser, nivelAcesso: newType }
+                        setCurrentUser(merged)
+                        sessionStorage.setItem('currentUser', JSON.stringify(merged))
+                        alert(`Tipo de conta alterado para ${newType === 'DOADOR' ? 'Doador' : 'Donatário'}!`)
+                      } catch { alert('Erro de conexão') }
+                      setIsLoading(false)
+                    }}
+                  >
+                    <option value="DONATARIO">Donatário</option>
+                    <option value="DOADOR">Doador</option>
+                  </select>
+                  {isLoading && <span style={{ fontSize: 12, color: '#9C928A', marginLeft: 8 }}>Salvando...</span>}
+                </>
+              )}
+            </div>
+
+            {/* CPF / CEP / Data Nascimento (somente doadores) */}
+            {currentUser?.nivelAcesso === 'DOADOR' && currentUser?.doadorId && (
+              <>
+                <div style={S.infoRow}>
+                  <User size={20} style={S.infoIcon} />
+                  <span style={S.infoLabel}>CPF</span>
+                  <span style={S.infoValue}>{currentUser?.cpf || 'Não informado'}</span>
+                </div>
+                <div style={S.infoRow}>
+                  <User size={20} style={S.infoIcon} />
+                  <span style={S.infoLabel}>CEP</span>
+                  <span style={S.infoValue}>{currentUser?.cep || 'Não informado'}</span>
+                </div>
+                <div style={{ ...S.infoRow, borderBottom: 'none' }}>
+                  <Calendar size={20} style={S.infoIcon} />
+                  <span style={S.infoLabel}>Data de Nascimento</span>
+                  <span style={S.infoValue}>
+                    {currentUser?.dataNascimento
+                      ? new Date(currentUser.dataNascimento).toLocaleDateString('pt-BR')
+                      : 'Não informado'}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* Form novo doador */}
+            {showDoadorForm && (
+              <div style={S.doadorForm}>
+                <p style={S.doadorTitle}>Informações de Doador</p>
+
+                {[
+                  { label: 'CPF (obrigatório)', val: doadorCpf, set: setDoadorCpf, saved: cpfSaved, setSaved: setCpfSaved, max: 11, placeholder: '00000000000', validate: v => v.length === 11 || 'CPF deve ter 11 dígitos', sanitize: v => v.replace(/\D/g, '') },
+                  { label: 'Data de Nascimento (obrigatório)', val: doadorDataNasc, set: setDoadorDataNasc, saved: dataSaved, setSaved: setDataSaved, type: 'date', validate: v => !!v || 'Data é obrigatória' },
+                  { label: 'CEP (obrigatório)', val: doadorCep, set: setDoadorCep, saved: cepSaved, setSaved: setCepSaved, max: 8, placeholder: '00000000', validate: v => v.length === 8 || 'CEP deve ter 8 dígitos', sanitize: v => v.replace(/\D/g, '') },
+                ].map(({ label, val, set, saved, setSaved, max, placeholder, validate, type, sanitize }) => (
+                  <div key={label} style={S.doadorRow}>
+                    <label style={S.doadorLabel}>{label}</label>
+                    <div style={S.doadorInputRow}>
+                      <input
+                        type={type || 'text'}
+                        maxLength={max}
+                        placeholder={placeholder}
+                        value={val}
+                        onChange={e => set(sanitize ? sanitize(e.target.value) : e.target.value)}
+                        style={{ ...S.editInput, border: saved ? '2px solid #4CAF50' : '1px solid #D6C7B7', background: saved ? '#E8F5E9' : 'white' }}
+                      />
+                      {saved
+                        ? <span style={S.savedBadge}>✓ Salvo</span>
+                        : <button style={S.saveBtn} onClick={() => {
+                          const err = validate(val)
+                          if (err !== true && typeof err === 'string') { alert(err); return }
+                          setSaved(true)
+                        }}>Salvar</button>
+                      }
+                    </div>
+                  </div>
+                ))}
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <button
+                    style={{ ...S.primaryBtn, height: 44, opacity: (cpfSaved && dataSaved && cepSaved) ? 1 : 0.5 }}
+                    disabled={isLoading || !cpfSaved || !dataSaved || !cepSaved}
+                    onClick={async () => {
+                      setIsLoading(true)
+                      try {
+                        const updatedUser = await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${currentUser.id}`, {
+                          method: 'PUT',
+                          body: JSON.stringify({ ...currentUser, nivelAcesso: 'DOADOR', cpf: doadorCpf, dataNascimento: doadorDataNasc, cep: doadorCep }),
+                        })
+                        const merged = { ...currentUser, ...updatedUser, nivelAcesso: 'DOADOR', cpf: doadorCpf, dataNascimento: doadorDataNasc, cep: doadorCep }
+                        setShowDoadorForm(false)
+                        const doador = await apiRequest(API_CONFIG.ENDPOINTS.DOADOR, {
+                          method: 'POST',
+                          body: JSON.stringify({ nome: currentUser.nome || currentUser.name, cpf: doadorCpf, dataNascimento: doadorDataNasc, cep: doadorCep, usuario: { id: currentUser.id } }),
+                        })
+                        merged.doadorId = doador.id
+                        setCurrentUser(merged)
+                        sessionStorage.setItem('currentUser', JSON.stringify(merged))
+                        alert('Conta alterada para Doador!')
+                      } catch { alert('Erro de conexão') }
+                      setIsLoading(false)
+                    }}
+                  >
+                    {isLoading ? 'Enviando...' : 'Confirmar'}
+                  </button>
+                  <button style={{ ...S.inactivateBtn, height: 44 }} onClick={() => {
+                    setShowDoadorForm(false)
+                    setDoadorCpf(''); setDoadorDataNasc(''); setDoadorCep('')
+                    setCpfSaved(false); setDataSaved(false); setCepSaved(false)
+                  }}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {(currentUser?.type === 'doador' || currentUser?.nivelAcesso === 'DOADOR') ? (
-          <>
-            <div className="profile-card">
-              <h3>Estatísticas de Doação</h3>
-              <div className="profile-info">
-                <div className="info-item">
-                  <strong>Produtos Cadastrados:</strong>
-                  <span>{userProducts.length}</span>
-                </div>
-                <div className="info-item">
-                  <strong>Doações Realizadas:</strong>
-                  <span>{approvedDonations}</span>
-                </div>
+        {/* ── Segurança ──────────────────────────── */}
+        <div style={S.sectionCard()}>
+          <div style={S.sectionHeader}>
+            <div>
+              <div style={S.sectionTitleRow}>
+                <Lock size={22} color="#8B4A20" />
+                <span style={S.sectionTitle}>Segurança</span>
               </div>
+              <p style={S.sectionSub}>Mantenha sua conta protegida.</p>
             </div>
-            
-            <div className="profile-card">
-              <h3>Validações de Anúncios Recebidas</h3>
-              <div className="profile-info">
-                <div className="info-item">
-                  <strong>Produtos com Validações:</strong>
-                  <span>{userProducts.filter(p => requests.some(r => r.productId === p.id)).length}</span>
+            <button
+              style={{ ...S.primaryBtn, background: showPasswordForm ? '#9C928A' : '#8B4A20' }}
+              onMouseEnter={e => e.currentTarget.style.background = showPasswordForm ? '#6F665F' : '#6F3816'}
+              onMouseLeave={e => e.currentTarget.style.background = showPasswordForm ? '#9C928A' : '#8B4A20'}
+              onClick={() => {
+                setShowPasswordForm(!showPasswordForm)
+                if (showPasswordForm) {
+                  setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setPasswordError('')
+                }
+              }}
+            >
+              {showPasswordForm ? 'Cancelar' : 'Alterar Senha'}
+            </button>
+          </div>
+
+          {showPasswordForm && (
+            <div style={S.pwForm}>
+              {passwordError && <div style={S.errorBox}>{passwordError}</div>}
+              {[
+                { label: 'Senha Atual', val: currentPassword, set: setCurrentPassword, placeholder: 'Digite sua senha atual' },
+                { label: 'Nova Senha', val: newPassword, set: setNewPassword, placeholder: 'Mínimo 6 caracteres' },
+                { label: 'Confirmar Nova Senha', val: confirmPassword, set: setConfirmPassword, placeholder: 'Repita a nova senha', err: confirmPassword && newPassword !== confirmPassword },
+              ].map(({ label, val, set, placeholder, err }) => (
+                <div key={label}>
+                  <label style={S.pwLabel}>{label}</label>
+                  <input
+                    type="password"
+                    value={val}
+                    onChange={e => set(e.target.value)}
+                    placeholder={placeholder}
+                    style={{ ...S.pwInput, border: err ? '2px solid #E74C3C' : '1px solid #D6C7B7' }}
+                  />
+                  {err && <p style={{ color: '#E74C3C', fontSize: 12, marginTop: 4 }}>As senhas não coincidem</p>}
                 </div>
-                <div className="info-item">
-                  <strong>Total de Validações:</strong>
-                  <span>{requests.filter(r => r.donorId === currentUser?.id).length}</span>
+              ))}
+              <button
+                style={{ ...S.primaryBtn, opacity: (currentPassword && newPassword && confirmPassword && newPassword === confirmPassword) ? 1 : 0.5 }}
+                onClick={handlePasswordChange}
+                disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+              >
+                {isChangingPassword ? 'Alterando...' : 'Confirmar Alteração'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Validações ─────────────────────────── */}
+        <div style={S.sectionCard()}>
+          <div style={S.sectionTitleRow}>
+            <ClipboardList size={22} color="#8B4A20" />
+            <span style={S.sectionTitle}>Validações de Anúncios em Andamento</span>
+          </div>
+
+          {isDonor ? (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: 'flex', gap: 32, marginBottom: 16 }}>
+                <div>
+                  <p style={{ color: '#9C928A', fontSize: '0.85rem' }}>Produtos Cadastrados</p>
+                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E241E' }}>{userProducts.length}</p>
+                </div>
+                <div>
+                  <p style={{ color: '#9C928A', fontSize: '0.85rem' }}>Doações Realizadas</p>
+                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E241E' }}>{approvedDonations}</p>
+                </div>
+                <div>
+                  <p style={{ color: '#9C928A', fontSize: '0.85rem' }}>Total de Validações</p>
+                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E241E' }}>{donorRequests.length}</p>
                 </div>
               </div>
-              <button 
+              <button
+                style={S.primaryBtn}
+                onMouseEnter={e => e.currentTarget.style.background = '#6F3816'}
+                onMouseLeave={e => e.currentTarget.style.background = '#8B4A20'}
                 onClick={() => navigate('/received-requests')}
-                className="btn btn-primary"
-                style={{ marginTop: '1rem', width: '100%' }}
               >
                 Ver Todas as Validações
               </button>
             </div>
-          </>
-        ) : (
-          <div className="profile-card">
-            <h3>Validações de Anúncios em Andamento</h3>
-            {pendingRequests.length === 0 ? (
-              <p>Nenhuma validação pendente.</p>
-            ) : (
-              <div className="requests-summary">
-                {pendingRequests.map(request => (
-                  <div key={request.id} className="request-summary-item">
-                    <div className="request-product">
-                      <img 
-                        src={request.productImage.startsWith('data:') ? request.productImage : `/${request.productImage}`} 
-                        alt={request.productName}
-                        className="request-thumb"
-                      />
-                      <div className="request-details">
-                        <strong>{request.productName}</strong>
-                        <p>Validado em: {new Date(request.date).toLocaleDateString()}</p>
-                        <span className="status-pending">Aguardando resposta</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentUser?.isAdmin && (
-          <div className="profile-card" style={{marginTop: '2rem', borderTop: '2px solid #ff4444'}}>
-            <h3 style={{color: '#ff4444'}}>Painel Administrativo - Remover Anúncios</h3>
-            <div style={{marginBottom: '1rem'}}>
-              <span style={{color: '#ccc'}}>Total de anúncios: {products.length}</span>
-            </div>
-            
-            <div className="admin-products-list" style={{maxHeight: '400px', overflowY: 'auto'}}>
-              {products.slice(0, 10).map(product => (
-                <div key={product.id} className="admin-product-item" style={{
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  padding: '10px', 
-                  border: '1px solid #333', 
-                  borderRadius: '8px', 
-                  marginBottom: '10px',
-                  backgroundColor: '#1a1a1a'
-                }}>
-                  <img 
-                    src={product.image?.startsWith('data:') ? product.image : `/${product.image}`} 
-                    alt={product.name}
-                    style={{
-                      width: '60px', 
-                      height: '60px', 
-                      objectFit: 'cover', 
-                      borderRadius: '4px',
-                      marginRight: '15px'
-                    }}
-                    onError={(e) => {
-                      e.target.src = '/images/placeholder.jpg'
-                      e.target.onerror = null
-                    }}
+          ) : pendingRequests.length === 0 ? (
+            <p style={{ color: '#9C928A', marginTop: 16, fontSize: '0.95rem' }}>Nenhuma validação pendente.</p>
+          ) : (
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {pendingRequests.map(request => (
+                <div key={request.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: '#FAF7F2', borderRadius: 12, border: '1px solid #ECE4DA' }}>
+                  <img
+                    src={request.productImage?.startsWith('data:') ? request.productImage : `/${request.productImage}`}
+                    alt={request.productName}
+                    style={{ width: 60, height: 60, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
                   />
-                  <div style={{flex: 1}}>
-                    <h5 style={{margin: '0 0 5px 0', color: 'white'}}>{product.name}</h5>
-                    <p style={{margin: '0', color: '#ccc', fontSize: '14px'}}>Por: {product.donor}</p>
-                    <span style={{
-                      fontSize: '12px',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      backgroundColor: product.status === 'available' ? '#4CAF50' : 
-                                     product.status === 'pending' ? '#FF9800' : '#f44336',
-                      color: 'white'
-                    }}>
-                      {product.status === 'available' ? 'Disponível' : 
-                       product.status === 'pending' ? 'Pendente' : 'Doado'}
+                  <div>
+                    <strong style={{ color: '#2E241E', display: 'block', marginBottom: 4 }}>{request.productName}</strong>
+                    <p style={{ color: '#9C928A', fontSize: '0.85rem', margin: 0 }}>Validado em: {new Date(request.date).toLocaleDateString()}</p>
+                    <span style={{ display: 'inline-block', marginTop: 6, padding: '2px 10px', background: '#FFF3CD', color: '#856404', borderRadius: 20, fontSize: '0.8rem' }}>
+                      Aguardando resposta
                     </span>
                   </div>
-                  <button 
-                    onClick={() => removeProduct(product.id)}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      display: 'inline-block',
-                      visibility: 'visible',
-                      opacity: 1
-                    }}
-                  >
-                    Remover
-                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Admin panel ────────────────────────── */}
+        {currentUser?.isAdmin && (
+          <div style={{ ...S.sectionCard(), borderTop: '3px solid #E74C3C' }}>
+            <div style={S.sectionTitleRow}>
+              <AlertTriangle size={22} color="#E74C3C" />
+              <span style={{ ...S.sectionTitle, color: '#C0392B' }}>Painel Administrativo – Remover Anúncios</span>
+            </div>
+            <p style={{ color: '#9C928A', fontSize: '0.85rem', marginTop: 4, marginBottom: 20 }}>
+              Total de anúncios: {products.length}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
+              {products.slice(0, 10).map(product => (
+                <div key={product.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, border: '1px solid #ECE4DA', borderRadius: 12 }}>
+                  <img
+                    src={product.image?.startsWith('data:') ? product.image : `/${product.image}`}
+                    alt={product.name}
+                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }}
+                    onError={e => { e.target.src = '/images/placeholder.jpg'; e.target.onerror = null }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <strong style={{ color: '#2E241E' }}>{product.name}</strong>
+                    <p style={{ color: '#9C928A', fontSize: '0.85rem', margin: '2px 0' }}>Por: {product.donor}</p>
+                  </div>
+                  <button style={S.deleteBtn} onClick={() => removeProduct(product.id)}>Remover</button>
                 </div>
               ))}
               {products.length > 10 && (
-                <p style={{textAlign: 'center', color: '#ccc', marginTop: '15px'}}>
+                <p style={{ textAlign: 'center', color: '#9C928A', fontSize: '0.85rem' }}>
                   Mostrando 10 de {products.length} anúncios.
                 </p>
               )}
             </div>
           </div>
         )}
+
+        {/* ── Zona de Perigo ─────────────────────── */}
+        <div style={S.dangerCard}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+            <AlertTriangle size={22} color="#C0392B" />
+            <span style={S.dangerTitle}>Zona de Perigo</span>
+          </div>
+          <p style={S.dangerText}>
+            Inativar sua conta irá desabilitar o acesso.<br />
+            Você poderá reativá-la fazendo login novamente.
+          </p>
+          <div style={S.dangerBtns}>
+            <button
+              style={S.inactivateBtn}
+              onMouseEnter={e => e.currentTarget.style.background = '#FFF0EE'}
+              onMouseLeave={e => e.currentTarget.style.background = 'white'}
+              onClick={() => setShowDeactivateModal(true)}
+            >
+              Inativar Conta
+            </button>
+            <button
+              style={S.deleteBtn}
+              onMouseEnter={e => e.currentTarget.style.background = '#C0392B'}
+              onMouseLeave={e => e.currentTarget.style.background = '#E74C3C'}
+              onClick={() => setShowDeleteModal(true)}
+            >
+              Excluir Conta
+            </button>
+          </div>
+        </div>
       </div>
-      
+
+      {/* ── Modal Inativar ─────────────────────── */}
       {showDeactivateModal && (
-        <div className="modal" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: '#2a2a2a',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '400px',
-            textAlign: 'center'
-          }}>
-            <h3 style={{color: '#ff4444', marginBottom: '1rem'}}>Confirmar Inativação</h3>
-            <p style={{color: '#ccc', marginBottom: '2rem'}}>Tem certeza que deseja inativar sua conta? Você pode reativar fazendo login novamente.</p>
-            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
-              <button 
-                onClick={handleDeactivateAccount}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#ff4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Sim, Inativar
-              </button>
-              <button 
-                onClick={() => setShowDeactivateModal(false)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#666',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancelar
-              </button>
+        <div style={S.modal}>
+          <div style={S.modalBox(false)}>
+            <h3 style={S.modalTitle(false)}>Confirmar Inativação</h3>
+            <p style={S.modalText}>
+              Tem certeza que deseja inativar sua conta?<br />
+              Você pode reativar fazendo login novamente.
+            </p>
+            <div style={S.modalBtns}>
+              <button style={S.deleteBtn} onClick={handleDeactivateAccount}>Sim, Inativar</button>
+              <button style={S.editBtn} onClick={() => setShowDeactivateModal(false)}>Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Modal Excluir ──────────────────────── */}
       {showDeleteModal && (
-        <div className="modal" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.9)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: '#2a2a2a',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '450px',
-            textAlign: 'center',
-            border: '2px solid #ff0000'
-          }}>
-            <h3 style={{color: '#ff0000', marginBottom: '1rem', fontSize: '20px'}}>⚠️ EXCLUIR CONTA PERMANENTEMENTE</h3>
-            <p style={{color: '#fff', marginBottom: '1rem', fontSize: '16px', fontWeight: 'bold'}}>Esta ação é IRREVERSÍVEL!</p>
-            <p style={{color: '#ccc', marginBottom: '2rem', fontSize: '14px'}}>Todos os seus dados, anúncios e histórico serão perdidos para sempre. Você não poderá recuperar sua conta após a exclusão.</p>
-            <p style={{color: '#ff6666', marginBottom: '2rem', fontSize: '14px', fontStyle: 'italic'}}>Tem absoluta certeza que deseja excluir sua conta?</p>
-            <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
-              <button 
-                onClick={handleDeleteAccount}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#8B0000',
-                  color: 'white',
-                  border: '2px solid #ff0000',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 'bold'
-                }}
-              >
-                SIM, EXCLUIR PERMANENTEMENTE
-              </button>
-              <button 
-                onClick={() => setShowDeleteModal(false)}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Cancelar
-              </button>
+        <div style={S.modal}>
+          <div style={S.modalBox(true)}>
+            <h3 style={S.modalTitle(true)}>⚠️ Excluir Conta Permanentemente</h3>
+            <p style={S.modalText}>
+              <strong>Esta ação é irreversível!</strong><br />
+              Todos os seus dados, anúncios e histórico serão perdidos para sempre.
+            </p>
+            <div style={S.modalBtns}>
+              <button style={S.deleteBtn} onClick={handleDeleteAccount}>Sim, Excluir</button>
+              <button style={S.editBtn} onClick={() => setShowDeleteModal(false)}>Cancelar</button>
             </div>
           </div>
         </div>

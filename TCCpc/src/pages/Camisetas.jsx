@@ -6,8 +6,6 @@ const Camisetas = () => {
   const navigate = useNavigate()
   const { 
     products, 
-    favorites, 
-    toggleFavorite, 
     currentUser, 
     addRequest, 
     removeProduct 
@@ -84,7 +82,7 @@ const Camisetas = () => {
                 Camiseta • {product.condition}
               </p>
               <div className="product-donor">
-                <img src="images/avatar2.webp" alt="Avatar" className="donor-avatar" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0, marginRight: '8px'}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span>{product.donor}</span>
               </div>
               <div className="product-bottom">
@@ -105,18 +103,6 @@ const Camisetas = () => {
                     </button>
                   )}
                 </div>
-                {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO') && (
-                  <button 
-                    className={`favorite-btn-card ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleFavorite(product.id)
-                    }}
-                    title={favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                  >
-                    {favorites.includes(product.id) ? '♥' : '♡'}
-                  </button>
-                )}
               </div>
             </div>
           </div>

@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext'
 
 const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
   const navigate = useNavigate()
-  const { favorites, toggleFavorite } = useApp()
+  const { } = useApp()
   const carouselRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -102,24 +102,6 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                   e.target.onerror = null
                 }}
               />
-              {currentUser && (currentUser.type === 'donatario' || currentUser.nivelAcesso === 'DONATARIO' || currentUser.type === 'doador' || currentUser.nivelAcesso === 'DOADOR') && (
-                <button 
-                  className={`carousel-favorite-btn ${favorites.includes(product.id) ? 'favorited' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (product.status !== 'donated') {
-                      toggleFavorite(product.id)
-                    }
-                  }}
-                  title={product.status === 'donated' ? 'Produto doado' : (favorites.includes(product.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos')}
-                  style={{
-                    opacity: product.status === 'donated' ? 0.5 : 1,
-                    cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {favorites.includes(product.id) ? '♥' : '♡'}
-                </button>
-              )}
             </div>
             <div className="product-info">
               <h3 className="product-name" style={{
@@ -129,23 +111,13 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                 color: product.status === 'donated' ? '#999' : '#666'
               }}>{product.size} • {product.condition}</p>
               {product.region && (
-                <p className="product-region" style={{
-                  color: product.status === 'donated' ? '#999' : '#4A230A'
-                }}>Região: {product.region}</p>
+                <p className="product-region">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0, marginRight: '8px'}}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {product.region}
+                </p>
               )}
               <div className="product-donor">
-                <img 
-                  src={product.donorPhoto || '/images/avatar2.webp'} 
-                  alt="Avatar" 
-                  className="donor-avatar"
-                  style={{
-                    opacity: product.status === 'donated' ? 0.5 : 1
-                  }}
-                  onError={(e) => {
-                    e.target.src = '/images/avatar2.webp'
-                    e.target.onerror = null
-                  }}
-                />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0, marginRight: '8px'}}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span 
                   className="donor-name-link" 
                   onClick={(e) => {
@@ -154,7 +126,7 @@ const ProductCarousel = ({ products, showAddCard = false, currentUser }) => {
                     }
                   }}
                   style={{
-                    color: product.status === 'donated' ? '#999' : '#4A230A',
+                    color: product.status === 'donated' ? '#999' : undefined,
                     cursor: product.status === 'donated' ? 'not-allowed' : 'pointer'
                   }}
                 >
