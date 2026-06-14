@@ -73,7 +73,7 @@ export const AppProvider = ({ children }) => {
     donorId: a.doador?.id,
     donorPhoto: a.doador?.fotoPerfil,
     image: a.foto || 'images/avatar2.webp',
-    images: [a.foto || 'images/avatar2.webp'],
+    images: a.fotos ? a.fotos.split(',') : [a.foto || 'images/avatar2.webp'],
     status,
     statusAnuncio: a.statusAnuncio,
     dataCadastro: a.dataCadastro

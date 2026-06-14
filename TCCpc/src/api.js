@@ -35,7 +35,12 @@ export const apiRequest = async (endpoint, options = {}) => {
     const response = await fetch(url, { ...defaultOptions, ...options })
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      let errorMessage = `HTTP error! status: ${response.status}`
+      try {
+        const errorData = await response.json()
+        if (errorData.message) errorMessage = errorData.message
+      } catch {}
+      throw new Error(errorMessage)
     }
     
     const contentType = response.headers.get('content-type')
