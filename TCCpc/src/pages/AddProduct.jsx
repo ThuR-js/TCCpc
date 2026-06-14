@@ -118,6 +118,7 @@ const AddProduct = () => {
     try {
       await execute(async () => {
         const fotoUrl = await uploadImgBB(images[0])
+        const fotosUrls = await Promise.all(images.map(img => uploadImgBB(img)))
 
         const novoAnuncio = {
           nome: formData.nome,
@@ -126,6 +127,7 @@ const AddProduct = () => {
           condicao: formData.condicao,
           regiao: formData.regiao,
           foto: fotoUrl,
+          fotos: fotosUrls.join(','),
           categoria: { id: formData.categoria },
           doador: { id: currentUser.doadorId || currentUser.id }
         }
