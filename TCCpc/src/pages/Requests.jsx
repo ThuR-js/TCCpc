@@ -72,93 +72,498 @@ const Requests = () => {
   }
 
   return (
-    <div className="container">
-      <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
-
-      {currentUser?.isAdmin && (
-        <button
-          onClick={fetchAnuncios}
-          className="btn btn-primary"
-          style={{ marginLeft: '1rem', marginBottom: '1rem' }}
+    <div style={{ background: '#F8F4EF', minHeight: '100vh' }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '32px'
+      }}>
+        {/* Cabeçalho da página */}
+        <button 
+          onClick={() => navigate('/')}
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #8B5E3C',
+            color: '#8B5E3C',
+            borderRadius: '999px',
+            padding: '10px 20px',
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginBottom: '2rem',
+            transition: 'all 0.3s'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = '#8B5E3C'
+            e.target.style.color = '#FFFFFF'
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = '#FFFFFF'
+            e.target.style.color = '#8B5E3C'
+          }}
         >
-          🔄 Recarregar Anúncios
+          ← Voltar
         </button>
-      )}
-
-      <div className="chat-container">
-        <div className="chat-sidebar">
-          <h3>Validação de Anúncios</h3>
-
-          {loading ? (
-            <p style={{ color: 'white', padding: '1rem' }}>Carregando...</p>
-          ) : erro ? (
-            <p style={{ color: 'red', padding: '1rem' }}>Erro: {erro}</p>
-          ) : pendentes.length === 0 ? (
-            <p style={{ color: 'white', padding: '1rem', fontSize: '0.9rem' }}>Nenhum anúncio pendente.</p>
-          ) : (
-            pendentes.map(a => (
-              <div
-                key={a.id}
-                className={`chat-item ${selectedItem?.id === a.id ? 'active' : ''}`}
-                onClick={() => setSelectedItem(a)}
-              >
-                <div className="chat-preview">
-                  <strong>{a.nome}</strong>
-                  <p>Doador: {a.doador?.nome}</p>
-                  <small style={{ fontSize: '0.7rem', opacity: 0.7 }}>{a.dataCadastro}</small>
-                </div>
-              </div>
-            ))
-          )}
+        
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ 
+            fontSize: '48px', 
+            fontWeight: 700, 
+            color: '#3B2415', 
+            margin: '0 0 0.5rem 0',
+            lineHeight: 1.1
+          }}>
+            Validação de Anúncio
+          </h1>
+          <p style={{ 
+            fontSize: '20px', 
+            color: '#7B6B5E', 
+            margin: 0 
+          }}>
+            Revise as informações antes de disponibilizar o item no catálogo.
+          </p>
         </div>
 
-        <div className="chat-main">
-          {selectedItem ? (
-            <div style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: 1 }}>
-                {selectedItem.foto && (
+        {/* Lista de anúncios pendentes para seleção */}
+        {!loading && !erro && pendentes.length > 0 && !selectedItem && (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            marginBottom: '32px'
+          }}>
+            <h2 style={{
+              fontSize: '32px',
+              fontWeight: 700,
+              color: '#3B2415',
+              margin: '0 0 24px 0'
+            }}>
+              Selecione um anúncio para validar ({pendentes.length})
+            </h2>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '20px'
+            }}>
+              {pendentes.map(a => (
+                <div 
+                  key={a.id} 
+                  onClick={() => setSelectedItem(a)}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '2px solid #E8DDD2',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(139, 94, 60, 0.15)'
+                    e.currentTarget.style.borderColor = '#8B5E3C'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+                    e.currentTarget.style.borderColor = '#E8DDD2'
+                  }}
+                >
                   <img
-                    src={selectedItem.foto}
-                    alt={selectedItem.nome}
-                    style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }}
+                    src={a.foto || '/images/avatar2.webp'}
+                    alt={a.nome}
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      objectFit: 'cover'
+                    }}
+                    onError={(e) => {
+                      e.target.src = '/images/avatar2.webp'
+                      e.target.onerror = null
+                    }}
                   />
-                )}
-                <h2 style={{ marginBottom: '1rem', color: '#4A230A' }}>{selectedItem.nome}</h2>
-                <p><strong>Doador:</strong> {selectedItem.doador?.nome}</p>
-                <p><strong>Categoria:</strong> {selectedItem.categoria?.nome}</p>
-                <p><strong>Tamanho:</strong> {selectedItem.tamanho}</p>
-                <p><strong>Condição:</strong> {selectedItem.condicao}</p>
-                <p><strong>Descrição:</strong> {selectedItem.descricao}</p>
-                <p><strong>Data:</strong> {selectedItem.dataCadastro}</p>
-                <p>
-                  <strong>Status:</strong>{' '}
-                  <span style={{ color: getStatusColor(selectedItem.statusAnuncio), fontWeight: 'bold' }}>
-                    {selectedItem.statusAnuncio}
-                  </span>
+                  <div style={{ padding: '16px' }}>
+                    <h4 style={{
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      color: '#3B2415',
+                      margin: '0 0 8px 0',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {a.nome}
+                    </h4>
+                    <p style={{
+                      fontSize: '0.9rem',
+                      color: '#7B6B5E',
+                      margin: '0 0 12px 0',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {a.descricao || 'Sem descrição'}
+                    </p>
+                    <div style={{ fontSize: '0.85rem', color: '#6B3E1F' }}>
+                      <p style={{ margin: '0 0 4px 0' }}><strong>Doador:</strong> {a.doador?.nome || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Botão para voltar à lista */}
+        {selectedItem && (
+          <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+            <button 
+              onClick={() => setSelectedItem(null)}
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #8B5E3C',
+                color: '#8B5E3C',
+                borderRadius: '999px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.3s'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#8B5E3C'
+                e.target.style.color = '#FFFFFF'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#FFFFFF'
+                e.target.style.color = '#8B5E3C'
+              }}
+            >
+              ← Voltar à lista
+            </button>
+          </div>
+        )}
+
+        {/* Card principal */}
+        {loading ? (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#7B6B5E', fontSize: '18px' }}>Carregando...</p>
+          </div>
+        ) : erro ? (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#7B6B5E', fontSize: '18px' }}>Erro: {erro}</p>
+          </div>
+        ) : pendentes.length === 0 ? (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#7B6B5E', fontSize: '18px' }}>Nenhum anúncio pendente.</p>
+          </div>
+        ) : selectedItem ? (
+          /* Layout de duas colunas - Imagem | Informações */
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            display: 'flex',
+            gap: '40px',
+            alignItems: 'start'
+          }}>
+            
+            {/* Coluna Esquerda - Imagem */}
+            <div style={{
+              width: '480px',
+              height: '540px',
+              flexShrink: 0
+            }}>
+              <img
+                src={selectedItem.foto || '/images/avatar2.webp'}
+                alt={selectedItem.nome}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '18px'
+                }}
+                onError={(e) => { 
+                  e.target.src = '/images/avatar2.webp'
+                  e.target.onerror = null 
+                }}
+              />
+            </div>
+
+            {/* Coluna Direita - Informações */}
+            <div style={{ flex: 1, paddingLeft: '40px' }}>
+              {/* Nome do item */}
+              <h1 style={{
+                fontSize: '52px',
+                fontWeight: 700,
+                lineHeight: 1.1,
+                color: '#3B2415',
+                margin: '0 0 20px 0'
+              }}>
+                {selectedItem.nome}
+              </h1>
+
+              {/* Descrição */}
+              {selectedItem.descricao && (
+                <p style={{
+                  fontSize: '22px',
+                  lineHeight: 1.6,
+                  color: '#7B6B5E',
+                  margin: '0 0 32px 0'
+                }}>
+                  {selectedItem.descricao}
                 </p>
+              )}
+              {/* Informações do produto */}
+              <div style={{
+                background: '#FFFFFF',
+                border: '1px solid #E8DDD2',
+                borderRadius: '18px',
+                overflow: 'hidden',
+                padding: '0 32px',
+                marginBottom: '32px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '56px',
+                  borderBottom: '1px solid #E8DDD2'
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.88rem',
+                    color: '#7A6254',
+                    fontWeight: 500
+                  }}>
+                    <span className="material-icons" style={{ color: '#6B3E1F', fontSize: '20px', marginRight: '8px' }}>
+                      checkroom
+                    </span>
+                    Categoria
+                  </span>
+                  <span style={{
+                    fontSize: '0.92rem',
+                    color: '#4A3428',
+                    fontWeight: 600
+                  }}>
+                    {selectedItem.categoria?.nome || 'Não informado'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '56px',
+                  borderBottom: '1px solid #E8DDD2'
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.88rem',
+                    color: '#7A6254',
+                    fontWeight: 500
+                  }}>
+                    <span className="material-icons" style={{ color: '#6B3E1F', fontSize: '20px', marginRight: '8px' }}>
+                      straighten
+                    </span>
+                    Tamanho
+                  </span>
+                  <span style={{
+                    fontSize: '0.92rem',
+                    color: '#4A3428',
+                    fontWeight: 600
+                  }}>
+                    {selectedItem.tamanho || 'Não informado'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '56px',
+                  borderBottom: '1px solid #E8DDD2'
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.88rem',
+                    color: '#7A6254',
+                    fontWeight: 500
+                  }}>
+                    <span className="material-icons" style={{ color: '#6B3E1F', fontSize: '20px', marginRight: '8px' }}>
+                      check_circle_outline
+                    </span>
+                    Condição
+                  </span>
+                  <span style={{
+                    fontSize: '0.92rem',
+                    color: '#4A3428',
+                    fontWeight: 600
+                  }}>
+                    {selectedItem.condicao || 'Não informado'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '56px',
+                  borderBottom: '1px solid #E8DDD2'
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.88rem',
+                    color: '#7A6254',
+                    fontWeight: 500
+                  }}>
+                    <span className="material-icons" style={{ color: '#6B3E1F', fontSize: '20px', marginRight: '8px' }}>
+                      person_outline
+                    </span>
+                    Doador
+                  </span>
+                  <span style={{
+                    fontSize: '0.92rem',
+                    color: '#4A3428',
+                    fontWeight: 600
+                  }}>
+                    {selectedItem.doador?.nome || 'Não informado'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: '56px'
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.88rem',
+                    color: '#7A6254',
+                    fontWeight: 500
+                  }}>
+                    <span className="material-icons" style={{ color: '#6B3E1F', fontSize: '20px', marginRight: '8px' }}>
+                      calendar_today
+                    </span>
+                    Data de envio
+                  </span>
+                  <span style={{
+                    fontSize: '0.92rem',
+                    color: '#4A3428',
+                    fontWeight: 600
+                  }}>
+                    {selectedItem.dataCadastro || 'Não informado'}
+                  </span>
+                </div>
               </div>
 
+              {/* Botões */}
               {currentUser?.isAdmin && selectedItem.statusAnuncio === 'PENDENTE' && (
-                <div style={{ display: 'flex', gap: '1rem', borderTop: '2px solid #4A230A', paddingTop: '1rem' }}>
-                  <button onClick={() => aprovar(selectedItem.id)} className="btn btn-primary" style={{ flex: 1 }}>
+                <div style={{
+                  display: 'flex',
+                  gap: '16px'
+                }}>
+                  <button 
+                    onClick={() => aprovar(selectedItem.id)}
+                    style={{
+                      flex: 1,
+                      height: '64px',
+                      background: '#8B5E3C',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '14px',
+                      fontSize: '20px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s, transform 0.15s, box-shadow 0.2s'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.opacity = '0.9'
+                      e.target.style.transform = 'translateY(-2px)'
+                      e.target.style.boxShadow = '0 8px 24px rgba(139, 94, 60, 0.3)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.opacity = '1'
+                      e.target.style.transform = 'translateY(0)'
+                      e.target.style.boxShadow = 'none'
+                    }}
+                  >
                     Aprovar Anúncio
                   </button>
-                  <button
+
+                  <button 
                     onClick={() => rejeitar(selectedItem.id)}
-                    className="btn btn-secondary"
-                    style={{ flex: 1, background: '#dc3545' }}
+                    style={{
+                      flex: 1,
+                      height: '64px',
+                      background: 'white',
+                      border: '2px solid #8B5E3C',
+                      color: '#8B5E3C',
+                      borderRadius: '14px',
+                      fontSize: '20px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'background 0.2s, color 0.2s'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.background = '#F5EDE3'
+                      e.target.style.color = '#6B3E1F'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.background = 'white'
+                      e.target.style.color = '#8B5E3C'
+                    }}
                   >
                     Rejeitar Anúncio
                   </button>
                 </div>
               )}
             </div>
-          ) : (
-            <div className="no-chat-selected">
-              <p>Selecione um anúncio para ver os detalhes</p>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div style={{
+            background: '#FFFFFF',
+            border: '1px solid #E8DDD2',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+            padding: '32px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#7B6B5E', fontSize: '18px' }}>Selecione um anúncio para ver os detalhes</p>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -14,6 +14,7 @@ import MyAds from './pages/MyAds'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminPanel from './pages/AdminPanel'
+import ValidateAd from './pages/ValidateAd'
 import Camisetas from './pages/Camisetas'
 import Calcas from './pages/Calcas'
 import Blusas from './pages/Blusas'
@@ -33,6 +34,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/validate-ad/:id" element={<ValidateAd />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Header />

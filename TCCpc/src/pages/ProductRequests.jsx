@@ -30,15 +30,6 @@ const ProductRequests = () => {
     fetchData()
   }, [productId])
 
-  const handleStatus = async (id, status) => {
-    try {
-      await SolicitacaoService.updateStatus(id, status)
-      setSolicitacoes(prev => prev.map(s => s.id === id ? { ...s, statusSolicitacao: status } : s))
-    } catch (e) {
-      alert('Erro ao atualizar status: ' + e.message)
-    }
-  }
-
   if (loading) return <div className="container"><p>Carregando...</p></div>
   if (erro) return <div className="container"><p>Erro ao carregar anúncio: {erro}</p></div>
   if (!anuncio) return <div className="container"><p>Anúncio não encontrado. (ID: {productId})</p></div>
@@ -100,13 +91,6 @@ const ProductRequests = () => {
                   <div><strong style={{ color: '#4A230A' }}>Email:</strong><p style={{ margin: '0.25rem 0 0 0' }}>{s.usuario?.username}</p></div>
                   <div><strong style={{ color: '#4A230A' }}>Telefone:</strong><p style={{ margin: '0.25rem 0 0 0' }}>{s.telefone || '—'}</p></div>
                 </div>
-
-                {s.statusSolicitacao === 'EM_ANALISE' && (
-                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                    <button onClick={() => handleStatus(s.id, 'ACEITA')} className="btn btn-primary" style={{ flex: 1 }}>Aceitar</button>
-                    <button onClick={() => handleStatus(s.id, 'RECUSADA')} className="btn btn-secondary" style={{ flex: 1, background: '#dc3545' }}>Recusar</button>
-                  </div>
-                )}
               </div>
             ))}
           </div>
