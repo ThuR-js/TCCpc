@@ -1,17 +1,16 @@
-// Importações necessárias para navegação, contexto da aplicação e componente de tela de login
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import LoginScreen from '../LoginScreen'
 import { apiRequest, API_CONFIG } from '../api'
 
-// Componente principal de Login
 const Login = () => {
-  // Hook para navegação entre páginas
   const navigate = useNavigate()
-  // Hook para acessar e modificar o usuário atual no contexto global
   const { setCurrentUser } = useApp()
+  const [contaInativa, setContaInativa] = useState(false)
+  const [emailInativo, setEmailInativo] = useState('')
+  const [reativando, setReativando] = useState(false)
 
-  // Função que processa o login do usuário
   const handleInitialLogin = async (email, password) => {
     if (email === 'admin@doeconect.com' && password === 'admin1') {
       const adminUser = {
@@ -32,14 +31,9 @@ const Login = () => {
         body: JSON.stringify({ email, senha: password })
       })
 
-      if (data.nivelAcesso === 'DONATARIO') {
-        alert('Acesso negado. Donatários devem usar o aplicativo mobile.')
-        return
-      }
-
       let userData = {
         ...data,
-        type: 'doador'
+        type: data.nivelAcesso === 'DOADOR' ? 'doador' : 'donatario'
       }
 
       if (data.nivelAcesso === 'DOADOR') {
@@ -56,11 +50,31 @@ const Login = () => {
       sessionStorage.setItem('currentUser', JSON.stringify(userData))
       navigate('/')
     } catch (error) {
-      alert('Email ou senha incorretos')
+      const msg = error.message || ''
+      if (msg.toLowerCase().includes('inativa')) {
+        setEmailInativo(email)
+        setContaInativa(true)
+      } else {
+        alert('Email ou senha incorretos')
+      }
     }
   }
 
-  // Função para permitir acesso como convidado (sem login)
+  const handleReativar = async () => {
+    setReativando(true)
+    try {
+      const usuarios = await apiRequest(API_CONFIG.ENDPOINTS.USUARIO)
+      const usuario = usuarios.find(u => u.email === emailInativo || u.username === emailInativo)
+      if (!usuario) throw new Error('Usuário não encontrado')
+      await apiRequest(`${API_CONFIG.ENDPOINTS.USUARIO}/${usuario.id}/reativar`, { method: 'PUT' })
+      alert('Conta reativada! Você já pode fazer login normalmente.')
+      setContaInativa(false)
+    } catch (err) {
+      alert(err.message || 'Não foi possível reativar a conta.')
+    }
+    setReativando(false)
+  }
+
   const handleContinueWithoutLogin = () => {
     const guestUser = {
       id: 'guest',
@@ -74,12 +88,72 @@ const Login = () => {
     navigate('/')
   }
 
-  // Renderiza o componente LoginScreen passando as funções como props
   return (
-    <LoginScreen 
-      onLogin={handleInitialLogin} // Função de login
-      onContinueWithoutLogin={handleContinueWithoutLogin} // Função de acesso como convidado
-    />
+    <>
+      <LoginScreen
+        onLogin={handleInitialLogin}
+        onContinueWithoutLogin={handleContinueWithoutLogin}
+      />
+      {contaInativa && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: '#2a1a0a',
+            border: '2px solid rgba(255,152,0,0.6)',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '90%',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#FFD180', fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>
+              ⚠️ Sua conta está inativa.
+            </p>
+            <p style={{ color: '#ccc', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Deseja reativar sua conta?
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button
+                onClick={handleReativar}
+                disabled={reativando}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: 'rgba(255,152,0,0.8)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: reativando ? 'not-allowed' : 'pointer',
+                  fontWeight: '700',
+                  opacity: reativando ? 0.6 : 1
+                }}
+              >
+                {reativando ? 'Reativando...' : 'Reativar minha conta'}
+              </button>
+              <button
+                onClick={() => setContaInativa(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

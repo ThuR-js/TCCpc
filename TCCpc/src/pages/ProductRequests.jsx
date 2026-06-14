@@ -51,7 +51,7 @@ const ProductRequests = () => {
 
   return (
     <div className="container">
-      <button onClick={() => navigate('/received-requests')} className="btn-back">← Voltar</button>
+      <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
 
       <div style={{ padding: '2rem 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
