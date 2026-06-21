@@ -9,6 +9,9 @@ const MyAds = () => {
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [productToRemove, setProductToRemove] = useState(null)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [showDonatedModal, setShowDonatedModal] = useState(false)
+  const [productToDonate, setProductToDonate] = useState(null)
+  const [isMarking, setIsMarking] = useState(false)
 
   const myAds = products.filter(product =>
     currentUser?.doadorId &&
@@ -28,6 +31,10 @@ const MyAds = () => {
       case 'pending': return 'Aguardando Aprovação'
       case 'analyzing': return 'Em Análise'
       case 'donated': return 'Doado'
+      case 'DOADO': return 'Doado'
+      case 'ATIVO': return 'Disponível'
+      case 'PENDENTE': return 'Aguardando Aprovação'
+      case 'INATIVO': return 'Inativo'
       default: return 'Desconhecido'
     }
   }
@@ -35,9 +42,13 @@ const MyAds = () => {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'available': return { background: '#E8F5E9', color: '#2E7D32' }
+      case 'ATIVO':     return { background: '#E8F5E9', color: '#2E7D32' }
       case 'pending':   return { background: '#FFF8E1', color: '#F57F17' }
+      case 'PENDENTE':  return { background: '#FFF8E1', color: '#F57F17' }
       case 'analyzing': return { background: '#E3F2FD', color: '#1565C0' }
       case 'donated':   return { background: '#F3E5F5', color: '#6A1B9A' }
+      case 'DOADO':     return { background: '#F3E5F5', color: '#6A1B9A' }
+      case 'INATIVO':   return { background: '#F5F5F5', color: '#616161' }
       default:          return { background: '#F5F5F5', color: '#616161' }
     }
   }
@@ -45,6 +56,31 @@ const MyAds = () => {
   const typeName = (type) => {
     if (type === 'moletom') return 'Blusa'
     return type ? type.charAt(0).toUpperCase() + type.slice(1) : '—'
+  }
+
+  const handleDonatedClick = (product) => {
+    setProductToDonate(product)
+    setShowDonatedModal(true)
+  }
+
+  const confirmMarkDonated = async () => {
+    if (!productToDonate) return
+    setIsMarking(true)
+    try {
+      const apiId = String(productToDonate.id).replace('api_', '')
+      await apiRequest(API_CONFIG.ENDPOINTS.MARCAR_DOADO(apiId), {
+        method: 'PUT',
+        body: JSON.stringify({ statusAnuncio: 'DOADO' })
+      })
+      setProducts(prev => prev.map(p =>
+        p.id === productToDonate.id ? { ...p, status: 'DOADO' } : p
+      ))
+    } catch {
+      alert('Erro ao marcar como doado. Tente novamente.')
+    }
+    setIsMarking(false)
+    setShowDonatedModal(false)
+    setProductToDonate(null)
   }
 
   const handleRemoveClick = (product) => {
@@ -219,6 +255,19 @@ const MyAds = () => {
                     >
                       Solicitações
                     </button>
+                    {product.status !== 'donated' && product.status !== 'DOADO' && (
+                      <button
+                        onClick={() => handleDonatedClick(product)}
+                        style={{
+                          background: '#E8F5E9', color: '#2E7D32',
+                          border: '1px solid #A5D6A7',
+                          borderRadius: '10px', padding: '8px 18px',
+                          fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer'
+                        }}
+                      >
+                        ✓ Marcar como Doado
+                      </button>
+                    )}
                     <button
                       onClick={() => handleRemoveClick(product)}
                       style={{
@@ -237,6 +286,53 @@ const MyAds = () => {
           </div>
         )}
       </div>
+
+      {/* Modal marcar como doado */}
+      {showDonatedModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+          justifyContent: 'center', alignItems: 'center', zIndex: 1000
+        }}>
+          <div style={{
+            background: '#FFFFFF', borderRadius: '18px', padding: '2rem',
+            maxWidth: '420px', width: '90%', textAlign: 'center',
+            border: '1px solid #E8DDD2', boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+          }}>
+            <h3 style={{ color: '#3B2415', marginBottom: '0.75rem', fontSize: '1.2rem' }}>Confirmar doação</h3>
+            <p style={{ color: '#7B6B5E', marginBottom: '0.5rem' }}>Deseja marcar como doado:</p>
+            <p style={{ color: '#8B5E3C', fontWeight: 700, marginBottom: '1.5rem', fontSize: '1rem' }}>
+              "{productToDonate?.name}"
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={confirmMarkDonated}
+                disabled={isMarking}
+                style={{
+                  background: '#2E7D32', color: 'white', border: 'none',
+                  borderRadius: '10px', padding: '10px 24px',
+                  fontSize: '0.9rem', fontWeight: 600,
+                  cursor: isMarking ? 'not-allowed' : 'pointer', opacity: isMarking ? 0.7 : 1
+                }}
+              >
+                {isMarking ? 'Salvando...' : 'Confirmar'}
+              </button>
+              <button
+                onClick={() => { setShowDonatedModal(false); setProductToDonate(null) }}
+                disabled={isMarking}
+                style={{
+                  background: 'white', color: '#7B6B5E',
+                  border: '1px solid #E8DDD2',
+                  borderRadius: '10px', padding: '10px 24px',
+                  fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmação */}
       {showRemoveModal && (

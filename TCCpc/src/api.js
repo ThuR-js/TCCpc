@@ -16,7 +16,8 @@ export const API_CONFIG = {
     PERFIL_PUBLICO: (usuarioId) => `/usuario/${usuarioId}/perfil`,
     ALTERAR_SENHA: (usuarioId) => `/usuario/${usuarioId}/senha`,
     ANUNCIO_POR_CATEGORIA: (categoriaId) => `/anuncio/categoria/${categoriaId}`,
-    ANUNCIO_POR_DOADOR: (doadorId) => `/anuncio/doador/${doadorId}`
+    ANUNCIO_POR_DOADOR: (doadorId) => `/anuncio/doador/${doadorId}`,
+    MARCAR_DOADO: (anuncioId) => `/anuncio/${anuncioId}`
   }
 }
 

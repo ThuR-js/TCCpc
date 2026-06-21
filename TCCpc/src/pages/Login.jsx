@@ -36,6 +36,11 @@ const Login = () => {
         type: data.nivelAcesso === 'DOADOR' ? 'doador' : 'donatario'
       }
 
+      if (data.nivelAcesso === 'DONATARIO') {
+        alert('Acesso negado. Donatários devem usar o aplicativo mobile.')
+        return
+      }
+
       if (data.nivelAcesso === 'DOADOR') {
         try {
           const doador = await apiRequest(`${API_CONFIG.ENDPOINTS.DOADOR}/usuario/${data.id}`)
