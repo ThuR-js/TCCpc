@@ -380,7 +380,7 @@ const S = {
 /* ─── Component ─────────────────────────────────────────── */
 const Profile = () => {
   const navigate = useNavigate()
-  const { currentUser, requests, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
+  const { currentUser, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
   const [isEditingEmail, setIsEditingEmail] = useState(false)
@@ -410,12 +410,8 @@ const Profile = () => {
   const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.foto || null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
 
-  const userRequests = requests.filter(req => req.userId === currentUser?.id)
-  const pendingRequests = userRequests.filter(req => req.status === 'pending')
-  const donorRequests = requests.filter(req => req.donorId === currentUser?.id)
-  const pendingDonorRequests = donorRequests.filter(req => req.status === 'pending')
-  const approvedDonations = donorRequests.filter(req => req.status === 'approved').length
-  const userProducts = products.filter(product => product.donorId === currentUser?.id)
+  const userProducts = products.filter(product => product.donorId === currentUser?.id || String(product.donorId) === String(currentUser?.doadorId))
+  const approvedDonations = userProducts.filter(p => p.status === 'DOADO' || p.status === 'donated').length
 
   const getRegistrationDate = () => {
     if (currentUser?.id) {
@@ -942,7 +938,7 @@ const Profile = () => {
                 </div>
                 <div>
                   <p style={{ color: '#9C928A', fontSize: '0.85rem' }}>Total de Validações</p>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E241E' }}>{donorRequests.length}</p>
+                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#2E241E' }}>{userProducts.length}</p>
                 </div>
               </div>
               <button
@@ -954,27 +950,8 @@ const Profile = () => {
                 Ver Todas as Validações
               </button>
             </div>
-          ) : pendingRequests.length === 0 ? (
-            <p style={{ color: '#9C928A', marginTop: 16, fontSize: '0.95rem' }}>Nenhuma validação pendente.</p>
           ) : (
-            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {pendingRequests.map(request => (
-                <div key={request.id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: '#FAF7F2', borderRadius: 12, border: '1px solid #ECE4DA' }}>
-                  <img
-                    src={request.productImage?.startsWith('data:') ? request.productImage : `/${request.productImage}`}
-                    alt={request.productName}
-                    style={{ width: 60, height: 60, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
-                  />
-                  <div>
-                    <strong style={{ color: '#2E241E', display: 'block', marginBottom: 4 }}>{request.productName}</strong>
-                    <p style={{ color: '#9C928A', fontSize: '0.85rem', margin: 0 }}>Validado em: {new Date(request.date).toLocaleDateString()}</p>
-                    <span style={{ display: 'inline-block', marginTop: 6, padding: '2px 10px', background: '#FFF3CD', color: '#856404', borderRadius: 20, fontSize: '0.8rem' }}>
-                      Aguardando resposta
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p style={{ color: '#9C928A', marginTop: 16, fontSize: '0.95rem' }}>Nenhuma validação pendente.</p>
           )}
         </div>
 

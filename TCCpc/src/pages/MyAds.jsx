@@ -255,7 +255,7 @@ const MyAds = () => {
                     >
                       Solicitações
                     </button>
-                    {product.status !== 'donated' && product.status !== 'DOADO' && (
+                    {(product.status === 'available' || product.status === 'ATIVO') && (
                       <button
                         onClick={() => handleDonatedClick(product)}
                         style={{
