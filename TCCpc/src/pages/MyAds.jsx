@@ -121,7 +121,7 @@ const MyAds = () => {
     { label: 'Anúncios',   value: myAds.length },
     { label: 'Disponíveis', value: myAds.filter(p => p.status === 'available').length },
     { label: 'Em análise',  value: myAds.filter(p => p.status === 'pending' || p.status === 'analyzing').length },
-    { label: 'Doados',      value: myAds.filter(p => p.status === 'donated').length },
+    { label: 'Doados',      value: myAds.filter(p => p.status === 'donated' || p.status === 'DOADO').length },
   ]
 
   return (

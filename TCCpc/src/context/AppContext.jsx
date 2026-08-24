@@ -87,16 +87,16 @@ export const AppProvider = ({ children }) => {
       const doadorId = user?.doadorId
       if (doadorId) {
         try {
-          const pendentes = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO_POR_DOADOR(doadorId))
-          if (Array.isArray(pendentes)) {
+          const doadorAnuncios = await apiRequest(API_CONFIG.ENDPOINTS.ANUNCIO_POR_DOADOR(doadorId))
+          if (Array.isArray(doadorAnuncios)) {
             const ids = new Set(fromApi.map(p => p.id))
-            const pendentesMap = pendentes
-              .filter(a => a.statusAnuncio === 'PENDENTE')
-              .map(a => mapAnuncio(a, 'pending'))
+            const extras = doadorAnuncios
+              .filter(a => a.statusAnuncio === 'PENDENTE' || a.statusAnuncio === 'DOADO' || a.statusAnuncio === 'INATIVO')
+              .map(a => mapAnuncio(a, a.statusAnuncio === 'PENDENTE' ? 'pending' : a.statusAnuncio === 'DOADO' ? 'DOADO' : 'INATIVO'))
               .filter(p => !ids.has(p.id))
-            fromApi = [...fromApi, ...pendentesMap]
+            fromApi = [...fromApi, ...extras]
           }
-        } catch (e) { console.error('Erro ao buscar pendentes:', e) }
+        } catch (e) { console.error('Erro ao buscar anúncios do doador:', e) }
       }
 
       setProducts([...fromApi, ...sampleProducts])
