@@ -1,6 +1,6 @@
 // Configuração centralizada da API
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8080/api/v1',
+  BASE_URL: 'http://localhost:8081/api/v1',
   ENDPOINTS: {
     USUARIO: '/usuario',
     DOADOR: '/doador',

@@ -45,7 +45,7 @@ const ProductDetails = () => {
     : 'Produto'
 
   return (
-    <div style={{ background: '#F8F4EF', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--bg-page)', minHeight: '100vh' }}>
       <div className="container">
         <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
 

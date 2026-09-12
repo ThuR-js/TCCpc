@@ -158,7 +158,7 @@ const Home = () => {
     const email = prompt('Digite seu email:')
     if (!email) return
     
-    const telefone = prompt('Digite seu telefone:')
+    const telefone = prompt('Digite seu telefone ou outra forma de contato:')
     if (!telefone) return
     
     // Registra o interesse no produto com os dados coletados

@@ -222,7 +222,15 @@ const Header = () => {
         <nav className="nav">
           {currentUser ? (
             <>
-              <span>Olá, {currentUser.name || currentUser.nome}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
+              <div className="header-user-area">
+                <img
+                  src={currentUser?.fotoPerfil || currentUser?.foto || '/images/avatar2.webp'}
+                  alt="Foto de perfil"
+                  className="header-user-avatar"
+                  onError={(e) => { e.target.src = '/images/avatar2.webp'; e.target.onerror = null }}
+                />
+                <span>Olá, {currentUser.name || currentUser.nome}{currentUser.isGuest ? ' (Convidado)' : ''}</span>
+              </div>
               <button onClick={() => navigate('/')}>Início</button>
               <button onClick={() => navigate('/profile')}>Perfil</button>
               {currentUser.isGuest ? (

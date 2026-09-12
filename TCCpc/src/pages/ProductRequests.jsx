@@ -40,6 +40,16 @@ const ProductRequests = () => {
     return '#dc3545'
   }
 
+  const getContatoTexto = (solicitacao) => {
+    return solicitacao?.telefone || solicitacao?.mensagem || solicitacao?.contato || '—'
+  }
+
+  const getContatoLabel = (solicitacao) => {
+    const texto = String(getContatoTexto(solicitacao)).trim()
+    if (!texto || texto === '—') return 'Contato'
+    return /^[0-9()+\s-]{7,}$/.test(texto) ? 'Telefone' : 'Contato'
+  }
+
   return (
     <div className="container">
       <button onClick={() => navigate('/')} className="btn-back">← Voltar</button>
@@ -89,7 +99,10 @@ const ProductRequests = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                   <div><strong style={{ color: '#4A230A' }}>Email:</strong><p style={{ margin: '0.25rem 0 0 0' }}>{s.usuario?.username}</p></div>
-                  <div><strong style={{ color: '#4A230A' }}>Telefone:</strong><p style={{ margin: '0.25rem 0 0 0' }}>{s.telefone || '—'}</p></div>
+                  <div>
+                    <strong style={{ color: '#4A230A' }}>{getContatoLabel(s)}:</strong>
+                    <p style={{ margin: '0.25rem 0 0 0' }}>{getContatoTexto(s)}</p>
+                  </div>
                 </div>
               </div>
             ))}

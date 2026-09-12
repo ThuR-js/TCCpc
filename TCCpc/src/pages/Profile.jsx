@@ -3,12 +3,12 @@ import { useApp } from '../context/AppContext'
 import { useState } from 'react'
 import { apiRequest, API_CONFIG } from '../api'
 import { isValidImageType, isValidFileSize } from '../utils'
-import { User, Mail, Calendar, BadgeCheck, Lock, ClipboardList, AlertTriangle } from 'lucide-react'
+import { User, Mail, Calendar, BadgeCheck, Lock, ClipboardList, AlertTriangle, Moon, Sun } from 'lucide-react'
 
 /* ─── Inline Styles ─────────────────────────────────────── */
 const S = {
   page: {
-    background: '#FAF7F2',
+    background: 'var(--bg-page)',
     minHeight: '100vh',
   },
   wrapper: {
@@ -37,14 +37,14 @@ const S = {
     marginBottom: 40,
   },
   card: {
-    background: '#FFFFFF',
-    border: '1px solid #ECE4DA',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     borderRadius: 20,
     padding: 40,
   },
   photoCard: {
-    background: '#FFFFFF',
-    border: '1px solid #ECE4DA',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     borderRadius: 20,
     padding: 40,
     height: 600,
@@ -106,7 +106,7 @@ const S = {
   infoTitle: {
     fontSize: 38,
     fontWeight: 700,
-    color: '#2E241E',
+    color: 'var(--text-primary)',
     marginBottom: 32,
     lineHeight: 1.1,
   },
@@ -114,7 +114,7 @@ const S = {
     height: 72,
     display: 'flex',
     alignItems: 'center',
-    borderBottom: '1px solid #ECE4DA',
+    borderBottom: '1px solid var(--border-color)',
     gap: 16,
   },
   infoIcon: {
@@ -129,7 +129,7 @@ const S = {
     flexShrink: 0,
   },
   infoValue: {
-    color: '#2E241E',
+    color: 'var(--text-primary)',
     fontSize: '0.95rem',
     fontWeight: 500,
     flex: 1,
@@ -184,8 +184,8 @@ const S = {
     flex: 1,
   },
   sectionCard: (mt = 40) => ({
-    background: '#FFFFFF',
-    border: '1px solid #ECE4DA',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-color)',
     borderRadius: 20,
     padding: 32,
     marginTop: mt,
@@ -204,10 +204,10 @@ const S = {
   sectionTitle: {
     fontSize: '1.2rem',
     fontWeight: 700,
-    color: '#2E241E',
+    color: 'var(--text-primary)',
   },
   sectionSub: {
-    color: '#6F665F',
+    color: 'var(--text-secondary)',
     fontSize: '0.9rem',
     marginTop: 4,
     marginLeft: 36,
@@ -275,9 +275,9 @@ const S = {
   pwForm: {
     marginTop: 20,
     padding: 24,
-    background: '#FAF7F2',
+    background: 'var(--bg-page)',
     borderRadius: 12,
-    border: '1px solid #ECE4DA',
+    border: '1px solid var(--border-color)',
     display: 'flex',
     flexDirection: 'column',
     gap: 16,
@@ -293,10 +293,11 @@ const S = {
     width: '100%',
     padding: '10px 14px',
     borderRadius: 10,
-    border: '1px solid #D6C7B7',
+    border: '1px solid var(--border-color)',
     fontSize: '0.9rem',
     outline: 'none',
-    background: 'white',
+    background: 'var(--bg-card)',
+    color: 'var(--text-primary)',
   },
   errorBox: {
     padding: '10px 16px',
@@ -316,22 +317,22 @@ const S = {
     zIndex: 2000,
   },
   modalBox: (danger) => ({
-    background: 'white',
+    background: 'var(--bg-card)',
     borderRadius: 20,
     padding: 40,
     maxWidth: 440,
     width: '90%',
     textAlign: 'center',
-    border: danger ? '2px solid #E74C3C' : '1px solid #ECE4DA',
+    border: danger ? '2px solid #E74C3C' : '1px solid var(--border-color)',
   }),
   modalTitle: (danger) => ({
     fontSize: '1.3rem',
     fontWeight: 700,
-    color: danger ? '#C0392B' : '#2E241E',
+    color: danger ? '#C0392B' : 'var(--text-primary)',
     marginBottom: 12,
   }),
   modalText: {
-    color: '#6F665F',
+    color: 'var(--text-secondary)',
     fontSize: '0.9rem',
     marginBottom: 24,
     lineHeight: 1.6,
@@ -380,7 +381,7 @@ const S = {
 /* ─── Component ─────────────────────────────────────────── */
 const Profile = () => {
   const navigate = useNavigate()
-  const { currentUser, products, updateUser, setProducts, resetProducts, setCurrentUser } = useApp()
+  const { currentUser, products, updateUser, setProducts, resetProducts, setCurrentUser, darkMode, setDarkMode } = useApp()
   const [isEditingName, setIsEditingName] = useState(false)
   const [newName, setNewName] = useState(currentUser?.name || currentUser?.nome || '')
   const [isEditingEmail, setIsEditingEmail] = useState(false)
@@ -410,7 +411,9 @@ const Profile = () => {
   const [profileImagePreview, setProfileImagePreview] = useState(currentUser?.foto || null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
 
-  const userProducts = products.filter(product => product.donorId === currentUser?.id || String(product.donorId) === String(currentUser?.doadorId))
+  const userProducts = products.filter(product => 
+    product.apiId && (product.donorId === currentUser?.id || String(product.donorId) === String(currentUser?.doadorId))
+  )
   const approvedDonations = userProducts.filter(p => p.status === 'DOADO' || p.status === 'donated').length
 
   const getRegistrationDate = () => {
@@ -525,7 +528,7 @@ const Profile = () => {
     setIsUploadingImage(true)
     try {
       const imageUrl = await uploadImageToCloudinary(profileImage)
-      const result = await updateUser({ foto: imageUrl })
+      const result = await updateUser({ foto: imageUrl, fotoPerfil: imageUrl })
       if (result.success) {
         setProfileImagePreview(imageUrl)
         alert('Foto de perfil atualizada com sucesso!')
@@ -543,7 +546,7 @@ const Profile = () => {
     if (!confirm('Tem certeza que deseja remover sua foto de perfil?')) return
     setIsUploadingImage(true)
     try {
-      const result = await updateUser({ fotoPerfil: null })
+      const result = await updateUser({ fotoPerfil: null, foto: null })
       if (result.success) {
         setProfileImagePreview(null)
         setProfileImage(null)
@@ -588,7 +591,7 @@ const Profile = () => {
           {/* Foto de Perfil */}
           <div style={S.photoCard}>
             <img
-              src={profileImagePreview || currentUser?.fotoPerfil || '/images/avatar2.webp'}
+              src={profileImagePreview || currentUser?.fotoPerfil || currentUser?.foto || '/images/avatar2.webp'}
               alt="Foto de perfil"
               style={S.avatar}
               onError={(e) => { e.target.src = '/images/avatar2.webp'; e.target.onerror = null }}
@@ -707,7 +710,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  <span style={S.infoValue}>{currentUser?.email}</span>
+                  <span style={S.infoValue}>{currentUser?.email || currentUser?.username || 'Não informado'}</span>
                   <button
                     style={S.editBtn}
                     onMouseEnter={e => e.target.style.background = '#FAF1E8'}
@@ -859,6 +862,24 @@ const Profile = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ── Aparência ──────────────────────────── */}
+        <div style={S.sectionCard()}>
+          <div style={S.sectionHeader}>
+            <div>
+              <div style={S.sectionTitleRow}>
+                <span style={S.sectionTitle}>Aparência</span>
+              </div>
+              <p style={S.sectionSub}>Escolha o tema visual do site.</p>
+            </div>
+            <button
+              style={{ ...S.primaryBtn, background: darkMode ? '#2E241E' : '#8B4A20', border: darkMode ? '1px solid #8B4A20' : 'none' }}
+              onClick={() => setDarkMode(!darkMode)}
+            >
+              {darkMode ? 'Modo Claro' : 'Modo Escuro'}
+            </button>
           </div>
         </div>
 

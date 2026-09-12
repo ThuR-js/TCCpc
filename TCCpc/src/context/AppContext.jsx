@@ -19,6 +19,13 @@ export const AppProvider = ({ children }) => {
     const savedUser = sessionStorage.getItem('currentUser')
     return savedUser ? JSON.parse(savedUser) : null
   })
+
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true')
+
+  useEffect(() => {
+    document.body.classList.toggle('dark', darkMode)
+    localStorage.setItem('darkMode', darkMode)
+  }, [darkMode])
   const [products, setProducts] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({ type: '', size: '', condition: '' })
@@ -713,11 +720,20 @@ export const AppProvider = ({ children }) => {
         body: JSON.stringify(fullUserData)
       })
       
+      const normalizedPhoto =
+        userData.fotoPerfil ?? userData.foto ??
+        updatedUserFromAPI?.fotoPerfil ?? updatedUserFromAPI?.foto ??
+        currentUser?.fotoPerfil ?? currentUser?.foto ?? null
+
       const mergedUser = {
         ...currentUser,
         ...updatedUserFromAPI,
+        ...userData,
         nome: userData.nome || updatedUserFromAPI.nome || currentUser.nome,
-        name: userData.nome || updatedUserFromAPI.nome || currentUser.name
+        name: userData.nome || updatedUserFromAPI.nome || currentUser.name,
+        email: userData.email || updatedUserFromAPI.email || currentUser.email,
+        fotoPerfil: normalizedPhoto,
+        foto: normalizedPhoto
       }
       setCurrentUser(mergedUser)
       sessionStorage.setItem('currentUser', JSON.stringify(mergedUser))
@@ -739,6 +755,8 @@ export const AppProvider = ({ children }) => {
     const value = {
     currentUser,
     setCurrentUser,
+    darkMode,
+    setDarkMode,
     products,
     setProducts,
     fetchProducts,
